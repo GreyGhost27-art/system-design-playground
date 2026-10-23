@@ -1,0 +1,30 @@
+{
+  "id": "worker",
+  "label": "Worker",
+  "badge": "WK",
+  "category": "compute",
+  "info": {
+    "what": "Runs background jobs that don't need an immediate answer.",
+    "why": "Slow tasks like sending emails or resizing images happen behind the scenes, so users don't have to wait for them.",
+    "analogy": "Back-office staff finishing paperwork after the customer has left.",
+    "examples": ["Celery", "Sidekiq", "BullMQ"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "A worker takes jobs from a queue, one at a time",
+        "language": "javascript",
+        "code": "worker.on(\"send-email\", async (job) => {\n  const { to, template } = job.data;\n  await email.send(to, template);\n});\n// if it fails, the job is retried"
+      },
+      {
+        "type": "table",
+        "caption": "Jobs and their state",
+        "columns": ["job", "status", "tries"],
+        "rows": [
+          ["welcome-email", "done", "1"],
+          ["resize-photo", "running", "1"],
+          ["send-invoice", "retrying", "3"]
+        ]
+      }
+    ]
+  }
+}

@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { distance } from './geometry.ts';
-import { createRope, distanceToRope, stepRope, type Rope } from './rope.ts';
+import { distance } from '../src/geometry.ts';
+import {
+  createRope,
+  distanceToRope,
+  stepRope,
+  type Rope,
+} from '../src/rope.ts';
 
 function settle(rope: Rope, start = { x: 0, y: 0 }, end = { x: 200, y: 0 }) {
   for (let i = 0; i < 300; i++) stepRope(rope, start, end);

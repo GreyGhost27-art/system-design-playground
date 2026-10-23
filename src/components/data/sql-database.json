@@ -1,0 +1,39 @@
+{
+  "id": "sql-database",
+  "label": "SQL Database",
+  "badge": "SQL",
+  "category": "data",
+  "info": {
+    "what": "Stores data in tables of rows and columns, with strict rules about its shape.",
+    "why": "Ideal when data is related (users, orders, payments) and must stay correct: transactions make a group of changes happen completely or not at all.",
+    "analogy": "A well-organised spreadsheet with rules nobody can break.",
+    "examples": ["PostgreSQL", "MySQL", "Microsoft SQL Server"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "users",
+        "columns": ["id", "name", "email"],
+        "rows": [
+          ["1", "Ana", "ana@example.com"],
+          ["2", "Bruno", "bruno@example.com"]
+        ]
+      },
+      {
+        "type": "table",
+        "caption": "orders: user_id points to a row in users",
+        "columns": ["id", "user_id", "total", "status"],
+        "rows": [
+          ["101", "1", "39.90", "paid"],
+          ["102", "1", "12.50", "shipped"],
+          ["103", "2", "80.00", "pending"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "A query that joins both tables",
+        "language": "sql",
+        "code": "SELECT users.name, orders.total\nFROM orders\nJOIN users ON users.id = orders.user_id\nWHERE orders.status = 'paid';"
+      }
+    ]
+  }
+}

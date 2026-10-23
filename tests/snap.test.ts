@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { DesignNode } from './design.ts';
-import { findSnapTarget, portAt } from './snap.ts';
+import type { DesignNode } from '../src/design.ts';
+import { findSnapTarget, portAt } from '../src/snap.ts';
 
 const server: DesignNode = { id: 'server', kind: 'app-server', x: 0, y: 0 };
 const database: DesignNode = { id: 'db', kind: 'sql-database', x: 400, y: 0 };

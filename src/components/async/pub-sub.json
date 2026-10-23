@@ -1,0 +1,12 @@
+{
+  "id": "pub-sub",
+  "label": "Pub/Sub",
+  "badge": "PS",
+  "category": "async",
+  "info": {
+    "what": "Delivers each message to everyone who subscribed to a topic.",
+    "why": "Senders don't need to know who is listening, and new listeners can join without changing the sender.",
+    "analogy": "A radio station: everyone tuned in hears the broadcast.",
+    "examples": ["Google Cloud Pub/Sub", "Amazon SNS", "Redis Pub/Sub"]
+  }
+}

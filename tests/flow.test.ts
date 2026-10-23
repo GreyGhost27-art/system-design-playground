@@ -7,8 +7,8 @@ import {
   smoothCurve,
   waveAt,
   type FlowSettings,
-} from './flow.ts';
-import defaults from './settings.json' with { type: 'json' };
+} from '../src/flow.ts';
+import defaults from '../src/settings.json' with { type: 'json' };
 
 // A 300-long cable: each wave takes (300 + 100) / 100 = 4 seconds to cross.
 const settings: FlowSettings = {

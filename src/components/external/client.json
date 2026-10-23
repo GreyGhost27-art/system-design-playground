@@ -1,0 +1,26 @@
+{
+  "id": "client",
+  "label": "Client",
+  "badge": "CL",
+  "category": "external",
+  "info": {
+    "what": "The app or browser a person uses to talk to your system.",
+    "why": "Every interaction starts here: opening a page, tapping a button or sending a message becomes a request to your servers.",
+    "analogy": "A customer walking up to a shop counter.",
+    "examples": ["Google Chrome", "Safari", "Postman"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "The request a browser sends to open an order",
+        "language": "http",
+        "code": "GET /orders/101 HTTP/1.1\nHost: shop.example.com\nAccept: application/json\nAuthorization: Bearer eyJhbGci…"
+      },
+      {
+        "type": "code",
+        "caption": "…and the response it gets back",
+        "language": "http",
+        "code": "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{ \"id\": 101, \"status\": \"paid\" }"
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "alerting",
+  "label": "Alerting",
+  "badge": "ALR",
+  "category": "observability",
+  "info": {
+    "what": "Watches the metrics and notifies a person when something crosses a limit.",
+    "why": "Problems are noticed and fixed quickly, at any hour, instead of being discovered by customers.",
+    "analogy": "A smoke alarm.",
+    "examples": ["PagerDuty", "Opsgenie", "Prometheus Alertmanager"]
+  }
+}

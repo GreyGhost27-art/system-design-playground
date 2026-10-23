@@ -1,0 +1,31 @@
+{
+  "id": "load-balancer",
+  "label": "Load Balancer",
+  "badge": "LB",
+  "category": "routing",
+  "info": {
+    "what": "Spreads incoming requests across several identical servers.",
+    "why": "No single server gets overwhelmed, and if one breaks, traffic simply goes to the others.",
+    "analogy": "A restaurant host seating guests at different tables.",
+    "examples": ["NGINX", "HAProxy", "AWS Elastic Load Balancing"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "NGINX spreading requests over three servers (round-robin by default)",
+        "language": "nginx",
+        "code": "upstream app {\n  server 10.0.0.11:8080;\n  server 10.0.0.12:8080;\n  server 10.0.0.13:8080;\n}\nserver {\n  listen 80;\n  location / { proxy_pass http://app; }\n}"
+      },
+      {
+        "type": "table",
+        "caption": "Round-robin: each request goes to the next server",
+        "columns": ["request", "server"],
+        "rows": [
+          ["#1", "app-1"],
+          ["#2", "app-2"],
+          ["#3", "app-3"],
+          ["#4", "app-1 (starts over)"]
+        ]
+      }
+    ]
+  }
+}

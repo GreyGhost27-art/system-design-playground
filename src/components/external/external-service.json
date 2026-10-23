@@ -1,0 +1,30 @@
+{
+  "id": "external-service",
+  "label": "External Service",
+  "badge": "EXT",
+  "category": "external",
+  "info": {
+    "what": "A service run by another company that your system calls over the internet.",
+    "why": "Some jobs, like taking payments or sending email, are hard to build and run well. Renting them is faster and often safer.",
+    "analogy": "Hiring a courier instead of buying your own delivery vans.",
+    "examples": [
+      "Stripe (payments)",
+      "Twilio (text messages)",
+      "SendGrid (email)"
+    ],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "Charging a card through a payment provider's API",
+        "language": "javascript",
+        "code": "await payments.charges.create(\n  { amount: 5000, currency: \"eur\" },\n  { idempotencyKey: \"order-101\" }\n);"
+      },
+      {
+        "type": "code",
+        "caption": "When it's done, they call you back (a webhook)",
+        "language": "http",
+        "code": "POST /webhooks/payments\nContent-Type: application/json\n\n{\n  \"event\": \"charge.succeeded\",\n  \"orderId\": \"order-101\"\n}"
+      }
+    ]
+  }
+}

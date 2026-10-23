@@ -1,0 +1,30 @@
+{
+  "id": "function",
+  "label": "Function",
+  "badge": "λ",
+  "category": "compute",
+  "info": {
+    "what": "A small piece of code that runs only when something triggers it, with no server for you to manage.",
+    "why": "You pay only while it runs, and it scales up and down automatically. Handy for occasional or spiky work.",
+    "analogy": "Calling a taxi when you need one instead of owning a car.",
+    "examples": ["AWS Lambda", "Google Cloud Functions", "Cloudflare Workers"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "A complete function: runs whenever a file is uploaded",
+        "language": "javascript",
+        "code": "export async function handler(event) {\n  const file = event.records[0].key;\n  await makeThumbnail(file);\n  return { ok: true };\n}"
+      },
+      {
+        "type": "table",
+        "caption": "It scales with demand on its own, down to zero",
+        "columns": ["time", "requests", "copies"],
+        "rows": [
+          ["03:00", "2 / min", "1"],
+          ["12:00", "900 / min", "40"],
+          ["12:30", "none", "0"]
+        ]
+      }
+    ]
+  }
+}

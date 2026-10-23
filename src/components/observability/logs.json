@@ -1,0 +1,12 @@
+{
+  "id": "logs",
+  "label": "Logs",
+  "badge": "LOG",
+  "category": "observability",
+  "info": {
+    "what": "Collects what every service writes down and makes it searchable in one place.",
+    "why": "When something goes wrong you can read exactly what happened, across all servers, instead of logging into each machine one by one.",
+    "analogy": "A ship's logbook, kept for the whole fleet.",
+    "examples": ["Elasticsearch (ELK)", "Grafana Loki", "Splunk"]
+  }
+}

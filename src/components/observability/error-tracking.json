@@ -1,0 +1,12 @@
+{
+  "id": "error-tracking",
+  "label": "Error Tracking",
+  "badge": "ERR",
+  "category": "observability",
+  "info": {
+    "what": "Catches crashes and exceptions, groups identical ones and shows the code that failed.",
+    "why": "Turns thousands of scattered error messages into a short list of bugs, ranked by how many users they affect.",
+    "analogy": "A mechanic's fault report listing each problem and how often it happens.",
+    "examples": ["Sentry", "Rollbar", "Bugsnag"]
+  }
+}

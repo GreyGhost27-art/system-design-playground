@@ -1,0 +1,30 @@
+{
+  "id": "search-index",
+  "label": "Search Index",
+  "badge": "IDX",
+  "category": "data",
+  "info": {
+    "what": "Organises text so it can be searched quickly, like a search engine for your own data.",
+    "why": "Databases are slow at \"find everything mentioning these words\". A search index does it fast and handles typos, ranking and filters.",
+    "analogy": "The index at the back of a book.",
+    "examples": ["Elasticsearch", "OpenSearch", "Algolia"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "An inverted index: each word points to the documents that contain it",
+        "columns": ["word", "found in"],
+        "rows": [
+          ["lisbon", "hotel #1, hotel #4"],
+          ["cheap", "hotel #2, hotel #4"],
+          ["hotel", "hotel #1, hotel #2, hotel #4"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "A search: matches words in any order, best hits first",
+        "language": "json",
+        "code": "{\n  \"query\": {\n    \"match\": {\n      \"description\": \"cheap hotel\"\n    }\n  }\n}"
+      }
+    ]
+  }
+}

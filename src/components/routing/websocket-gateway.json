@@ -1,0 +1,30 @@
+{
+  "id": "websocket-gateway",
+  "label": "WebSocket Gateway",
+  "badge": "WS",
+  "category": "routing",
+  "info": {
+    "what": "Keeps a live, two-way connection open with each user.",
+    "why": "The server can push new messages or updates the moment they happen, instead of waiting for the user to ask.",
+    "analogy": "An open phone line instead of letters sent back and forth.",
+    "examples": ["Socket.IO", "Pusher", "Ably"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "The browser opens one connection and keeps it",
+        "language": "javascript",
+        "code": "const ws = new WebSocket(\n  \"wss://chat.example.com/live\"\n);\nws.onmessage = (event) => {\n  showMessage(JSON.parse(event.data));\n};\nws.send(\"Hi!\");"
+      },
+      {
+        "type": "table",
+        "caption": "Who is connected where",
+        "columns": ["user", "gateway", "since"],
+        "rows": [
+          ["alice", "ws-1", "10:02"],
+          ["bob", "ws-2", "10:05"],
+          ["carla", "ws-1", "10:07"]
+        ]
+      }
+    ]
+  }
+}

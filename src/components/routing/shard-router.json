@@ -1,0 +1,30 @@
+{
+  "id": "shard-router",
+  "label": "Shard Router",
+  "badge": "SR",
+  "category": "routing",
+  "info": {
+    "what": "Knows which part of a split-up database holds each piece of data, and sends queries there.",
+    "why": "When data is too big for one machine it is split into shards. The router hides that split, so the app talks to it as if it were one database.",
+    "analogy": "A library catalogue telling you which building holds a book.",
+    "examples": ["Vitess", "MongoDB mongos", "Citus"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "Shard map: users split by id range",
+        "columns": ["user ids", "shard"],
+        "rows": [
+          ["1 – 1M", "shard-a"],
+          ["1M – 2M", "shard-b"],
+          ["2M and up", "shard-c"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "Hash routing: the same key always lands on the same shard",
+        "language": "javascript",
+        "code": "const shards = [\"a\", \"b\", \"c\"];\nconst i = hash(userId) % shards.length;\nreturn connect(`shard-${shards[i]}`);"
+      }
+    ]
+  }
+}

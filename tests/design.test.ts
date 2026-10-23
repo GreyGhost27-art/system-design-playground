@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { Design, portPosition, type PortRef } from './design.ts';
+import { Design, portPosition, type PortRef } from '../src/design.ts';
 
 function twoComponents() {
   const design = new Design();

@@ -1,0 +1,30 @@
+{
+  "id": "object-storage",
+  "label": "Object Storage",
+  "badge": "OBJ",
+  "category": "data",
+  "info": {
+    "what": "Stores files of any size, like images, videos and backups, which you fetch by name.",
+    "why": "Cheap, practically unlimited and very durable. The right home for big files that don't belong in a database.",
+    "analogy": "A huge self-storage facility where every box has a label.",
+    "examples": ["Amazon S3", "Google Cloud Storage", "Azure Blob Storage"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "Each file lives under a key that looks like a path",
+        "columns": ["key", "size"],
+        "rows": [
+          ["avatars/ana.png", "84 KB"],
+          ["videos/42/original.mp4", "1.2 GB"],
+          ["backups/2026-10-23.gz", "3.4 GB"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "Files are read and written over HTTP, by key",
+        "language": "http",
+        "code": "GET /my-bucket/avatars/ana.png\nPUT /my-bucket/videos/42/original.mp4"
+      }
+    ]
+  }
+}

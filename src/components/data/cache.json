@@ -1,0 +1,30 @@
+{
+  "id": "cache",
+  "label": "Cache",
+  "badge": "CA",
+  "category": "data",
+  "info": {
+    "what": "Keeps frequently used data in fast memory.",
+    "why": "Answers repeated questions in a fraction of a millisecond and takes load off the database. The trade-off: cached data can be slightly out of date.",
+    "analogy": "Keeping the things you use most on your desk instead of in the archive.",
+    "examples": ["Redis", "Memcached", "Valkey"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "Keys and values, each with an expiry time",
+        "columns": ["key", "value", "expires"],
+        "rows": [
+          ["user:1", "{\"name\":\"Ana\"}", "5 min"],
+          ["session:8f2a", "{\"userId\":1}", "1 h"],
+          ["top-products", "[12, 7, 33]", "30 s"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "Check the cache first; on a miss, read the database and keep a copy",
+        "language": "javascript",
+        "code": "let user = await cache.get(\"user:1\");\nif (!user) {\n  user = await db.users.find(1);\n  await cache.set(\"user:1\", user, 300);\n}"
+      }
+    ]
+  }
+}

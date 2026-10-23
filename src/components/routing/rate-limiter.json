@@ -1,0 +1,31 @@
+{
+  "id": "rate-limiter",
+  "label": "Rate Limiter",
+  "badge": "RL",
+  "category": "routing",
+  "info": {
+    "what": "Caps how many requests someone can make in a period of time.",
+    "why": "Protects the system from abuse and from buggy clients that send too much, and keeps things fair between users.",
+    "analogy": "A bouncer letting in a set number of people per minute.",
+    "examples": ["NGINX rate limiting", "Cloudflare Rate Limiting", "Envoy"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "Token bucket: 5 requests per second per user",
+        "columns": ["request", "tokens", "result"],
+        "rows": [
+          ["#1", "5 → 4", "allowed"],
+          ["#5", "1 → 0", "allowed"],
+          ["#6", "0", "rejected"],
+          ["1 s later", "5", "allowed"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "What a rejected client receives",
+        "language": "http",
+        "code": "HTTP/1.1 429 Too Many Requests\nRetry-After: 1\nX-RateLimit-Limit: 5\nX-RateLimit-Remaining: 0"
+      }
+    ]
+  }
+}

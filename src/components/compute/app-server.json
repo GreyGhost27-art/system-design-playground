@@ -1,0 +1,31 @@
+{
+  "id": "app-server",
+  "label": "App Server",
+  "badge": "APP",
+  "category": "compute",
+  "info": {
+    "what": "Runs your application's code: the business logic.",
+    "why": "It receives a request, applies your rules (log in, place an order), talks to databases and other services, and sends back the answer.",
+    "analogy": "The kitchen that actually prepares the meals.",
+    "examples": ["Node.js", "Spring Boot", "Django"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "An endpoint: this is where the business rules live",
+        "language": "javascript",
+        "code": "async function createOrder(req, res) {\n  const user = await auth(req);\n  const order = await db.orders.add({\n    userId: user.id,\n    items: req.body.items,\n  });\n  res.status(201).json(order);\n}\napp.post(\"/orders\", createOrder);"
+      },
+      {
+        "type": "table",
+        "caption": "What happens to one request",
+        "columns": ["step", "takes"],
+        "rows": [
+          ["check who is calling", "2 ms"],
+          ["validate the items", "1 ms"],
+          ["save to the database", "8 ms"],
+          ["send the response", "1 ms"]
+        ]
+      }
+    ]
+  }
+}

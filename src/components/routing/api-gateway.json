@@ -1,0 +1,30 @@
+{
+  "id": "api-gateway",
+  "label": "API Gateway",
+  "badge": "GW",
+  "category": "routing",
+  "info": {
+    "what": "The single front door to all your backend services.",
+    "why": "It checks who is calling, applies shared rules like rate limits, and forwards each request to the right service, so every service doesn't have to do it.",
+    "analogy": "A hotel reception that checks guests in and points them to the right room.",
+    "examples": ["Kong", "Amazon API Gateway", "Apigee"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "Routes: which service handles which path",
+        "columns": ["path", "service", "login"],
+        "rows": [
+          ["/users/*", "users-service", "required"],
+          ["/orders/*", "orders-service", "required"],
+          ["/health", "the gateway", "none"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "The same rule written as configuration",
+        "language": "yaml",
+        "code": "routes:\n  - path: /orders/*\n    service: orders-service\n    auth: jwt\n    rateLimit: 100/minute"
+      }
+    ]
+  }
+}

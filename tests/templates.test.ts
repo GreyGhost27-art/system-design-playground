@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { Design } from './design.ts';
+import { Design } from '../src/design.ts';
 import {
   loadTemplate,
   toTemplate,
   validateTemplate,
   type Template,
-} from './templates.ts';
+} from '../src/templates.ts';
 
-const templatesFolder = new URL('./templates/', import.meta.url);
+const templatesFolder = new URL('../src/templates/', import.meta.url);
 const templateFiles = readdirSync(templatesFolder).filter((file) =>
   file.endsWith('.json'),
 );

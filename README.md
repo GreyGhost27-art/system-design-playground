@@ -47,10 +47,22 @@ npm run dev
 Everything content-related lives in JSON, so no code changes are needed to
 add components or templates.
 
-### Components — `src/components.json`
+### Components — `src/components/`
 
-`categories` set the sidebar groups and colours; `components` list what can
-be placed, with the plain-language explanation shown in the drawer:
+Each component is its own file, so several people can work on them without
+stepping on each other:
+
+```
+src/components/
+  categories.json          sidebar groups, their order and colours
+  index.ts                 lists every component file, in sidebar order
+  data/cache.json          one file per component, in its category folder
+  data/sql-database.json
+  …
+```
+
+A component file holds what can be placed and the plain-language
+explanation shown in the drawer:
 
 ```json
 {
@@ -67,8 +79,11 @@ be placed, with the plain-language explanation shown in the drawer:
 }
 ```
 
-Keep `info` short and jargon-free; `npm test` checks every component has all
-four parts and exactly three examples.
+To add a component, create `<category>/<id>.json` and add one import line to
+`index.ts` where it should appear in the sidebar. Keep `info` short and
+jargon-free. `npm test` checks that every file is listed, sits in the folder
+of its category and is named after its `id`, and that every component has all
+four parts of `info` and exactly three examples.
 
 `info.samples` (optional) shows what a component looks like in practice,
 under _What it looks like_ in the drawer. Each sample is a small table or a
@@ -128,7 +143,7 @@ place in the list (`01-hello-world.json`, `02-…`).
 }
 ```
 
-- `kind` is a component `id` from `components.json`; `label` is optional and
+- `kind` is a component `id` from `src/components/`; `label` is optional and
   renames that one component (the type is shown underneath).
 - `x`/`y` are the component's centre. Columns 250 apart and rows 120–140
   apart keep cables and labels readable.
@@ -154,30 +169,30 @@ place in the list (`01-hello-world.json`, `02-…`).
 | `src/flow.ts`            | The ripple that runs along cables                   |
 | `src/snap.ts`            | Finding the port under the pointer and snap targets |
 | `src/camera.ts`          | Pan, zoom and fitting a design in view              |
-| `src/components.ts`      | Reads the component catalogue                       |
+| `src/components.ts`      | Reads the component catalogue in `src/components/`  |
 | `src/render.ts`          | Drawing the board on a canvas                       |
 | `src/palette.ts`         | The sidebar of components                           |
 | `src/geometry.ts`        | Small point and distance helpers                    |
 
 ## Tests
 
-Tests use Node's built-in runner (Node 22.18+ runs TypeScript directly), so
-they need no extra packages.
+Tests live in `tests/` and use Node's built-in runner (Node 22.18+ runs
+TypeScript directly), so they need no extra packages.
 
 ```sh
 npm test                          # everything
-node --test src/rope.test.ts      # one file
+node --test tests/rope.test.ts    # one file
 ```
 
-| Source file                                                                                                                                             | Test file                                              |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `src/rope.ts`                                                                                                                                           | `src/rope.test.ts`                                     |
-| `src/flow.ts`, `src/settings.json`                                                                                                                      | `src/flow.test.ts`                                     |
-| `src/design.ts`                                                                                                                                         | `src/design.test.ts`                                   |
-| `src/history.ts`                                                                                                                                        | `src/history.test.ts`                                  |
-| `src/snap.ts`                                                                                                                                           | `src/snap.test.ts`                                     |
-| `src/camera.ts`                                                                                                                                         | `src/camera.test.ts`                                   |
-| `src/templates.ts`, `src/templates/*.json`                                                                                                              | `src/templates.test.ts`                                |
-| `src/components.ts`, `src/components.json`                                                                                                              | `src/components.test.ts`, `src/templates.test.ts`      |
-| `src/geometry.ts`                                                                                                                                       | covered by `src/rope.test.ts` and `src/design.test.ts` |
-| `src/render.ts`, `src/main.ts`, `src/palette.ts`, `src/lesson.ts`, `src/componentInfo.ts`, `src/dom.ts`, `src/labelEditor.ts`, `src/templateLibrary.ts` | no unit tests; check in the browser                    |
+| Source file                                                                                                                                             | Test file                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `src/rope.ts`                                                                                                                                           | `tests/rope.test.ts`                                       |
+| `src/flow.ts`, `src/settings.json`                                                                                                                      | `tests/flow.test.ts`                                       |
+| `src/design.ts`                                                                                                                                         | `tests/design.test.ts`                                     |
+| `src/history.ts`                                                                                                                                        | `tests/history.test.ts`                                    |
+| `src/snap.ts`                                                                                                                                           | `tests/snap.test.ts`                                       |
+| `src/camera.ts`                                                                                                                                         | `tests/camera.test.ts`                                     |
+| `src/templates.ts`, `src/templates/*.json`                                                                                                              | `tests/templates.test.ts`                                  |
+| `src/components.ts`, `src/components/**`                                                                                                                | `tests/components.test.ts`, `tests/templates.test.ts`      |
+| `src/geometry.ts`                                                                                                                                       | covered by `tests/rope.test.ts` and `tests/design.test.ts` |
+| `src/render.ts`, `src/main.ts`, `src/palette.ts`, `src/lesson.ts`, `src/componentInfo.ts`, `src/dom.ts`, `src/labelEditor.ts`, `src/templateLibrary.ts` | no unit tests; check in the browser                        |

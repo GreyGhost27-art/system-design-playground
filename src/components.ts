@@ -1,4 +1,5 @@
-import catalog from './components.json' with { type: 'json' };
+import categories from './components/categories.json' with { type: 'json' };
+import componentFiles from './components/index.ts';
 
 export type Category =
   | 'external'
@@ -37,10 +38,10 @@ export interface CategoryInfo {
   color: string;
 }
 
-export const CATEGORIES = catalog.categories as CategoryInfo[];
+export const CATEGORIES = categories as CategoryInfo[];
 // JSON can't express the Sample union, so the shape is asserted here and
 // checked by components.test.ts.
-export const COMPONENT_KINDS = catalog.components as ComponentKind[];
+export const COMPONENT_KINDS = componentFiles as ComponentKind[];
 
 export function isKnownKind(id: string): boolean {
   return COMPONENT_KINDS.some((candidate) => candidate.id === id);

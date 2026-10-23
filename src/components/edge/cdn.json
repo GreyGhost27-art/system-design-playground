@@ -1,0 +1,30 @@
+{
+  "id": "cdn",
+  "label": "CDN",
+  "badge": "CDN",
+  "category": "edge",
+  "info": {
+    "what": "A network of servers around the world that keeps copies of your files close to users.",
+    "why": "Images, videos and scripts load much faster from nearby, and your own servers handle far less traffic.",
+    "analogy": "Local warehouses stocking popular items so deliveries arrive quickly.",
+    "examples": ["Cloudflare", "Akamai", "Amazon CloudFront"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "A nearby copy answers: the origin never sees it",
+        "language": "http",
+        "code": "GET /images/logo.png\nHost: cdn.example.com\n\nHTTP/1.1 200 OK\nCache-Control: max-age=86400\nX-Cache: HIT\nAge: 3150"
+      },
+      {
+        "type": "table",
+        "caption": "How long each file is kept: versioned names can stay a year, personal data never",
+        "columns": ["file", "cached for"],
+        "rows": [
+          ["logo.png", "1 day"],
+          ["app.3f9c2a.js", "1 year"],
+          ["/api/cart", "never"]
+        ]
+      }
+    ]
+  }
+}

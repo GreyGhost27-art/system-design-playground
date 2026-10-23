@@ -1,0 +1,12 @@
+{
+  "id": "stream",
+  "label": "Stream",
+  "badge": "STR",
+  "category": "async",
+  "info": {
+    "what": "An ordered, durable log of events that many readers can process, and replay, at their own pace.",
+    "why": "Suits high volumes of events (clicks, payments, sensor readings) that several systems need to handle, now or later.",
+    "analogy": "A recorded TV channel you can rewind.",
+    "examples": ["Apache Kafka", "Amazon Kinesis", "Redpanda"]
+  }
+}

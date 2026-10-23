@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
+import { readdirSync } from 'node:fs';
 import { test } from 'node:test';
-import { CATEGORIES, COMPONENT_KINDS, findKind } from './components.ts';
+import { CATEGORIES, COMPONENT_KINDS, findKind } from '../src/components.ts';
 
 const kindsIn = (category: string) =>
   COMPONENT_KINDS.filter((kind) => kind.category === category);
@@ -69,5 +70,33 @@ test('code examples fit the drawer, 40 characters per line at most', () => {
         assert.ok(line.length <= 40, `${id}: "${line}" is too long`);
       }
     }
+  }
+});
+
+const componentsFolder = new URL('../src/components/', import.meta.url);
+
+/** Every `<category>/<id>.json` file under src/components. */
+function componentFilesOnDisk(): { category: string; id: string }[] {
+  return readdirSync(componentsFolder, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((folder) =>
+      readdirSync(new URL(`${folder.name}/`, componentsFolder))
+        .filter((file) => file.endsWith('.json'))
+        .map((file) => ({ category: folder.name, id: file.slice(0, -5) })),
+    );
+}
+
+test('every component file is listed in components/index.ts', () => {
+  const listed = COMPONENT_KINDS.map((kind) => kind.id).sort();
+  const onDisk = componentFilesOnDisk()
+    .map((file) => file.id)
+    .sort();
+  assert.deepEqual(listed, onDisk);
+});
+
+test('each component file is named after its id, in its category folder', () => {
+  for (const { category, id } of componentFilesOnDisk()) {
+    const kind = findKind(id);
+    assert.equal(kind.category, category, `${id}.json is in ${category}/`);
   }
 });

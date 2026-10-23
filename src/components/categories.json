@@ -1,0 +1,37 @@
+[
+  {
+    "id": "external",
+    "label": "External",
+    "color": "#5eb1ff"
+  },
+  {
+    "id": "edge",
+    "label": "Edge",
+    "color": "#38d6e8"
+  },
+  {
+    "id": "routing",
+    "label": "Routing",
+    "color": "#b48cff"
+  },
+  {
+    "id": "compute",
+    "label": "Compute",
+    "color": "#4fd1a5"
+  },
+  {
+    "id": "data",
+    "label": "Data",
+    "color": "#ffb454"
+  },
+  {
+    "id": "async",
+    "label": "Async",
+    "color": "#ff7a90"
+  },
+  {
+    "id": "observability",
+    "label": "Observability",
+    "color": "#94a3b8"
+  }
+]

@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fitCamera, screenToWorld, worldToScreen, zoomAt } from './camera.ts';
+import {
+  fitCamera,
+  screenToWorld,
+  worldToScreen,
+  zoomAt,
+} from '../src/camera.ts';
 
 test('screen points convert to world points with pan and zoom', () => {
   const camera = { x: 100, y: 50, scale: 2 };

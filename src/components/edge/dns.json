@@ -1,0 +1,30 @@
+{
+  "id": "dns",
+  "label": "DNS",
+  "badge": "DNS",
+  "category": "edge",
+  "info": {
+    "what": "Turns a name like example.com into the numeric address of a server.",
+    "why": "People remember names; computers connect to IP addresses. DNS can also send each user to the nearest or healthiest server.",
+    "analogy": "The internet's phone book.",
+    "examples": ["Cloudflare DNS", "Amazon Route 53", "Google Cloud DNS"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "Records for shop.example.com",
+        "columns": ["type", "value", "meaning"],
+        "rows": [
+          ["A", "203.0.113.10", "IPv4 address"],
+          ["AAAA", "2001:db8::10", "IPv6 address"],
+          ["MX", "mail.example.com", "email server"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "Looking a name up from a terminal",
+        "language": "shell",
+        "code": "$ dig +short shop.example.com\n203.0.113.10"
+      }
+    ]
+  }
+}

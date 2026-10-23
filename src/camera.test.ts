@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { screenToWorld, zoomAt } from './camera.ts';
+
+test('screen points convert to world points with pan and zoom', () => {
+  const camera = { x: 100, y: 50, scale: 2 };
+  assert.deepEqual(screenToWorld(camera, { x: 300, y: 250 }), {
+    x: 100,
+    y: 100,
+  });
+});
+
+test('zooming keeps the point under the cursor in place', () => {
+  const camera = { x: 30, y: -20, scale: 1 };
+  const cursor = { x: 400, y: 300 };
+  const before = screenToWorld(camera, cursor);
+  const after = screenToWorld(zoomAt(camera, cursor, 1.5), cursor);
+  assert.ok(Math.abs(before.x - after.x) < 1e-9);
+  assert.ok(Math.abs(before.y - after.y) < 1e-9);
+});
+
+test('zoom stays within a sensible range', () => {
+  const camera = { x: 0, y: 0, scale: 1 };
+  assert.equal(zoomAt(camera, { x: 0, y: 0 }, 100).scale, 2.5);
+  assert.equal(zoomAt(camera, { x: 0, y: 0 }, 0.001).scale, 0.3);
+});

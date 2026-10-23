@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>System Design Playground</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <header class="sidebar-header">
+        <h1>System Design</h1>
+        <span class="mode">Free mode</span>
+      </header>
+      <nav id="palette" class="palette" aria-label="Components"></nav>
+      <footer class="hints">
+        <p><kbd>Drag</kbd> a component onto the board</p>
+        <p><kbd>Drag</kbd> from a port to run a cable</p>
+        <p><kbd>Del</kbd> removes the selection</p>
+        <p><kbd>Scroll</kbd> zooms · drag the board to pan</p>
+      </footer>
+    </aside>
+    <main class="board">
+      <canvas id="board"></canvas>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

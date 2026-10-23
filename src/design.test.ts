@@ -1,0 +1,88 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { Design, portPosition, type PortRef } from './design.ts';
+
+function twoComponents() {
+  const design = new Design();
+  const client = design.addNode('client', { x: 0, y: 0 });
+  const server = design.addNode('app-server', { x: 400, y: 0 });
+  return { design, client, server };
+}
+
+const port = (nodeId: string, side: PortRef['side'] = 'right'): PortRef => ({
+  nodeId,
+  side,
+});
+
+test('adding a component places it at the given position', () => {
+  const design = new Design();
+  const node = design.addNode('cache', { x: 40, y: 80 });
+  assert.equal(node.kind, 'cache');
+  assert.deepEqual({ x: node.x, y: node.y }, { x: 40, y: 80 });
+});
+
+test('ports sit in the middle of each side of a component', () => {
+  const node = { id: 'n', kind: 'cache', x: 0, y: 0 };
+  assert.deepEqual(portPosition(node, 'top'), { x: 0, y: -26 });
+  assert.deepEqual(portPosition(node, 'right'), { x: 84, y: 0 });
+  assert.deepEqual(portPosition(node, 'bottom'), { x: 0, y: 26 });
+  assert.deepEqual(portPosition(node, 'left'), { x: -84, y: 0 });
+});
+
+test('a cable connects ports on two different components', () => {
+  const { design, client, server } = twoComponents();
+  const cable = design.connect(port(client.id), port(server.id, 'left'));
+  assert.ok(cable);
+  assert.equal(design.cables.length, 1);
+});
+
+test('a component cannot be connected to itself', () => {
+  const { design, client } = twoComponents();
+  assert.equal(design.connect(port(client.id), port(client.id, 'top')), null);
+});
+
+test('two components can only be connected once, in either direction', () => {
+  const { design, client, server } = twoComponents();
+  design.connect(port(client.id), port(server.id));
+  assert.equal(design.connect(port(client.id, 'top'), port(server.id)), null);
+  assert.equal(design.connect(port(server.id), port(client.id)), null);
+});
+
+test('removing a component removes its cables', () => {
+  const { design, client, server } = twoComponents();
+  design.connect(port(client.id), port(server.id));
+  design.removeNode(server.id);
+  assert.equal(design.nodes.length, 1);
+  assert.equal(design.cables.length, 0);
+});
+
+test('the topmost component under a point is found', () => {
+  const design = new Design();
+  design.addNode('client', { x: 0, y: 0 });
+  const top = design.addNode('cache', { x: 20, y: 0 });
+  assert.equal(design.nodeAt({ x: 10, y: 0 })?.id, top.id);
+  assert.equal(design.nodeAt({ x: 1000, y: 0 }), null);
+});
+
+test('a component brought to front is found before the ones below it', () => {
+  const design = new Design();
+  const bottom = design.addNode('client', { x: 0, y: 0 });
+  design.addNode('cache', { x: 20, y: 0 });
+  design.bringToFront(bottom.id);
+  assert.equal(design.nodeAt({ x: 10, y: 0 })?.id, bottom.id);
+});
+
+test('a cable is found when the point is near its rope', () => {
+  const { design, client, server } = twoComponents();
+  const cable = design.connect(port(client.id), port(server.id, 'left'));
+  assert.equal(design.cableAt({ x: 200, y: 4 })?.id, cable?.id);
+  assert.equal(design.cableAt({ x: 200, y: 100 }), null);
+});
+
+test('cables follow a component when it moves', () => {
+  const { design, client, server } = twoComponents();
+  const cable = design.connect(port(client.id), port(server.id, 'left'))!;
+  design.moveNode(server.id, { x: 400, y: 300 });
+  design.step();
+  assert.deepEqual(cable.rope.points.at(-1), { x: 316, y: 300 });
+});

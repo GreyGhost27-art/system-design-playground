@@ -19,6 +19,11 @@
       <footer class="hints">
         <p><kbd>Drag</kbd> a component onto the board</p>
         <p><kbd>Drag</kbd> from a port to run a cable</p>
+        <p>
+          <kbd>Drag</kbd> a cable near its end (or <kbd>Shift</kbd>+drag a port)
+          to unplug it
+        </p>
+        <p><kbd>Double-click</kbd> a cable to label it</p>
         <p><kbd>Del</kbd> removes the selection</p>
         <p><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copies a component</p>
         <p><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the last change</p>
@@ -34,6 +39,15 @@
     </aside>
     <main class="board">
       <canvas id="board"></canvas>
+      <input
+        id="label-editor"
+        class="label-editor"
+        type="text"
+        maxlength="40"
+        placeholder="Label this cable"
+        aria-label="Cable label"
+        hidden
+      />
       <aside id="drawer" class="drawer" hidden>
         <button
           id="drawer-close"

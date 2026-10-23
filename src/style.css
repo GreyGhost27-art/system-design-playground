@@ -337,3 +337,19 @@ kbd {
   background: var(--panel-raised);
   font-size: 12.5px;
 }
+
+.label-editor {
+  position: absolute;
+  width: 160px;
+  padding: 4px 12px;
+  border: 1px solid #8fe3ff;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}

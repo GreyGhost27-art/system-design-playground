@@ -1,4 +1,4 @@
-import type { Point } from './geometry.ts';
+import { distance, type Point } from './geometry.ts';
 import { createRope, distanceToRope, stepRope, type Rope } from './rope.ts';
 
 export const NODE_WIDTH = 176;
@@ -157,6 +157,15 @@ export class Design {
     return cable;
   }
 
+  /** Names a cable; an empty or blank label removes it. */
+  setCableLabel(id: string, label: string): void {
+    const cable = this.cables.find((candidate) => candidate.id === id);
+    if (!cable) throw new Error(`Unknown cable: ${id}`);
+    const trimmed = label.trim();
+    if (trimmed) cable.label = trimmed;
+    else delete cable.label;
+  }
+
   removeCable(id: string): void {
     this.cables = this.cables.filter((cable) => cable.id !== id);
   }
@@ -198,6 +207,30 @@ export class Design {
       right: Math.max(...boxes.map((box) => box.right)),
       bottom: Math.max(...boxes.map((box) => box.bottom)),
     };
+  }
+
+  /** Cables plugged into a port, oldest first. */
+  cablesAtPort(port: PortRef): Cable[] {
+    const isPort = (end: PortRef) =>
+      end.nodeId === port.nodeId && end.side === port.side;
+    return this.cables.filter(({ from, to }) => isPort(from) || isPort(to));
+  }
+
+  /**
+   * The cable whose end is near `point`, and which end, so a cable can be
+   * grabbed close to its plug and pulled out.
+   */
+  cableEndAt(
+    point: Point,
+    reach = 40,
+  ): { cable: Cable; end: 'from' | 'to' } | null {
+    const cable = this.cableAt(point);
+    if (!cable) return null;
+    const { points } = cable.rope;
+    const toStart = distance(point, points[0]);
+    const toEnd = distance(point, points[points.length - 1]);
+    if (Math.min(toStart, toEnd) > reach) return null;
+    return { cable, end: toStart <= toEnd ? 'from' : 'to' };
   }
 
   step(): void {

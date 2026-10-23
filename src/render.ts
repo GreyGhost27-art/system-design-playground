@@ -36,9 +36,12 @@ const FONT_MONO = "ui-monospace, 'Cascadia Code', Consolas, monospace";
 export type Selection = { type: 'node' | 'cable'; id: string };
 
 export interface CableDraft {
+  /** The end that stays plugged in while the other one is dragged. */
   from: PortRef;
   rope: Rope;
   snap: PortRef | null;
+  /** Set when an existing cable was pulled out and is being re-plugged. */
+  unplugged?: { label?: string; reversed: boolean };
 }
 
 export interface Scene {

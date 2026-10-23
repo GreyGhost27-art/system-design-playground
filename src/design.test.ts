@@ -142,3 +142,48 @@ test('restoring a snapshot brings back its components and cables', () => {
   assert.equal(design.nodes.length, 2);
   assert.equal(design.cables.length, 1);
 });
+
+test('a cable can be labelled after it is connected', () => {
+  const { design, client, server } = twoComponents();
+  const cable = design.connect(port(client.id), port(server.id))!;
+  design.setCableLabel(cable.id, '  reads  ');
+  assert.equal(cable.label, 'reads');
+});
+
+test('clearing a cable label removes it', () => {
+  const { design, client, server } = twoComponents();
+  const cable = design.connect(port(client.id), port(server.id), {
+    label: 'HTTP',
+  })!;
+  design.setCableLabel(cable.id, '   ');
+  assert.equal('label' in cable, false);
+});
+
+test('a cable is grabbed by the end nearest the pointer', () => {
+  const { design, client, server } = twoComponents();
+  const cable = design.connect(port(client.id), port(server.id, 'left'))!;
+  assert.deepEqual(design.cableEndAt({ x: 110, y: 0 }), {
+    cable,
+    end: 'from',
+  });
+  assert.deepEqual(design.cableEndAt({ x: 290, y: 0 }), { cable, end: 'to' });
+});
+
+test('the middle of a cable is not one of its ends', () => {
+  const { design, client, server } = twoComponents();
+  design.connect(port(client.id), port(server.id, 'left'));
+  assert.equal(design.cableEndAt({ x: 200, y: 0 }), null);
+  assert.equal(design.cableEndAt({ x: 110, y: 200 }), null);
+});
+
+test('the cables plugged into a port are listed oldest first', () => {
+  const design = new Design();
+  const lb = design.addNode('load-balancer', { x: 0, y: 0 });
+  const app1 = design.addNode('app-server', { x: 300, y: -100 });
+  const app2 = design.addNode('app-server', { x: 300, y: 100 });
+  const first = design.connect(port(lb.id), port(app1.id, 'left'))!;
+  const second = design.connect(port(lb.id), port(app2.id, 'left'))!;
+  assert.deepEqual(design.cablesAtPort(port(lb.id)), [first, second]);
+  assert.deepEqual(design.cablesAtPort(port(app2.id, 'left')), [second]);
+  assert.deepEqual(design.cablesAtPort(port(lb.id, 'top')), []);
+});

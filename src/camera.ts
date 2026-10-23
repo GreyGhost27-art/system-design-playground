@@ -17,6 +17,13 @@ export function screenToWorld(camera: Camera, point: Point): Point {
   };
 }
 
+export function worldToScreen(camera: Camera, point: Point): Point {
+  return {
+    x: point.x * camera.scale + camera.x,
+    y: point.y * camera.scale + camera.y,
+  };
+}
+
 export function zoomAt(
   camera: Camera,
   screenPoint: Point,

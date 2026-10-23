@@ -1,12 +1,13 @@
-import { fitCamera, screenToWorld, zoomAt } from './camera.ts';
+import { fitCamera, screenToWorld, worldToScreen, zoomAt } from './camera.ts';
 import { renderComponentInfo } from './componentInfo.ts';
 import { findKind } from './components.ts';
 import { Design, type PortRef } from './design.ts';
 import type { Point } from './geometry.ts';
 import { UndoHistory } from './history.ts';
+import { createCableLabelEditor } from './labelEditor.ts';
 import { renderLesson } from './lesson.ts';
 import { DRAG_FORMAT, renderPalette } from './palette.ts';
-import { render, type Scene } from './render.ts';
+import { render, type CableDraft, type Scene } from './render.ts';
 import { createRope, stepRope } from './rope.ts';
 import settings from './settings.json' with { type: 'json' };
 import { findSnapTarget, portAt } from './snap.ts';
@@ -17,6 +18,12 @@ type Gesture =
   | { type: 'idle' }
   | { type: 'moving-node'; nodeId: string; grabOffset: Point; moved: boolean }
   | { type: 'drawing-cable' }
+  | {
+      type: 'holding-cable-end';
+      cableId: string;
+      end: 'from' | 'to';
+      start: Point;
+    }
   | { type: 'panning'; last: Point };
 
 const canvas = document.querySelector<HTMLCanvasElement>('#board')!;
@@ -30,6 +37,7 @@ const drawerCloseButton = document.querySelector<HTMLElement>('#drawer-close')!;
 const lessonOpenButton = document.querySelector<HTMLElement>('#lesson-open')!;
 const copyJsonButton = document.querySelector<HTMLElement>('#copy-json')!;
 const flowToggle = document.querySelector<HTMLInputElement>('#flow-toggle')!;
+const labelInput = document.querySelector<HTMLInputElement>('#label-editor')!;
 
 // Space the drawer covers on the right of the board when open.
 const DRAWER_SPACE = 372;
@@ -37,6 +45,10 @@ const DRAWER_SPACE = 372;
 const SETTLE_STEPS = 90;
 // Each paste lands this far down and right of the last copy.
 const PASTE_OFFSET = 40;
+// Holding still on a cable this long (touch screens) opens its label field.
+const LONG_PRESS_MS = 500;
+// Pointer travel (screen pixels) that turns a press into a drag.
+const DRAG_SLOP = 6;
 
 const design = new Design();
 const undoHistory = new UndoHistory();
@@ -58,6 +70,19 @@ let lessonOpen = true;
 let drawerShowing = '';
 let copied: { kind: string; label?: string; x: number; y: number } | null =
   null;
+let longPress: { timer: number; start: Point } | null = null;
+
+const labelEditor = createCableLabelEditor({
+  input: labelInput,
+  design,
+  toScreen: (world) => worldToScreen(scene.camera, world),
+  onSave: (cableId, label) => {
+    const cable = design.cables.find((candidate) => candidate.id === cableId);
+    if (!cable || (cable.label ?? '') === label.trim()) return;
+    undoHistory.record(design);
+    design.setCableLabel(cableId, label);
+  },
+});
 
 renderPalette(palette, (kindId) => addAtViewCenter(kindId));
 fillTemplateSelect();
@@ -200,6 +225,13 @@ canvas.addEventListener('pointerdown', (event) => {
   pointer = toWorld(event);
 
   const port = portAt(design.nodes, pointer);
+  // Shift-dragging a port picks up its newest cable instead of a new one.
+  const newestCable = port && design.cablesAtPort(port).at(-1);
+  if (event.shiftKey && port && newestCable) {
+    const end = newestCable.from.nodeId === port.nodeId ? 'from' : 'to';
+    unplug(newestCable.id, end);
+    return;
+  }
   if (port) {
     const start = design.portPoint(port);
     scene.draft = { from: port, rope: createRope(start, start), snap: null };
@@ -222,13 +254,50 @@ canvas.addEventListener('pointerdown', (event) => {
 
   const cable = design.cableAt(pointer);
   scene.selection = cable ? { type: 'cable', id: cable.id } : null;
-  if (!cable) {
+  if (cable) {
+    const grabbed = design.cableEndAt(pointer);
+    if (grabbed) {
+      gesture = {
+        type: 'holding-cable-end',
+        cableId: grabbed.cable.id,
+        end: grabbed.end,
+        start: { x: event.clientX, y: event.clientY },
+      };
+    }
+    longPress = {
+      timer: window.setTimeout(() => labelEditor.open(cable.id), LONG_PRESS_MS),
+      start: { x: event.clientX, y: event.clientY },
+    };
+  } else {
     gesture = { type: 'panning', last: { x: event.clientX, y: event.clientY } };
   }
 });
 
+function cancelLongPress(): void {
+  if (longPress) window.clearTimeout(longPress.timer);
+  longPress = null;
+}
+
+canvas.addEventListener('dblclick', (event) => {
+  cancelLongPress();
+  const cable = design.cableAt(toWorld(event));
+  if (cable) labelEditor.open(cable.id);
+});
+
 canvas.addEventListener('pointermove', (event) => {
   pointer = toWorld(event);
+  if (longPress) {
+    const moved = Math.hypot(
+      event.clientX - longPress.start.x,
+      event.clientY - longPress.start.y,
+    );
+    if (moved > DRAG_SLOP) cancelLongPress();
+  }
+  if (gesture.type === 'holding-cable-end') {
+    const { start, cableId, end } = gesture;
+    const moved = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+    if (moved > DRAG_SLOP) unplug(cableId, end);
+  }
 
   switch (gesture.type) {
     case 'moving-node':
@@ -259,22 +328,60 @@ canvas.addEventListener('pointermove', (event) => {
 });
 
 canvas.addEventListener('pointerup', () => {
+  cancelLongPress();
   const draft = scene.draft;
   if (
     gesture.type === 'drawing-cable' &&
     draft?.snap &&
     design.canConnect(draft.from, draft.snap)
   ) {
-    undoHistory.record(design);
-    const cable = design.connect(draft.from, draft.snap, {
-      rope: draft.rope,
-    });
+    const cable = plugIn(draft, draft.snap);
     if (cable) scene.selection = { type: 'cable', id: cable.id };
   }
   scene.draft = null;
   gesture = { type: 'idle' };
   updateHover();
 });
+
+/** Pulls one end of a cable out; the cable then follows the pointer. */
+function unplug(cableId: string, end: 'from' | 'to'): void {
+  cancelLongPress();
+  const cable = design.cables.find((candidate) => candidate.id === cableId);
+  if (!cable) return;
+  undoHistory.record(design);
+  design.removeCable(cableId);
+  // The draft always grows from the end that stays plugged in.
+  const reversed = end === 'from';
+  if (reversed) reverseRope(cable);
+  scene.draft = {
+    from: reversed ? cable.to : cable.from,
+    rope: cable.rope,
+    snap: null,
+    unplugged: { label: cable.label, reversed },
+  };
+  scene.selection = null;
+  gesture = { type: 'drawing-cable' };
+}
+
+function plugIn(draft: CableDraft, target: PortRef) {
+  const { unplugged, rope } = draft;
+  if (!unplugged) {
+    undoHistory.record(design);
+    return design.connect(draft.from, target, { rope });
+  }
+  // A re-plugged cable keeps the way round it was drawn, so its traffic
+  // still flows the same direction. Unplugging already recorded an undo step.
+  if (unplugged.reversed) reverseRope({ rope });
+  const [from, to] = unplugged.reversed
+    ? [target, draft.from]
+    : [draft.from, target];
+  return design.connect(from, to, { rope, label: unplugged.label });
+}
+
+function reverseRope({ rope }: { rope: CableDraft['rope'] }): void {
+  rope.points.reverse();
+  rope.previous.reverse();
+}
 
 canvas.addEventListener('pointerleave', () => {
   if (gesture.type !== 'idle') return;
@@ -379,15 +486,15 @@ function updateHover(): void {
   const port = portAt(design.nodes, pointer);
   scene.hoveredPort = port;
   scene.hoveredNodeId = port?.nodeId ?? design.nodeAt(pointer)?.id ?? null;
-  canvas.style.cursor = cursorFor(port !== null);
+  const overCableEnd =
+    !scene.hoveredNodeId && design.cableEndAt(pointer) !== null;
+  canvas.style.cursor = cursorFor(port !== null, overCableEnd);
 }
 
-function cursorFor(overPort: boolean): string {
+function cursorFor(overPort: boolean, overCableEnd: boolean): string {
   if (gesture.type === 'drawing-cable' || overPort) return 'crosshair';
-  if (gesture.type === 'moving-node' || gesture.type === 'panning') {
-    return 'grabbing';
-  }
-  return scene.hoveredNodeId ? 'grab' : 'default';
+  if (gesture.type !== 'idle') return 'grabbing';
+  return scene.hoveredNodeId || overCableEnd ? 'grab' : 'default';
 }
 
 flowToggle.checked = scene.flow.enabled;
@@ -404,6 +511,7 @@ function frame(now: number): void {
     stepRope(rope, design.portPoint(from), end);
   }
   syncDrawer();
+  labelEditor.follow();
   render(ctx, scene, boardSize());
   requestAnimationFrame(frame);
 }

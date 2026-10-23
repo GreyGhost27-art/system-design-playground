@@ -36,8 +36,10 @@ test('an unknown component kind is reported by name', () => {
   );
 });
 
-test('data, edge and external components show an example', () => {
-  const kinds = ['data', 'edge', 'external'].flatMap(kindsIn);
+test('external, edge, routing, compute and data components show an example', () => {
+  const kinds = ['external', 'edge', 'routing', 'compute', 'data'].flatMap(
+    kindsIn,
+  );
   for (const { id, info } of kinds) {
     assert.ok((info.samples ?? []).length > 0, `${id} has no samples`);
   }
@@ -54,6 +56,17 @@ test('every example is a captioned table or code snippet', () => {
       } else {
         assert.equal(sample.type, 'code', `${id} has an unknown sample type`);
         assert.ok(sample.language && sample.code.trim(), id);
+      }
+    }
+  }
+});
+
+test('code examples fit the drawer, 40 characters per line at most', () => {
+  for (const { id, info } of COMPONENT_KINDS) {
+    for (const sample of info.samples ?? []) {
+      if (sample.type !== 'code') continue;
+      for (const line of sample.code.split('\n')) {
+        assert.ok(line.length <= 40, `${id}: "${line}" is too long`);
       }
     }
   }

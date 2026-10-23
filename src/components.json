@@ -162,7 +162,26 @@
         "what": "Spreads incoming requests across several identical servers.",
         "why": "No single server gets overwhelmed, and if one breaks, traffic simply goes to the others.",
         "analogy": "A restaurant host seating guests at different tables.",
-        "examples": ["NGINX", "HAProxy", "AWS Elastic Load Balancing"]
+        "examples": ["NGINX", "HAProxy", "AWS Elastic Load Balancing"],
+        "samples": [
+          {
+            "type": "code",
+            "caption": "NGINX spreading requests over three servers (round-robin by default)",
+            "language": "nginx",
+            "code": "upstream app {\n  server 10.0.0.11:8080;\n  server 10.0.0.12:8080;\n  server 10.0.0.13:8080;\n}\nserver {\n  listen 80;\n  location / { proxy_pass http://app; }\n}"
+          },
+          {
+            "type": "table",
+            "caption": "Round-robin: each request goes to the next server",
+            "columns": ["request", "server"],
+            "rows": [
+              ["#1", "app-1"],
+              ["#2", "app-2"],
+              ["#3", "app-3"],
+              ["#4", "app-1 (starts over)"]
+            ]
+          }
+        ]
       }
     },
     {
@@ -174,7 +193,25 @@
         "what": "The single front door to all your backend services.",
         "why": "It checks who is calling, applies shared rules like rate limits, and forwards each request to the right service, so every service doesn't have to do it.",
         "analogy": "A hotel reception that checks guests in and points them to the right room.",
-        "examples": ["Kong", "Amazon API Gateway", "Apigee"]
+        "examples": ["Kong", "Amazon API Gateway", "Apigee"],
+        "samples": [
+          {
+            "type": "table",
+            "caption": "Routes: which service handles which path",
+            "columns": ["path", "service", "login"],
+            "rows": [
+              ["/users/*", "users-service", "required"],
+              ["/orders/*", "orders-service", "required"],
+              ["/health", "the gateway", "none"]
+            ]
+          },
+          {
+            "type": "code",
+            "caption": "The same rule written as configuration",
+            "language": "yaml",
+            "code": "routes:\n  - path: /orders/*\n    service: orders-service\n    auth: jwt\n    rateLimit: 100/minute"
+          }
+        ]
       }
     },
     {
@@ -186,7 +223,30 @@
         "what": "Caps how many requests someone can make in a period of time.",
         "why": "Protects the system from abuse and from buggy clients that send too much, and keeps things fair between users.",
         "analogy": "A bouncer letting in a set number of people per minute.",
-        "examples": ["NGINX rate limiting", "Cloudflare Rate Limiting", "Envoy"]
+        "examples": [
+          "NGINX rate limiting",
+          "Cloudflare Rate Limiting",
+          "Envoy"
+        ],
+        "samples": [
+          {
+            "type": "table",
+            "caption": "Token bucket: 5 requests per second per user",
+            "columns": ["request", "tokens", "result"],
+            "rows": [
+              ["#1", "5 → 4", "allowed"],
+              ["#5", "1 → 0", "allowed"],
+              ["#6", "0", "rejected"],
+              ["1 s later", "5", "allowed"]
+            ]
+          },
+          {
+            "type": "code",
+            "caption": "What a rejected client receives",
+            "language": "http",
+            "code": "HTTP/1.1 429 Too Many Requests\nRetry-After: 1\nX-RateLimit-Limit: 5\nX-RateLimit-Remaining: 0"
+          }
+        ]
       }
     },
     {
@@ -198,7 +258,25 @@
         "what": "Keeps a live, two-way connection open with each user.",
         "why": "The server can push new messages or updates the moment they happen, instead of waiting for the user to ask.",
         "analogy": "An open phone line instead of letters sent back and forth.",
-        "examples": ["Socket.IO", "Pusher", "Ably"]
+        "examples": ["Socket.IO", "Pusher", "Ably"],
+        "samples": [
+          {
+            "type": "code",
+            "caption": "The browser opens one connection and keeps it",
+            "language": "javascript",
+            "code": "const ws = new WebSocket(\n  \"wss://chat.example.com/live\"\n);\nws.onmessage = (event) => {\n  showMessage(JSON.parse(event.data));\n};\nws.send(\"Hi!\");"
+          },
+          {
+            "type": "table",
+            "caption": "Who is connected where",
+            "columns": ["user", "gateway", "since"],
+            "rows": [
+              ["alice", "ws-1", "10:02"],
+              ["bob", "ws-2", "10:05"],
+              ["carla", "ws-1", "10:07"]
+            ]
+          }
+        ]
       }
     },
     {
@@ -210,7 +288,25 @@
         "what": "Knows which part of a split-up database holds each piece of data, and sends queries there.",
         "why": "When data is too big for one machine it is split into shards. The router hides that split, so the app talks to it as if it were one database.",
         "analogy": "A library catalogue telling you which building holds a book.",
-        "examples": ["Vitess", "MongoDB mongos", "Citus"]
+        "examples": ["Vitess", "MongoDB mongos", "Citus"],
+        "samples": [
+          {
+            "type": "table",
+            "caption": "Shard map: users split by id range",
+            "columns": ["user ids", "shard"],
+            "rows": [
+              ["1 – 1M", "shard-a"],
+              ["1M – 2M", "shard-b"],
+              ["2M and up", "shard-c"]
+            ]
+          },
+          {
+            "type": "code",
+            "caption": "Hash routing: the same key always lands on the same shard",
+            "language": "javascript",
+            "code": "const shards = [\"a\", \"b\", \"c\"];\nconst i = hash(userId) % shards.length;\nreturn connect(`shard-${shards[i]}`);"
+          }
+        ]
       }
     },
     {
@@ -222,7 +318,26 @@
         "what": "Runs your application's code: the business logic.",
         "why": "It receives a request, applies your rules (log in, place an order), talks to databases and other services, and sends back the answer.",
         "analogy": "The kitchen that actually prepares the meals.",
-        "examples": ["Node.js", "Spring Boot", "Django"]
+        "examples": ["Node.js", "Spring Boot", "Django"],
+        "samples": [
+          {
+            "type": "code",
+            "caption": "An endpoint: this is where the business rules live",
+            "language": "javascript",
+            "code": "async function createOrder(req, res) {\n  const user = await auth(req);\n  const order = await db.orders.add({\n    userId: user.id,\n    items: req.body.items,\n  });\n  res.status(201).json(order);\n}\napp.post(\"/orders\", createOrder);"
+          },
+          {
+            "type": "table",
+            "caption": "What happens to one request",
+            "columns": ["step", "takes"],
+            "rows": [
+              ["check who is calling", "2 ms"],
+              ["validate the items", "1 ms"],
+              ["save to the database", "8 ms"],
+              ["send the response", "1 ms"]
+            ]
+          }
+        ]
       }
     },
     {
@@ -234,7 +349,25 @@
         "what": "Runs background jobs that don't need an immediate answer.",
         "why": "Slow tasks like sending emails or resizing images happen behind the scenes, so users don't have to wait for them.",
         "analogy": "Back-office staff finishing paperwork after the customer has left.",
-        "examples": ["Celery", "Sidekiq", "BullMQ"]
+        "examples": ["Celery", "Sidekiq", "BullMQ"],
+        "samples": [
+          {
+            "type": "code",
+            "caption": "A worker takes jobs from a queue, one at a time",
+            "language": "javascript",
+            "code": "worker.on(\"send-email\", async (job) => {\n  const { to, template } = job.data;\n  await email.send(to, template);\n});\n// if it fails, the job is retried"
+          },
+          {
+            "type": "table",
+            "caption": "Jobs and their state",
+            "columns": ["job", "status", "tries"],
+            "rows": [
+              ["welcome-email", "done", "1"],
+              ["resize-photo", "running", "1"],
+              ["send-invoice", "retrying", "3"]
+            ]
+          }
+        ]
       }
     },
     {
@@ -250,6 +383,24 @@
           "AWS Lambda",
           "Google Cloud Functions",
           "Cloudflare Workers"
+        ],
+        "samples": [
+          {
+            "type": "code",
+            "caption": "A complete function: runs whenever a file is uploaded",
+            "language": "javascript",
+            "code": "export async function handler(event) {\n  const file = event.records[0].key;\n  await makeThumbnail(file);\n  return { ok: true };\n}"
+          },
+          {
+            "type": "table",
+            "caption": "It scales with demand on its own, down to zero",
+            "columns": ["time", "requests", "copies"],
+            "rows": [
+              ["03:00", "2 / min", "1"],
+              ["12:00", "900 / min", "40"],
+              ["12:30", "none", "0"]
+            ]
+          }
         ]
       }
     },

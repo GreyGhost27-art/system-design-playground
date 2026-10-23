@@ -23,6 +23,8 @@ body {
 body {
   display: grid;
   grid-template-columns: 248px 1fr;
+  /* One row exactly as tall as the window, so the sidebar can't outgrow it. */
+  grid-template-rows: minmax(0, 1fr);
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-ui);
@@ -33,11 +35,13 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   background: var(--panel);
   border-right: 1px solid var(--border);
 }
 
 .sidebar-header {
+  flex: none;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -114,7 +118,9 @@ select {
 }
 
 .palette {
+  /* Only the component list gives up space; header and footer keep theirs. */
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 0 12px 12px;
 }
@@ -167,6 +173,7 @@ select {
 }
 
 .hints {
+  flex: none;
   padding: 14px 18px 18px;
   border-top: 1px solid var(--border);
   font-size: 12px;

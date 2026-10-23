@@ -123,3 +123,22 @@ test('the bounds cover every component and group', () => {
 test('an empty board has no bounds', () => {
   assert.equal(new Design().bounds(), null);
 });
+
+test('a snapshot is unaffected by later changes to the board', () => {
+  const { design, client } = twoComponents();
+  const snapshot = design.snapshot();
+  design.moveNode(client.id, { x: 999, y: 999 });
+  design.removeNode(client.id);
+  assert.equal(snapshot.nodes.length, 2);
+  assert.deepEqual([snapshot.nodes[0].x, snapshot.nodes[0].y], [0, 0]);
+});
+
+test('restoring a snapshot brings back its components and cables', () => {
+  const { design, client, server } = twoComponents();
+  design.connect(port(client.id), port(server.id));
+  const snapshot = design.snapshot();
+  design.clear();
+  design.restore(snapshot);
+  assert.equal(design.nodes.length, 2);
+  assert.equal(design.cables.length, 1);
+});

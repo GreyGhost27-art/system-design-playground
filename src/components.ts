@@ -1,6 +1,7 @@
 import catalog from './components.json' with { type: 'json' };
 
-export type Category = 'edge' | 'routing' | 'compute' | 'data' | 'async';
+export type Category =
+  'edge' | 'routing' | 'compute' | 'data' | 'async' | 'observability';
 
 /** Plain-language explanation shown when a component is selected. */
 export interface ComponentInfo {

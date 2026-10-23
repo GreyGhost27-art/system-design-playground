@@ -25,6 +25,11 @@ npm run dev
   explains it in plain words: what it is, why it's used, an everyday
   comparison and three well-known examples. Close it to return to the lesson.
 - **Select / delete:** click a component or cable, then press `Delete`.
+- **Copy & paste:** select a component and press `Ctrl+C`, then `Ctrl+V`
+  for each copy (`Cmd` on macOS). Copies keep the name and land diagonally
+  below the original.
+- **Undo:** `Ctrl+Z` reverses the last change (adding, moving, connecting,
+  pasting or deleting), up to 100 steps. Opening a template starts afresh.
 - **Navigate:** scroll to zoom, drag empty space to pan.
 - **Show traffic:** a gentle ripple runs along each cable from caller to
   callee, and another ripple comes back as the response.
@@ -119,6 +124,7 @@ place in the list (`01-hello-world.json`, `02-…`).
 | ------------------------ | --------------------------------------------------- |
 | `src/main.ts`            | Wires input, the template picker and the lesson     |
 | `src/design.ts`          | The design model: components, ports, cables, groups |
+| `src/history.ts`         | Undo steps                                          |
 | `src/templates.ts`       | Validating, loading and exporting templates         |
 | `src/templateLibrary.ts` | Collects the JSON files in `src/templates/`         |
 | `src/lesson.ts`          | The template lesson shown in the drawer             |
@@ -148,6 +154,7 @@ node --test src/rope.test.ts      # one file
 | `src/rope.ts`                                                                                                                     | `src/rope.test.ts`                                     |
 | `src/flow.ts`, `src/settings.json`                                                                                                | `src/flow.test.ts`                                     |
 | `src/design.ts`                                                                                                                   | `src/design.test.ts`                                   |
+| `src/history.ts`                                                                                                                  | `src/history.test.ts`                                  |
 | `src/snap.ts`                                                                                                                     | `src/snap.test.ts`                                     |
 | `src/camera.ts`                                                                                                                   | `src/camera.test.ts`                                   |
 | `src/templates.ts`, `src/templates/*.json`                                                                                        | `src/templates.test.ts`                                |

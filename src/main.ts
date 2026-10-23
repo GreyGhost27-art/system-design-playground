@@ -3,6 +3,7 @@ import { renderComponentInfo } from './componentInfo.ts';
 import { findKind } from './components.ts';
 import { Design, type PortRef } from './design.ts';
 import type { Point } from './geometry.ts';
+import { UndoHistory } from './history.ts';
 import { renderLesson } from './lesson.ts';
 import { DRAG_FORMAT, renderPalette } from './palette.ts';
 import { render, type Scene } from './render.ts';
@@ -14,7 +15,7 @@ import { loadTemplate, toTemplate, type Template } from './templates.ts';
 
 type Gesture =
   | { type: 'idle' }
-  | { type: 'moving-node'; nodeId: string; grabOffset: Point }
+  | { type: 'moving-node'; nodeId: string; grabOffset: Point; moved: boolean }
   | { type: 'drawing-cable' }
   | { type: 'panning'; last: Point };
 
@@ -34,8 +35,11 @@ const flowToggle = document.querySelector<HTMLInputElement>('#flow-toggle')!;
 const DRAWER_SPACE = 372;
 // Physics steps run before showing a template, so cables appear settled.
 const SETTLE_STEPS = 90;
+// Each paste lands this far down and right of the last copy.
+const PASTE_OFFSET = 40;
 
 const design = new Design();
+const undoHistory = new UndoHistory();
 const scene: Scene = {
   design,
   camera: { x: 0, y: 0, scale: 1 },
@@ -52,6 +56,8 @@ let currentTemplate: Template | null = null;
 let lessonOpen = true;
 // What the drawer currently shows, so it is only rebuilt when that changes.
 let drawerShowing = '';
+let copied: { kind: string; label?: string; x: number; y: number } | null =
+  null;
 
 renderPalette(palette, (kindId) => addAtViewCenter(kindId));
 fillTemplateSelect();
@@ -70,6 +76,7 @@ function openTemplate(id: string): void {
   currentTemplate = TEMPLATES.find((template) => template.id === id) ?? null;
   templateSelect.value = currentTemplate?.id ?? '';
   scene.selection = null;
+  undoHistory.clear();
   if (currentTemplate) loadTemplate(design, currentTemplate);
   else design.clear();
   for (let i = 0; i < SETTLE_STEPS; i++) design.step();
@@ -175,6 +182,7 @@ function addAtViewCenter(kindId: string): void {
   const center = screenToWorld(scene.camera, { x: width / 2, y: height / 2 });
   // Nudge each click-added component so they don't stack exactly.
   const jitter = () => (Math.random() - 0.5) * 80;
+  undoHistory.record(design);
   const node = design.addNode(kindId, {
     x: center.x + jitter(),
     y: center.y + jitter(),
@@ -207,6 +215,7 @@ canvas.addEventListener('pointerdown', (event) => {
       type: 'moving-node',
       nodeId: node.id,
       grabOffset: { x: pointer.x - node.x, y: pointer.y - node.y },
+      moved: false,
     };
     return;
   }
@@ -223,6 +232,10 @@ canvas.addEventListener('pointermove', (event) => {
 
   switch (gesture.type) {
     case 'moving-node':
+      // Record once per drag, and only if it really moves, so a plain
+      // click doesn't leave an empty undo step behind.
+      if (!gesture.moved) undoHistory.record(design);
+      gesture.moved = true;
       design.moveNode(gesture.nodeId, {
         x: pointer.x - gesture.grabOffset.x,
         y: pointer.y - gesture.grabOffset.y,
@@ -247,7 +260,12 @@ canvas.addEventListener('pointermove', (event) => {
 
 canvas.addEventListener('pointerup', () => {
   const draft = scene.draft;
-  if (gesture.type === 'drawing-cable' && draft?.snap) {
+  if (
+    gesture.type === 'drawing-cable' &&
+    draft?.snap &&
+    design.canConnect(draft.from, draft.snap)
+  ) {
+    undoHistory.record(design);
     const cable = design.connect(draft.from, draft.snap, {
       rope: draft.rope,
     });
@@ -287,23 +305,75 @@ canvas.addEventListener('drop', (event) => {
   const kindId = event.dataTransfer?.getData(DRAG_FORMAT);
   if (!kindId) return;
   event.preventDefault();
+  undoHistory.record(design);
   const node = design.addNode(kindId, toWorld(event));
   scene.selection = { type: 'node', id: node.id };
 });
 
 window.addEventListener('keydown', (event) => {
   if (event.target instanceof HTMLSelectElement) return;
-  if (event.key === 'Escape') {
+  const key = event.key.toLowerCase();
+  // Ctrl on Windows and Linux, Cmd on macOS.
+  const shortcut = event.ctrlKey || event.metaKey;
+
+  if (shortcut && key === 'z' && !event.shiftKey) {
+    event.preventDefault();
+    undo();
+  } else if (shortcut && key === 'c') {
+    // Let the browser copy any text selected in the drawer.
+    if (window.getSelection()?.toString()) return;
+    if (copySelectedComponent()) event.preventDefault();
+  } else if (shortcut && key === 'v') {
+    if (!copied) return;
+    event.preventDefault();
+    pasteComponent();
+  } else if (key === 'escape') {
     scene.draft = null;
     scene.selection = null;
     gesture = { type: 'idle' };
+  } else if (key === 'delete' || key === 'backspace') {
+    deleteSelection();
   }
-  if (event.key !== 'Delete' && event.key !== 'Backspace') return;
-  const selection = scene.selection;
-  if (selection?.type === 'node') design.removeNode(selection.id);
-  if (selection?.type === 'cable') design.removeCable(selection.id);
-  scene.selection = null;
 });
+
+function deleteSelection(): void {
+  const selection = scene.selection;
+  if (!selection) return;
+  undoHistory.record(design);
+  if (selection.type === 'node') design.removeNode(selection.id);
+  else design.removeCable(selection.id);
+  scene.selection = null;
+}
+
+function copySelectedComponent(): boolean {
+  if (scene.selection?.type !== 'node') return false;
+  const { kind, label, x, y } = design.getNode(scene.selection.id);
+  copied = { kind, label, x, y };
+  return true;
+}
+
+function pasteComponent(): void {
+  if (!copied) return;
+  // Move the stored copy too, so repeated pastes fan out in a diagonal.
+  copied.x += PASTE_OFFSET;
+  copied.y += PASTE_OFFSET;
+  undoHistory.record(design);
+  const position = { x: copied.x, y: copied.y };
+  const node = design.addNode(copied.kind, position, copied.label);
+  scene.selection = { type: 'node', id: node.id };
+}
+
+function undo(): void {
+  if (!undoHistory.undo(design)) return;
+  scene.draft = null;
+  gesture = { type: 'idle' };
+  const selection = scene.selection;
+  const stillThere =
+    selection?.type === 'node'
+      ? design.nodes.some((node) => node.id === selection.id)
+      : design.cables.some((cable) => cable.id === selection?.id);
+  if (!stillThere) scene.selection = null;
+}
 
 function updateHover(): void {
   const port = portAt(design.nodes, pointer);

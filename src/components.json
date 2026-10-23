@@ -24,6 +24,11 @@
       "id": "async",
       "label": "Async",
       "color": "#ff7a90"
+    },
+    {
+      "id": "observability",
+      "label": "Observability",
+      "color": "#94a3b8"
     }
   ],
   "components": [
@@ -273,6 +278,66 @@
         "why": "Suits high volumes of events (clicks, payments, sensor readings) that several systems need to handle, now or later.",
         "analogy": "A recorded TV channel you can rewind.",
         "examples": ["Apache Kafka", "Amazon Kinesis", "Redpanda"]
+      }
+    },
+    {
+      "id": "logs",
+      "label": "Logs",
+      "badge": "LOG",
+      "category": "observability",
+      "info": {
+        "what": "Collects what every service writes down and makes it searchable in one place.",
+        "why": "When something goes wrong you can read exactly what happened, across all servers, instead of logging into each machine one by one.",
+        "analogy": "A ship's logbook, kept for the whole fleet.",
+        "examples": ["Elasticsearch (ELK)", "Grafana Loki", "Splunk"]
+      }
+    },
+    {
+      "id": "metrics",
+      "label": "Metrics",
+      "badge": "MET",
+      "category": "observability",
+      "info": {
+        "what": "Records numbers over time, like requests per second, error rate and response time.",
+        "why": "Shows at a glance whether the system is healthy, and reveals trends, like slowly growing response times, before users complain.",
+        "analogy": "The gauges on a car's dashboard.",
+        "examples": ["Prometheus", "Datadog", "Amazon CloudWatch"]
+      }
+    },
+    {
+      "id": "tracing",
+      "label": "Tracing",
+      "badge": "TRC",
+      "category": "observability",
+      "info": {
+        "what": "Follows a single request as it travels through every service, timing each step.",
+        "why": "With many services involved, it shows exactly where a slow or failed request got stuck.",
+        "analogy": "A parcel-tracking page showing every stop along the way.",
+        "examples": ["Jaeger", "Grafana Tempo", "Honeycomb"]
+      }
+    },
+    {
+      "id": "alerting",
+      "label": "Alerting",
+      "badge": "ALR",
+      "category": "observability",
+      "info": {
+        "what": "Watches the metrics and notifies a person when something crosses a limit.",
+        "why": "Problems are noticed and fixed quickly, at any hour, instead of being discovered by customers.",
+        "analogy": "A smoke alarm.",
+        "examples": ["PagerDuty", "Opsgenie", "Prometheus Alertmanager"]
+      }
+    },
+    {
+      "id": "error-tracking",
+      "label": "Error Tracking",
+      "badge": "ERR",
+      "category": "observability",
+      "info": {
+        "what": "Catches crashes and exceptions, groups identical ones and shows the code that failed.",
+        "why": "Turns thousands of scattered error messages into a short list of bugs, ranked by how many users they affect.",
+        "analogy": "A mechanic's fault report listing each problem and how often it happens.",
+        "examples": ["Sentry", "Rollbar", "Bugsnag"]
       }
     }
   ]

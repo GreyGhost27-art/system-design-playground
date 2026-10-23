@@ -38,6 +38,13 @@ export interface Group {
   height: number;
 }
 
+/** A full copy of the board's contents, used for undo. */
+export interface DesignSnapshot {
+  nodes: DesignNode[];
+  cables: Cable[];
+  groups: Group[];
+}
+
 export interface Bounds {
   left: number;
   top: number;
@@ -77,6 +84,16 @@ export class Design {
     this.nodes = [];
     this.cables = [];
     this.groups = [];
+  }
+
+  snapshot(): DesignSnapshot {
+    const { nodes, cables, groups } = this;
+    return structuredClone({ nodes, cables, groups });
+  }
+
+  restore(snapshot: DesignSnapshot): void {
+    const { nodes, cables, groups } = structuredClone(snapshot);
+    Object.assign(this, { nodes, cables, groups });
   }
 
   addNode(kind: string, position: Point, label?: string): DesignNode {

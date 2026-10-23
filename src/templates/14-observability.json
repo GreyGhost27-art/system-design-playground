@@ -1,0 +1,154 @@
+{
+  "id": "observability",
+  "title": "Finding problems",
+  "summary": "Logs, metrics, traces and alerts show what the system is doing and why it breaks.",
+  "lesson": {
+    "problem": "Checkout is slow for some users, and you only find out from angry customers. Three services are involved: which one is to blame?",
+    "why": [
+      "Metrics are the early warning. Every service reports numbers such as request rate, error rate and response time, so you can see that something is wrong, and since when.",
+      "Traces show where. Each request carries a trace ID through the gateway, orders and payments services, and every step reports how long it took, so the slow step stands out.",
+      "Logs show why. With all services' logs in one searchable place, and the trace ID on every line, you can read exactly what happened to that one request. Error tracking does the same for crashes, grouping them into a short list of bugs.",
+      "Alerting closes the loop: when a metric that users feel crosses a limit, like the error rate passing 2%, the on-call engineer is paged before customers notice."
+    ],
+    "takeaways": [
+      "Metrics tell you something is wrong, traces tell you where, logs tell you why.",
+      "Alert on symptoms users feel (errors, slowness), not on every busy CPU.",
+      "Put the same request or trace ID in every log line to connect the pieces.",
+      "Observability data costs money: sample traces and keep logs only as long as needed."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "gateway",
+      "kind": "api-gateway",
+      "x": 250,
+      "y": 0
+    },
+    {
+      "id": "orders",
+      "kind": "app-server",
+      "label": "Orders Service",
+      "x": 500,
+      "y": 0
+    },
+    {
+      "id": "payments",
+      "kind": "app-server",
+      "label": "Payments Service",
+      "x": 750,
+      "y": 0
+    },
+    {
+      "id": "db",
+      "kind": "sql-database",
+      "label": "Orders DB",
+      "x": 750,
+      "y": -150
+    },
+    {
+      "id": "oncall",
+      "kind": "client",
+      "label": "On-call Engineer",
+      "x": 1000,
+      "y": 0
+    },
+    {
+      "id": "errors",
+      "kind": "error-tracking",
+      "x": 0,
+      "y": 240
+    },
+    {
+      "id": "logs",
+      "kind": "logs",
+      "x": 250,
+      "y": 240
+    },
+    {
+      "id": "tracing",
+      "kind": "tracing",
+      "x": 500,
+      "y": 240
+    },
+    {
+      "id": "metrics",
+      "kind": "metrics",
+      "x": 750,
+      "y": 240
+    },
+    {
+      "id": "alerting",
+      "kind": "alerting",
+      "x": 1000,
+      "y": 240
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "gateway.left"
+    },
+    {
+      "from": "gateway.right",
+      "to": "orders.left"
+    },
+    {
+      "from": "orders.right",
+      "to": "payments.left",
+      "label": "charge"
+    },
+    {
+      "from": "orders.top",
+      "to": "db.left"
+    },
+    {
+      "from": "client.bottom",
+      "to": "errors.top",
+      "label": "crash reports"
+    },
+    {
+      "from": "gateway.bottom",
+      "to": "logs.top",
+      "label": "access logs"
+    },
+    {
+      "from": "orders.bottom",
+      "to": "logs.top"
+    },
+    {
+      "from": "orders.bottom",
+      "to": "tracing.top",
+      "label": "spans"
+    },
+    {
+      "from": "payments.bottom",
+      "to": "tracing.top"
+    },
+    {
+      "from": "orders.bottom",
+      "to": "metrics.top"
+    },
+    {
+      "from": "payments.bottom",
+      "to": "metrics.top",
+      "label": "latency, errors"
+    },
+    {
+      "from": "metrics.right",
+      "to": "alerting.left",
+      "label": "errors > 2%"
+    },
+    {
+      "from": "alerting.top",
+      "to": "oncall.bottom",
+      "label": "page"
+    }
+  ]
+}

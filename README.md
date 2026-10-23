@@ -79,8 +79,9 @@ code snippet:
 { "type": "code", "caption": "Find a user", "language": "sql", "code": "SELECT * FROM users;" }
 ```
 
-Keep code lines under about 40 characters so they fit the drawer. Every
-Data component has samples; other categories can add them the same way.
+Keep code lines under about 40 characters so they fit the drawer. Data, Edge
+and External components have samples; other categories can add them the
+same way.
 
 ### Traffic flow — `src/settings.json`
 

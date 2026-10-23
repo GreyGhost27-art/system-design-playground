@@ -36,8 +36,9 @@ test('an unknown component kind is reported by name', () => {
   );
 });
 
-test('every data component shows an example of what it holds', () => {
-  for (const { id, info } of kindsIn('data')) {
+test('data, edge and external components show an example', () => {
+  const kinds = ['data', 'edge', 'external'].flatMap(kindsIn);
+  for (const { id, info } of kinds) {
     assert.ok((info.samples ?? []).length > 0, `${id} has no samples`);
   }
 });

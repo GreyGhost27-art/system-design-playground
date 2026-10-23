@@ -1,7 +1,13 @@
 import catalog from './components.json' with { type: 'json' };
 
 export type Category =
-  'edge' | 'routing' | 'compute' | 'data' | 'async' | 'observability';
+  | 'external'
+  | 'edge'
+  | 'routing'
+  | 'compute'
+  | 'data'
+  | 'async'
+  | 'observability';
 
 /** A small, concrete example of what the component holds or does. */
 export type Sample =

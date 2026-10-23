@@ -1,9 +1,14 @@
 {
   "categories": [
     {
+      "id": "external",
+      "label": "External",
+      "color": "#5eb1ff"
+    },
+    {
       "id": "edge",
       "label": "Edge",
-      "color": "#5eb1ff"
+      "color": "#38d6e8"
     },
     {
       "id": "routing",
@@ -36,12 +41,26 @@
       "id": "client",
       "label": "Client",
       "badge": "CL",
-      "category": "edge",
+      "category": "external",
       "info": {
         "what": "The app or browser a person uses to talk to your system.",
         "why": "Every interaction starts here: opening a page, tapping a button or sending a message becomes a request to your servers.",
         "analogy": "A customer walking up to a shop counter.",
-        "examples": ["Google Chrome", "Safari", "Postman"]
+        "examples": ["Google Chrome", "Safari", "Postman"],
+        "samples": [
+          {
+            "type": "code",
+            "caption": "The request a browser sends to open an order",
+            "language": "http",
+            "code": "GET /orders/101 HTTP/1.1\nHost: shop.example.com\nAccept: application/json\nAuthorization: Bearer eyJhbGci…"
+          },
+          {
+            "type": "code",
+            "caption": "…and the response it gets back",
+            "language": "http",
+            "code": "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{ \"id\": 101, \"status\": \"paid\" }"
+          }
+        ]
       }
     },
     {
@@ -53,7 +72,25 @@
         "what": "Turns a name like example.com into the numeric address of a server.",
         "why": "People remember names; computers connect to IP addresses. DNS can also send each user to the nearest or healthiest server.",
         "analogy": "The internet's phone book.",
-        "examples": ["Cloudflare DNS", "Amazon Route 53", "Google Cloud DNS"]
+        "examples": ["Cloudflare DNS", "Amazon Route 53", "Google Cloud DNS"],
+        "samples": [
+          {
+            "type": "table",
+            "caption": "Records for shop.example.com",
+            "columns": ["type", "value", "meaning"],
+            "rows": [
+              ["A", "203.0.113.10", "IPv4 address"],
+              ["AAAA", "2001:db8::10", "IPv6 address"],
+              ["MX", "mail.example.com", "email server"]
+            ]
+          },
+          {
+            "type": "code",
+            "caption": "Looking a name up from a terminal",
+            "language": "shell",
+            "code": "$ dig +short shop.example.com\n203.0.113.10"
+          }
+        ]
       }
     },
     {
@@ -65,14 +102,32 @@
         "what": "A network of servers around the world that keeps copies of your files close to users.",
         "why": "Images, videos and scripts load much faster from nearby, and your own servers handle far less traffic.",
         "analogy": "Local warehouses stocking popular items so deliveries arrive quickly.",
-        "examples": ["Cloudflare", "Akamai", "Amazon CloudFront"]
+        "examples": ["Cloudflare", "Akamai", "Amazon CloudFront"],
+        "samples": [
+          {
+            "type": "code",
+            "caption": "A nearby copy answers: the origin never sees it",
+            "language": "http",
+            "code": "GET /images/logo.png\nHost: cdn.example.com\n\nHTTP/1.1 200 OK\nCache-Control: max-age=86400\nX-Cache: HIT\nAge: 3150"
+          },
+          {
+            "type": "table",
+            "caption": "How long each file is kept: versioned names can stay a year, personal data never",
+            "columns": ["file", "cached for"],
+            "rows": [
+              ["logo.png", "1 day"],
+              ["app.3f9c2a.js", "1 year"],
+              ["/api/cart", "never"]
+            ]
+          }
+        ]
       }
     },
     {
       "id": "external-service",
       "label": "External Service",
       "badge": "EXT",
-      "category": "edge",
+      "category": "external",
       "info": {
         "what": "A service run by another company that your system calls over the internet.",
         "why": "Some jobs, like taking payments or sending email, are hard to build and run well. Renting them is faster and often safer.",
@@ -81,6 +136,20 @@
           "Stripe (payments)",
           "Twilio (text messages)",
           "SendGrid (email)"
+        ],
+        "samples": [
+          {
+            "type": "code",
+            "caption": "Charging a card through a payment provider's API",
+            "language": "javascript",
+            "code": "await payments.charges.create(\n  { amount: 5000, currency: \"eur\" },\n  { idempotencyKey: \"order-101\" }\n);"
+          },
+          {
+            "type": "code",
+            "caption": "When it's done, they call you back (a webhook)",
+            "language": "http",
+            "code": "POST /webhooks/payments\nContent-Type: application/json\n\n{\n  \"event\": \"charge.succeeded\",\n  \"orderId\": \"order-101\"\n}"
+          }
         ]
       }
     },

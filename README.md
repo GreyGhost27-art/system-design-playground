@@ -23,6 +23,8 @@ npm run dev
   component you drop it on. Two components can be connected only once.
 - **Select / delete:** click a component or cable, then press `Delete`.
 - **Navigate:** scroll to zoom, drag empty space to pan.
+- **Show traffic:** a gentle ripple runs along each cable from caller to
+  callee, and another ripple comes back as the response.
 - **Copy board as JSON:** copies the board in template format, the easiest
   way to start a new template.
 
@@ -39,6 +41,25 @@ be placed:
 ```json
 { "id": "cache", "label": "Cache", "badge": "CA", "category": "data" }
 ```
+
+### Traffic flow — `src/settings.json`
+
+The `flow` section tunes the ripple that runs along cables: a request wave
+runs from the cable's start to its end, then a response wave runs back.
+
+| Setting         | Meaning                                               |
+| --------------- | ----------------------------------------------------- |
+| `enabled`       | Initial state of the _Show traffic_ toggle            |
+| `speed`         | How fast a wave travels, in board units per second    |
+| `amplitude`     | How far the cable bends sideways                      |
+| `wavelength`    | Length of cable one wave covers                       |
+| `ripples`       | Number of wiggles inside a wave                       |
+| `pause`         | Seconds between the request arriving and the response |
+| `rest`          | Seconds of stillness before the next exchange         |
+| `showResponses` | Also send a wave back                                 |
+
+A cable's direction is the order it was drawn in (or `from` → `to` in a
+template), so draw cables from the caller to the component it calls.
 
 ### Templates — `src/templates/*.json`
 
@@ -85,6 +106,7 @@ place in the list (`01-hello-world.json`, `02-…`).
 | `src/templateLibrary.ts` | Collects the JSON files in `src/templates/`         |
 | `src/lesson.ts`          | The _Learn why_ panel                               |
 | `src/rope.ts`            | Verlet rope physics for cables                      |
+| `src/flow.ts`            | The ripple that runs along cables                   |
 | `src/snap.ts`            | Finding the port under the pointer and snap targets |
 | `src/camera.ts`          | Pan, zoom and fitting a design in view              |
 | `src/components.ts`      | Reads the component catalogue                       |
@@ -105,6 +127,7 @@ node --test src/rope.test.ts      # one file
 | Source file                                                                                 | Test file                                              |
 | ------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | `src/rope.ts`                                                                               | `src/rope.test.ts`                                     |
+| `src/flow.ts`, `src/settings.json`                                                          | `src/flow.test.ts`                                     |
 | `src/design.ts`                                                                             | `src/design.test.ts`                                   |
 | `src/snap.ts`                                                                               | `src/snap.test.ts`                                     |
 | `src/camera.ts`                                                                             | `src/camera.test.ts`                                   |

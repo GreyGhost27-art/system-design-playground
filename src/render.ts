@@ -11,6 +11,14 @@ import {
   type Group,
   type PortRef,
 } from './design.ts';
+import {
+  displaceCurve,
+  displacementAt,
+  polylineLength,
+  smoothCurve,
+  waveAt,
+  type FlowSettings,
+} from './flow.ts';
 import type { Point } from './geometry.ts';
 import type { Rope } from './rope.ts';
 import { PORT_RADIUS } from './snap.ts';
@@ -40,6 +48,9 @@ export interface Scene {
   hoveredNodeId: string | null;
   hoveredPort: PortRef | null;
   draft: CableDraft | null;
+  flow: FlowSettings;
+  /** Seconds since the page loaded; drives the flow animation. */
+  time: number;
 }
 
 export function render(
@@ -66,7 +77,8 @@ export function render(
   for (const group of scene.design.groups) drawGroup(ctx, group);
   for (const cable of scene.design.cables) {
     const selected = isSelected(scene, 'cable', cable.id);
-    drawCable(ctx, scene.design, cable.from, cable.to, cable.rope, selected);
+    const curve = cableCurve(cable, scene.flow, scene.time);
+    drawCable(ctx, scene.design, cable, curve, selected);
   }
   for (const cable of scene.design.cables) drawCableLabel(ctx, cable);
   for (const node of scene.design.nodes) {
@@ -113,17 +125,37 @@ function nodeColor(node: DesignNode): string {
   return categoryColor(findKind(node.kind).category);
 }
 
+/**
+ * The cable's smooth curve, bent by any wave currently running along it:
+ * requests ripple from → to, responses ripple back.
+ */
+function cableCurve(cable: Cable, flow: FlowSettings, seconds: number) {
+  const curve = smoothCurve(cable.rope.points);
+  const length = polylineLength(curve);
+  const wave = waveAt(length, seconds, flow, phaseOf(cable.id));
+  if (!wave) return curve;
+  return displaceCurve(curve, (position) =>
+    displacementAt(position, length, wave, flow),
+  );
+}
+
+/** Spreads cables over a few seconds so they don't all ripple at once. */
+function phaseOf(id: string): number {
+  let hash = 0;
+  for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) % 9973;
+  return (hash / 9973) * 4;
+}
+
 function drawCable(
   ctx: CanvasRenderingContext2D,
   design: Design,
-  from: PortRef,
-  to: PortRef,
-  rope: Rope,
+  cable: Cable,
+  curve: Point[],
   selected: boolean,
 ): void {
-  const fromColor = nodeColor(design.getNode(from.nodeId));
-  const toColor = nodeColor(design.getNode(to.nodeId));
-  drawRope(ctx, rope.points, fromColor, toColor, selected);
+  const fromColor = nodeColor(design.getNode(cable.from.nodeId));
+  const toColor = nodeColor(design.getNode(cable.to.nodeId));
+  drawRope(ctx, curve, fromColor, toColor, selected);
 }
 
 function drawDraft(
@@ -135,7 +167,7 @@ function drawDraft(
   const toColor = draft.snap
     ? nodeColor(design.getNode(draft.snap.nodeId))
     : fromColor;
-  drawRope(ctx, draft.rope.points, fromColor, toColor, false);
+  drawRope(ctx, smoothCurve(draft.rope.points), fromColor, toColor, false);
 }
 
 function drawRope(
@@ -178,17 +210,10 @@ function drawRope(
   drawPlug(ctx, end, toColor);
 }
 
-/** Smooth curve through the rope points, using midpoints as anchors. */
-function traceRope(ctx: CanvasRenderingContext2D, points: Point[]): void {
+function traceRope(ctx: CanvasRenderingContext2D, curve: Point[]): void {
   ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-  for (let i = 1; i < points.length - 1; i++) {
-    const midX = (points[i].x + points[i + 1].x) / 2;
-    const midY = (points[i].y + points[i + 1].y) / 2;
-    ctx.quadraticCurveTo(points[i].x, points[i].y, midX, midY);
-  }
-  const last = points[points.length - 1];
-  ctx.lineTo(last.x, last.y);
+  ctx.moveTo(curve[0].x, curve[0].y);
+  for (const point of curve.slice(1)) ctx.lineTo(point.x, point.y);
 }
 
 function drawPlug(

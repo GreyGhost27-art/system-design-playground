@@ -1,0 +1,12 @@
+{
+  "flow": {
+    "enabled": true,
+    "speed": 240,
+    "amplitude": 3.5,
+    "wavelength": 110,
+    "ripples": 1.5,
+    "pause": 0.2,
+    "rest": 1.8,
+    "showResponses": true
+  }
+}

@@ -5,6 +5,7 @@ import { renderLesson } from './lesson.ts';
 import { DRAG_FORMAT, renderPalette } from './palette.ts';
 import { render, type Scene } from './render.ts';
 import { createRope, stepRope } from './rope.ts';
+import settings from './settings.json' with { type: 'json' };
 import { findSnapTarget, portAt } from './snap.ts';
 import { TEMPLATES } from './templateLibrary.ts';
 import { loadTemplate, toTemplate, type Template } from './templates.ts';
@@ -25,6 +26,7 @@ const lessonContent = document.querySelector<HTMLElement>('#lesson-content')!;
 const lessonOpenButton = document.querySelector<HTMLElement>('#lesson-open')!;
 const lessonCloseButton = document.querySelector<HTMLElement>('#lesson-close')!;
 const copyJsonButton = document.querySelector<HTMLElement>('#copy-json')!;
+const flowToggle = document.querySelector<HTMLInputElement>('#flow-toggle')!;
 
 // Space the lesson panel covers on the right of the board when open.
 const LESSON_PANEL_SPACE = 372;
@@ -39,6 +41,8 @@ const scene: Scene = {
   hoveredNodeId: null,
   hoveredPort: null,
   draft: null,
+  flow: { ...settings.flow },
+  time: 0,
 };
 let gesture: Gesture = { type: 'idle' };
 let pointer: Point = { x: 0, y: 0 };
@@ -288,7 +292,13 @@ function cursorFor(overPort: boolean): string {
   return scene.hoveredNodeId ? 'grab' : 'default';
 }
 
-function frame(): void {
+flowToggle.checked = scene.flow.enabled;
+flowToggle.addEventListener('change', () => {
+  scene.flow.enabled = flowToggle.checked;
+});
+
+function frame(now: number): void {
+  scene.time = now / 1000;
   design.step();
   if (scene.draft) {
     const { from, snap, rope } = scene.draft;

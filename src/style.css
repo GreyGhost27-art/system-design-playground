@@ -91,7 +91,21 @@ select {
 
 .secondary-button {
   width: 100%;
+  margin-top: 10px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.toggle input {
+  margin: 0;
+  accent-color: #8fe3ff;
 }
 
 .secondary-button:hover,

@@ -70,6 +70,18 @@ be placed, with the plain-language explanation shown in the drawer:
 Keep `info` short and jargon-free; `npm test` checks every component has all
 four parts and exactly three examples.
 
+`info.samples` (optional) shows what a component looks like in practice,
+under _What it looks like_ in the drawer. Each sample is a small table or a
+code snippet:
+
+```json
+{ "type": "table", "caption": "users", "columns": ["id", "name"], "rows": [["1", "Ana"]] }
+{ "type": "code", "caption": "Find a user", "language": "sql", "code": "SELECT * FROM users;" }
+```
+
+Keep code lines under about 40 characters so they fit the drawer. Every
+Data component has samples; other categories can add them the same way.
+
 ### Traffic flow — `src/settings.json`
 
 The `flow` section tunes the ripple that runs along cables: a request wave

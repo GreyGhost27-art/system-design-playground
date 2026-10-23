@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { CATEGORIES, COMPONENT_KINDS, findKind } from './components.ts';
 
+const kindsIn = (category: string) =>
+  COMPONENT_KINDS.filter((kind) => kind.category === category);
+
 test('every component has a unique id and a known category', () => {
   const ids = COMPONENT_KINDS.map((kind) => kind.id);
   assert.equal(new Set(ids).size, ids.length);
@@ -31,4 +34,26 @@ test('an unknown component kind is reported by name', () => {
     () => findKind('mainframe'),
     /Unknown component kind: mainframe/,
   );
+});
+
+test('every data component shows an example of what it holds', () => {
+  for (const { id, info } of kindsIn('data')) {
+    assert.ok((info.samples ?? []).length > 0, `${id} has no samples`);
+  }
+});
+
+test('every example is a captioned table or code snippet', () => {
+  for (const { id, info } of COMPONENT_KINDS) {
+    for (const sample of info.samples ?? []) {
+      assert.ok(sample.caption.trim(), `${id} has a sample without caption`);
+      if (sample.type === 'table') {
+        for (const row of sample.rows) {
+          assert.equal(row.length, sample.columns.length, `${id}: ${row}`);
+        }
+      } else {
+        assert.equal(sample.type, 'code', `${id} has an unknown sample type`);
+        assert.ok(sample.language && sample.code.trim(), id);
+      }
+    }
+  }
 });

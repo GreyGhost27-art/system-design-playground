@@ -193,7 +193,34 @@
         "what": "Stores data in tables of rows and columns, with strict rules about its shape.",
         "why": "Ideal when data is related (users, orders, payments) and must stay correct: transactions make a group of changes happen completely or not at all.",
         "analogy": "A well-organised spreadsheet with rules nobody can break.",
-        "examples": ["PostgreSQL", "MySQL", "Microsoft SQL Server"]
+        "examples": ["PostgreSQL", "MySQL", "Microsoft SQL Server"],
+        "samples": [
+          {
+            "type": "table",
+            "caption": "users",
+            "columns": ["id", "name", "email"],
+            "rows": [
+              ["1", "Ana", "ana@example.com"],
+              ["2", "Bruno", "bruno@example.com"]
+            ]
+          },
+          {
+            "type": "table",
+            "caption": "orders: user_id points to a row in users",
+            "columns": ["id", "user_id", "total", "status"],
+            "rows": [
+              ["101", "1", "39.90", "paid"],
+              ["102", "1", "12.50", "shipped"],
+              ["103", "2", "80.00", "pending"]
+            ]
+          },
+          {
+            "type": "code",
+            "caption": "A query that joins both tables",
+            "language": "sql",
+            "code": "SELECT users.name, orders.total\nFROM orders\nJOIN users ON users.id = orders.user_id\nWHERE orders.status = 'paid';"
+          }
+        ]
       }
     },
     {
@@ -205,7 +232,21 @@
         "what": "Stores data in flexible forms, like documents or key–value pairs, without a fixed table layout.",
         "why": "Spreads easily across many machines and suits huge volumes of simple lookups, or data whose shape changes often.",
         "analogy": "Labelled folders you can fill with whatever fits.",
-        "examples": ["MongoDB", "Amazon DynamoDB", "Apache Cassandra"]
+        "examples": ["MongoDB", "Amazon DynamoDB", "Apache Cassandra"],
+        "samples": [
+          {
+            "type": "code",
+            "caption": "One document keeps everything about a user together, nested",
+            "language": "json",
+            "code": "{\n  \"_id\": \"user_1\",\n  \"name\": \"Ana\",\n  \"addresses\": [\n    { \"city\": \"Lisbon\" }\n  ],\n  \"lastOrder\": {\n    \"id\": 101,\n    \"total\": 39.9\n  }\n}"
+          },
+          {
+            "type": "code",
+            "caption": "Fetched by its key, in one step",
+            "language": "javascript",
+            "code": "db.users.findOne({ _id: \"user_1\" })"
+          }
+        ]
       }
     },
     {
@@ -217,7 +258,25 @@
         "what": "Keeps frequently used data in fast memory.",
         "why": "Answers repeated questions in a fraction of a millisecond and takes load off the database. The trade-off: cached data can be slightly out of date.",
         "analogy": "Keeping the things you use most on your desk instead of in the archive.",
-        "examples": ["Redis", "Memcached", "Valkey"]
+        "examples": ["Redis", "Memcached", "Valkey"],
+        "samples": [
+          {
+            "type": "table",
+            "caption": "Keys and values, each with an expiry time",
+            "columns": ["key", "value", "expires"],
+            "rows": [
+              ["user:1", "{\"name\":\"Ana\"}", "5 min"],
+              ["session:8f2a", "{\"userId\":1}", "1 h"],
+              ["top-products", "[12, 7, 33]", "30 s"]
+            ]
+          },
+          {
+            "type": "code",
+            "caption": "Check the cache first; on a miss, read the database and keep a copy",
+            "language": "javascript",
+            "code": "let user = await cache.get(\"user:1\");\nif (!user) {\n  user = await db.users.find(1);\n  await cache.set(\"user:1\", user, 300);\n}"
+          }
+        ]
       }
     },
     {
@@ -229,7 +288,25 @@
         "what": "Stores files of any size, like images, videos and backups, which you fetch by name.",
         "why": "Cheap, practically unlimited and very durable. The right home for big files that don't belong in a database.",
         "analogy": "A huge self-storage facility where every box has a label.",
-        "examples": ["Amazon S3", "Google Cloud Storage", "Azure Blob Storage"]
+        "examples": ["Amazon S3", "Google Cloud Storage", "Azure Blob Storage"],
+        "samples": [
+          {
+            "type": "table",
+            "caption": "Each file lives under a key that looks like a path",
+            "columns": ["key", "size"],
+            "rows": [
+              ["avatars/ana.png", "84 KB"],
+              ["videos/42/original.mp4", "1.2 GB"],
+              ["backups/2026-10-23.gz", "3.4 GB"]
+            ]
+          },
+          {
+            "type": "code",
+            "caption": "Files are read and written over HTTP, by key",
+            "language": "http",
+            "code": "GET /my-bucket/avatars/ana.png\nPUT /my-bucket/videos/42/original.mp4"
+          }
+        ]
       }
     },
     {
@@ -241,7 +318,25 @@
         "what": "Organises text so it can be searched quickly, like a search engine for your own data.",
         "why": "Databases are slow at \"find everything mentioning these words\". A search index does it fast and handles typos, ranking and filters.",
         "analogy": "The index at the back of a book.",
-        "examples": ["Elasticsearch", "OpenSearch", "Algolia"]
+        "examples": ["Elasticsearch", "OpenSearch", "Algolia"],
+        "samples": [
+          {
+            "type": "table",
+            "caption": "An inverted index: each word points to the documents that contain it",
+            "columns": ["word", "found in"],
+            "rows": [
+              ["lisbon", "hotel #1, hotel #4"],
+              ["cheap", "hotel #2, hotel #4"],
+              ["hotel", "hotel #1, hotel #2, hotel #4"]
+            ]
+          },
+          {
+            "type": "code",
+            "caption": "A search: matches words in any order, best hits first",
+            "language": "json",
+            "code": "{\n  \"query\": {\n    \"match\": {\n      \"description\": \"cheap hotel\"\n    }\n  }\n}"
+          }
+        ]
       }
     },
     {

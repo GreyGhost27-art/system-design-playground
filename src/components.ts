@@ -3,12 +3,18 @@ import catalog from './components.json' with { type: 'json' };
 export type Category =
   'edge' | 'routing' | 'compute' | 'data' | 'async' | 'observability';
 
+/** A small, concrete example of what the component holds or does. */
+export type Sample =
+  | { type: 'table'; caption: string; columns: string[]; rows: string[][] }
+  | { type: 'code'; caption: string; language: string; code: string };
+
 /** Plain-language explanation shown when a component is selected. */
 export interface ComponentInfo {
   what: string;
   why: string;
   analogy: string;
   examples: string[];
+  samples?: Sample[];
 }
 
 export interface ComponentKind {
@@ -26,6 +32,8 @@ export interface CategoryInfo {
 }
 
 export const CATEGORIES = catalog.categories as CategoryInfo[];
+// JSON can't express the Sample union, so the shape is asserted here and
+// checked by components.test.ts.
 export const COMPONENT_KINDS = catalog.components as ComponentKind[];
 
 export function isKnownKind(id: string): boolean {

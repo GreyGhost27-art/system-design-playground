@@ -21,6 +21,9 @@ npm run dev
 - **Connect:** hover a component to reveal its ports, then drag from a port.
   The cable snaps to the nearest port in reach, or to the closest port of the
   component you drop it on. Two components can be connected only once.
+- **Learn a component:** click any component (or add one) and the drawer
+  explains it in plain words: what it is, why it's used, an everyday
+  comparison and three well-known examples. Close it to return to the lesson.
 - **Select / delete:** click a component or cable, then press `Delete`.
 - **Navigate:** scroll to zoom, drag empty space to pan.
 - **Show traffic:** a gentle ripple runs along each cable from caller to
@@ -36,11 +39,25 @@ add components or templates.
 ### Components — `src/components.json`
 
 `categories` set the sidebar groups and colours; `components` list what can
-be placed:
+be placed, with the plain-language explanation shown in the drawer:
 
 ```json
-{ "id": "cache", "label": "Cache", "badge": "CA", "category": "data" }
+{
+  "id": "cache",
+  "label": "Cache",
+  "badge": "CA",
+  "category": "data",
+  "info": {
+    "what": "Keeps frequently used data in fast memory.",
+    "why": "Answers repeated questions quickly and takes load off the database.",
+    "analogy": "Keeping the things you use most on your desk.",
+    "examples": ["Redis", "Memcached", "Valkey"]
+  }
+}
 ```
+
+Keep `info` short and jargon-free; `npm test` checks every component has all
+four parts and exactly three examples.
 
 ### Traffic flow — `src/settings.json`
 
@@ -104,7 +121,9 @@ place in the list (`01-hello-world.json`, `02-…`).
 | `src/design.ts`          | The design model: components, ports, cables, groups |
 | `src/templates.ts`       | Validating, loading and exporting templates         |
 | `src/templateLibrary.ts` | Collects the JSON files in `src/templates/`         |
-| `src/lesson.ts`          | The _Learn why_ panel                               |
+| `src/lesson.ts`          | The template lesson shown in the drawer             |
+| `src/componentInfo.ts`   | The component explanation shown in the drawer       |
+| `src/dom.ts`             | Tiny helpers for building drawer content            |
 | `src/rope.ts`            | Verlet rope physics for cables                      |
 | `src/flow.ts`            | The ripple that runs along cables                   |
 | `src/snap.ts`            | Finding the port under the pointer and snap targets |
@@ -124,13 +143,14 @@ npm test                          # everything
 node --test src/rope.test.ts      # one file
 ```
 
-| Source file                                                                                 | Test file                                              |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `src/rope.ts`                                                                               | `src/rope.test.ts`                                     |
-| `src/flow.ts`, `src/settings.json`                                                          | `src/flow.test.ts`                                     |
-| `src/design.ts`                                                                             | `src/design.test.ts`                                   |
-| `src/snap.ts`                                                                               | `src/snap.test.ts`                                     |
-| `src/camera.ts`                                                                             | `src/camera.test.ts`                                   |
-| `src/templates.ts`, `src/templates/*.json`, `src/components.json`, `src/components.ts`      | `src/templates.test.ts`                                |
-| `src/geometry.ts`                                                                           | covered by `src/rope.test.ts` and `src/design.test.ts` |
-| `src/render.ts`, `src/main.ts`, `src/palette.ts`, `src/lesson.ts`, `src/templateLibrary.ts` | no unit tests; check in the browser                    |
+| Source file                                                                                                                       | Test file                                              |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `src/rope.ts`                                                                                                                     | `src/rope.test.ts`                                     |
+| `src/flow.ts`, `src/settings.json`                                                                                                | `src/flow.test.ts`                                     |
+| `src/design.ts`                                                                                                                   | `src/design.test.ts`                                   |
+| `src/snap.ts`                                                                                                                     | `src/snap.test.ts`                                     |
+| `src/camera.ts`                                                                                                                   | `src/camera.test.ts`                                   |
+| `src/templates.ts`, `src/templates/*.json`                                                                                        | `src/templates.test.ts`                                |
+| `src/components.ts`, `src/components.json`                                                                                        | `src/components.test.ts`, `src/templates.test.ts`      |
+| `src/geometry.ts`                                                                                                                 | covered by `src/rope.test.ts` and `src/design.test.ts` |
+| `src/render.ts`, `src/main.ts`, `src/palette.ts`, `src/lesson.ts`, `src/componentInfo.ts`, `src/dom.ts`, `src/templateLibrary.ts` | no unit tests; check in the browser                    |

@@ -2,11 +2,20 @@ import catalog from './components.json' with { type: 'json' };
 
 export type Category = 'edge' | 'routing' | 'compute' | 'data' | 'async';
 
+/** Plain-language explanation shown when a component is selected. */
+export interface ComponentInfo {
+  what: string;
+  why: string;
+  analogy: string;
+  examples: string[];
+}
+
 export interface ComponentKind {
   id: string;
   label: string;
   badge: string;
   category: Category;
+  info: ComponentInfo;
 }
 
 export interface CategoryInfo {

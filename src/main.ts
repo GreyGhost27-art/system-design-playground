@@ -1,4 +1,6 @@
 import { fitCamera, screenToWorld, zoomAt } from './camera.ts';
+import { renderComponentInfo } from './componentInfo.ts';
+import { findKind } from './components.ts';
 import { Design, type PortRef } from './design.ts';
 import type { Point } from './geometry.ts';
 import { renderLesson } from './lesson.ts';
@@ -21,15 +23,15 @@ const ctx = canvas.getContext('2d')!;
 const palette = document.querySelector<HTMLElement>('#palette')!;
 const templateSelect =
   document.querySelector<HTMLSelectElement>('#template-select')!;
-const lessonPanel = document.querySelector<HTMLElement>('#lesson')!;
-const lessonContent = document.querySelector<HTMLElement>('#lesson-content')!;
+const drawer = document.querySelector<HTMLElement>('#drawer')!;
+const drawerContent = document.querySelector<HTMLElement>('#drawer-content')!;
+const drawerCloseButton = document.querySelector<HTMLElement>('#drawer-close')!;
 const lessonOpenButton = document.querySelector<HTMLElement>('#lesson-open')!;
-const lessonCloseButton = document.querySelector<HTMLElement>('#lesson-close')!;
 const copyJsonButton = document.querySelector<HTMLElement>('#copy-json')!;
 const flowToggle = document.querySelector<HTMLInputElement>('#flow-toggle')!;
 
-// Space the lesson panel covers on the right of the board when open.
-const LESSON_PANEL_SPACE = 372;
+// Space the drawer covers on the right of the board when open.
+const DRAWER_SPACE = 372;
 // Physics steps run before showing a template, so cables appear settled.
 const SETTLE_STEPS = 90;
 
@@ -48,6 +50,8 @@ let gesture: Gesture = { type: 'idle' };
 let pointer: Point = { x: 0, y: 0 };
 let currentTemplate: Template | null = null;
 let lessonOpen = true;
+// What the drawer currently shows, so it is only rebuilt when that changes.
+let drawerShowing = '';
 
 renderPalette(palette, (kindId) => addAtViewCenter(kindId));
 fillTemplateSelect();
@@ -69,21 +73,40 @@ function openTemplate(id: string): void {
   if (currentTemplate) loadTemplate(design, currentTemplate);
   else design.clear();
   for (let i = 0; i < SETTLE_STEPS; i++) design.step();
-
-  if (currentTemplate) {
-    renderLesson(lessonContent, currentTemplate, {
-      number: TEMPLATES.indexOf(currentTemplate) + 1,
-      total: TEMPLATES.length,
-    });
-  }
-  updateLessonVisibility();
+  syncDrawer();
   history.replaceState(null, '', currentTemplate ? `#${id}` : '#');
   fitToDesign();
 }
 
-function updateLessonVisibility(): void {
-  lessonPanel.hidden = !currentTemplate || !lessonOpen;
-  lessonOpenButton.hidden = !currentTemplate || lessonOpen;
+/**
+ * The drawer explains the selected component; with nothing selected it
+ * shows the template's lesson, unless the lesson was closed.
+ */
+function syncDrawer(): void {
+  const selection = scene.selection;
+  const node = selection?.type === 'node' ? design.getNode(selection.id) : null;
+  const showLesson = !node && currentTemplate !== null && lessonOpen;
+  const showing = node
+    ? `node:${node.id}:${node.label ?? ''}`
+    : showLesson
+      ? `lesson:${currentTemplate!.id}`
+      : '';
+
+  lessonOpenButton.hidden = !currentTemplate || lessonOpen || node !== null;
+  if (showing === drawerShowing) return;
+  drawerShowing = showing;
+  drawer.hidden = showing === '';
+
+  if (node) {
+    renderComponentInfo(drawerContent, findKind(node.kind), node.label);
+  } else if (showLesson) {
+    renderLesson(drawerContent, currentTemplate!, {
+      number: TEMPLATES.indexOf(currentTemplate!) + 1,
+      total: TEMPLATES.length,
+    });
+  }
+  drawerContent.scrollTop = 0;
+  drawer.scrollTop = 0;
 }
 
 function fitToDesign(): void {
@@ -93,7 +116,7 @@ function fitToDesign(): void {
     return;
   }
   const { width, height } = boardSize();
-  const covered = lessonPanel.hidden ? 0 : LESSON_PANEL_SPACE;
+  const covered = drawer.hidden ? 0 : DRAWER_SPACE;
   scene.camera = fitCamera(bounds, { width: width - covered, height }, 48);
 }
 
@@ -102,12 +125,17 @@ templateSelect.addEventListener('change', () => {
   templateSelect.blur();
 });
 
-lessonCloseButton.addEventListener('click', () => setLessonOpen(false));
+drawerCloseButton.addEventListener('click', () => {
+  // Closing a component's explanation falls back to the lesson.
+  if (scene.selection?.type === 'node') scene.selection = null;
+  else setLessonOpen(false);
+  syncDrawer();
+});
 lessonOpenButton.addEventListener('click', () => setLessonOpen(true));
 
 function setLessonOpen(open: boolean): void {
   lessonOpen = open;
-  updateLessonVisibility();
+  syncDrawer();
   fitToDesign();
 }
 
@@ -305,6 +333,7 @@ function frame(now: number): void {
     const end = snap ? design.portPoint(snap) : pointer;
     stepRope(rope, design.portPoint(from), end);
   }
+  syncDrawer();
   render(ctx, scene, boardSize());
   requestAnimationFrame(frame);
 }

@@ -199,7 +199,7 @@ kbd {
   touch-action: none;
 }
 
-.lesson {
+.drawer {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -216,7 +216,7 @@ kbd {
   line-height: 1.55;
 }
 
-.lesson[hidden],
+.drawer[hidden],
 .lesson-open[hidden] {
   display: none;
 }
@@ -250,18 +250,18 @@ kbd {
   letter-spacing: 0.08em;
 }
 
-.lesson-title {
+.drawer-title {
   margin: 0;
   font-size: 20px;
   font-weight: 650;
 }
 
-.lesson-summary {
+.drawer-subtitle {
   margin: 6px 0 0;
   color: var(--muted);
 }
 
-.lesson-section h3 {
+.drawer-section h3 {
   margin: 22px 0 6px;
   font-size: 12px;
   font-weight: 650;
@@ -270,16 +270,16 @@ kbd {
   letter-spacing: 0.06em;
 }
 
-.lesson-section p {
+.drawer-section p {
   margin: 0 0 10px;
 }
 
-.lesson-section ul {
+.drawer-section ul {
   margin: 0;
   padding-left: 18px;
 }
 
-.lesson-section li {
+.drawer-section li {
   margin-bottom: 6px;
 }
 
@@ -288,4 +288,45 @@ kbd {
   top: 16px;
   right: 16px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.component-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.component-header .badge {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.component-header .eyebrow {
+  margin-bottom: 2px;
+}
+
+.drawer-lede {
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.drawer-section ul.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.chips li {
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel-raised);
+  font-size: 12.5px;
 }

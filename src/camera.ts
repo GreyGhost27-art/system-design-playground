@@ -30,3 +30,22 @@ export function zoomAt(
     y: screenPoint.y - anchor.y * scale,
   };
 }
+
+/** A camera that shows `bounds` centred in a view of the given size. */
+export function fitCamera(
+  bounds: { left: number; top: number; right: number; bottom: number },
+  view: { width: number; height: number },
+  padding = 64,
+): Camera {
+  const fitWidth = (view.width - padding * 2) / (bounds.right - bounds.left);
+  const fitHeight = (view.height - padding * 2) / (bounds.bottom - bounds.top);
+  // Never zoom in past 100%, so small designs keep their natural size.
+  const scale = clamp(Math.min(fitWidth, fitHeight, 1), MIN_SCALE, MAX_SCALE);
+  const centerX = (bounds.left + bounds.right) / 2;
+  const centerY = (bounds.top + bounds.bottom) / 2;
+  return {
+    scale,
+    x: view.width / 2 - centerX * scale,
+    y: view.height / 2 - centerY * scale,
+  };
+}

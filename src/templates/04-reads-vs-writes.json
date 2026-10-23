@@ -1,0 +1,110 @@
+{
+  "id": "reads-vs-writes",
+  "title": "Reads vs writes",
+  "summary": "Read replicas scale reads; the primary handles writes.",
+  "lesson": {
+    "problem": "Even with a cache, the database is busy. Most of the traffic is reads, and the writes are stuck waiting behind them.",
+    "why": [
+      "Typical applications read far more than they write, often 10 to 100 reads for every write. A single primary database accepts all writes and streams the changes to read replicas.",
+      "App servers send writes to the primary and spread reads across the replicas, so read capacity grows by adding replicas.",
+      "Replication is usually asynchronous, so a replica can be a little behind the primary (replication lag)."
+    ],
+    "takeaways": [
+      "Replicas scale reads, not writes. Scaling writes needs sharding.",
+      "Replication lag breaks read-your-own-writes: read from the primary right after a user changes something.",
+      "If the primary fails, a replica can be promoted, which also makes replicas a high-availability tool."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 120
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "x": 250,
+      "y": 120
+    },
+    {
+      "id": "app1",
+      "kind": "app-server",
+      "label": "App Server 1",
+      "x": 500,
+      "y": 40
+    },
+    {
+      "id": "app2",
+      "kind": "app-server",
+      "label": "App Server 2",
+      "x": 500,
+      "y": 200
+    },
+    {
+      "id": "primary",
+      "kind": "sql-database",
+      "label": "Primary DB",
+      "x": 750,
+      "y": 120
+    },
+    {
+      "id": "replica1",
+      "kind": "sql-database",
+      "label": "Read Replica 1",
+      "x": 1000,
+      "y": 0
+    },
+    {
+      "id": "replica2",
+      "kind": "sql-database",
+      "label": "Read Replica 2",
+      "x": 1000,
+      "y": 240
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "lb.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app1.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app2.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "primary.left",
+      "label": "writes"
+    },
+    {
+      "from": "app2.right",
+      "to": "primary.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "replica1.left",
+      "label": "reads"
+    },
+    {
+      "from": "app2.right",
+      "to": "replica2.left",
+      "label": "reads"
+    },
+    {
+      "from": "primary.right",
+      "to": "replica1.left",
+      "label": "replication"
+    },
+    {
+      "from": "primary.right",
+      "to": "replica2.left"
+    }
+  ]
+}

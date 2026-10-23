@@ -1,0 +1,91 @@
+{
+  "categories": [
+    { "id": "edge", "label": "Edge", "color": "#5eb1ff" },
+    { "id": "routing", "label": "Routing", "color": "#b48cff" },
+    { "id": "compute", "label": "Compute", "color": "#4fd1a5" },
+    { "id": "data", "label": "Data", "color": "#ffb454" },
+    { "id": "async", "label": "Async", "color": "#ff7a90" }
+  ],
+  "components": [
+    { "id": "client", "label": "Client", "badge": "CL", "category": "edge" },
+    { "id": "dns", "label": "DNS", "badge": "DNS", "category": "edge" },
+    { "id": "cdn", "label": "CDN", "badge": "CDN", "category": "edge" },
+    {
+      "id": "external-service",
+      "label": "External Service",
+      "badge": "EXT",
+      "category": "edge"
+    },
+    {
+      "id": "load-balancer",
+      "label": "Load Balancer",
+      "badge": "LB",
+      "category": "routing"
+    },
+    {
+      "id": "api-gateway",
+      "label": "API Gateway",
+      "badge": "GW",
+      "category": "routing"
+    },
+    {
+      "id": "rate-limiter",
+      "label": "Rate Limiter",
+      "badge": "RL",
+      "category": "routing"
+    },
+    {
+      "id": "websocket-gateway",
+      "label": "WebSocket Gateway",
+      "badge": "WS",
+      "category": "routing"
+    },
+    {
+      "id": "shard-router",
+      "label": "Shard Router",
+      "badge": "SR",
+      "category": "routing"
+    },
+    {
+      "id": "app-server",
+      "label": "App Server",
+      "badge": "APP",
+      "category": "compute"
+    },
+    { "id": "worker", "label": "Worker", "badge": "WK", "category": "compute" },
+    {
+      "id": "function",
+      "label": "Function",
+      "badge": "λ",
+      "category": "compute"
+    },
+    {
+      "id": "sql-database",
+      "label": "SQL Database",
+      "badge": "SQL",
+      "category": "data"
+    },
+    {
+      "id": "nosql-database",
+      "label": "NoSQL Database",
+      "badge": "NO",
+      "category": "data"
+    },
+    { "id": "cache", "label": "Cache", "badge": "CA", "category": "data" },
+    {
+      "id": "object-storage",
+      "label": "Object Storage",
+      "badge": "OBJ",
+      "category": "data"
+    },
+    {
+      "id": "search-index",
+      "label": "Search Index",
+      "badge": "IDX",
+      "category": "data"
+    },
+    { "id": "queue", "label": "Queue", "badge": "Q", "category": "async" },
+    { "id": "pub-sub", "label": "Pub/Sub", "badge": "PS", "category": "async" },
+    { "id": "stream", "label": "Stream", "badge": "STR", "category": "async" }
+  ]
+}

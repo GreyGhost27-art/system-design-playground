@@ -1,0 +1,103 @@
+{
+  "id": "slow-tasks",
+  "title": "Slow tasks",
+  "summary": "A queue and workers move slow jobs, like sending email, out of the request.",
+  "lesson": {
+    "problem": "Signing up sends a welcome email. The email provider takes two seconds to respond, so every sign-up takes two seconds, and fails if the provider is down.",
+    "why": [
+      "The user does not need to wait for the email. The app server saves the user, puts a \"send welcome email\" job on a queue, and responds right away.",
+      "Workers take jobs from the queue at their own pace and call the email provider. If the provider is slow or down, jobs wait in the queue and are retried instead of failing the sign-up.",
+      "Producers and consumers now scale separately: add workers when the queue grows."
+    ],
+    "takeaways": [
+      "Queues turn slow, unreliable work into fast, reliable requests.",
+      "Jobs can run more than once after a retry, so make them idempotent.",
+      "Send jobs that keep failing to a dead-letter queue instead of retrying forever."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 120
+    },
+    {
+      "id": "app",
+      "kind": "app-server",
+      "label": "App Server",
+      "x": 250,
+      "y": 120
+    },
+    {
+      "id": "db",
+      "kind": "sql-database",
+      "label": "Users DB",
+      "x": 250,
+      "y": 300
+    },
+    {
+      "id": "queue",
+      "kind": "queue",
+      "label": "Email Queue",
+      "x": 500,
+      "y": 120
+    },
+    {
+      "id": "worker1",
+      "kind": "worker",
+      "label": "Email Worker 1",
+      "x": 750,
+      "y": 40
+    },
+    {
+      "id": "worker2",
+      "kind": "worker",
+      "label": "Email Worker 2",
+      "x": 750,
+      "y": 200
+    },
+    {
+      "id": "email",
+      "kind": "external-service",
+      "label": "Email Provider",
+      "x": 1000,
+      "y": 120
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "app.left",
+      "label": "sign up"
+    },
+    {
+      "from": "app.bottom",
+      "to": "db.top",
+      "label": "save user"
+    },
+    {
+      "from": "app.right",
+      "to": "queue.left",
+      "label": "enqueue job"
+    },
+    {
+      "from": "queue.right",
+      "to": "worker1.left"
+    },
+    {
+      "from": "queue.right",
+      "to": "worker2.left"
+    },
+    {
+      "from": "worker1.right",
+      "to": "email.left",
+      "label": "send"
+    },
+    {
+      "from": "worker2.right",
+      "to": "email.left"
+    }
+  ]
+}

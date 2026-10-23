@@ -39,9 +39,10 @@ body {
 
 .sidebar-header {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 14px;
   padding: 20px 18px 14px;
+  border-bottom: 1px solid var(--border);
 }
 
 .sidebar-header h1 {
@@ -51,11 +52,51 @@ body {
   letter-spacing: 0.01em;
 }
 
-.mode {
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   font-size: 11px;
+  font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.secondary-button,
+.lesson-open {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.secondary-button {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.secondary-button:hover,
+.lesson-open:hover {
+  border-color: #3a4352;
 }
 
 .palette {
@@ -142,4 +183,95 @@ kbd {
   width: 100%;
   height: 100%;
   touch-action: none;
+}
+
+.lesson {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: 340px;
+  overflow-y: auto;
+  padding: 22px 24px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(18, 22, 30, 0.94);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.lesson[hidden],
+.lesson-open[hidden] {
+  display: none;
+}
+
+.icon-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: var(--panel-raised);
+  color: var(--text);
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.lesson-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.lesson-summary {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.lesson-section h3 {
+  margin: 22px 0 6px;
+  font-size: 12px;
+  font-weight: 650;
+  color: #b48cff;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.lesson-section p {
+  margin: 0 0 10px;
+}
+
+.lesson-section ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.lesson-section li {
+  margin-bottom: 6px;
+}
+
+.lesson-open {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }

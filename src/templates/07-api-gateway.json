@@ -1,0 +1,108 @@
+{
+  "id": "api-gateway",
+  "title": "API gateway & rate limits",
+  "summary": "One front door for many services, with rate limiting.",
+  "lesson": {
+    "problem": "You now have several services and several kinds of clients. Each service re-implements authentication, and a single misbehaving client can flood everything.",
+    "why": [
+      "An API gateway is the single entry point: it terminates TLS, authenticates requests, routes them to the right service and applies cross-cutting rules in one place.",
+      "The rate limiter caps how many requests each user, API key or IP can make, using algorithms such as token bucket or sliding window. Requests over the limit get HTTP 429 with a Retry-After header.",
+      "Counters live in a shared, fast store so the limit holds across every gateway instance."
+    ],
+    "takeaways": [
+      "Centralise auth, routing and limits instead of copying them into every service.",
+      "Rate limiting protects you from abuse and from your own buggy clients.",
+      "Decide what happens when the counter store is down: fail open (allow) or fail closed (reject)."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "web",
+      "kind": "client",
+      "label": "Web App",
+      "x": 0,
+      "y": 60
+    },
+    {
+      "id": "mobile",
+      "kind": "client",
+      "label": "Mobile App",
+      "x": 0,
+      "y": 260
+    },
+    {
+      "id": "gateway",
+      "kind": "api-gateway",
+      "x": 250,
+      "y": 160
+    },
+    {
+      "id": "limiter",
+      "kind": "rate-limiter",
+      "x": 250,
+      "y": 380
+    },
+    {
+      "id": "counters",
+      "kind": "cache",
+      "label": "Rate Counters",
+      "x": 500,
+      "y": 380
+    },
+    {
+      "id": "users",
+      "kind": "app-server",
+      "label": "Users Service",
+      "x": 500,
+      "y": 20
+    },
+    {
+      "id": "orders",
+      "kind": "app-server",
+      "label": "Orders Service",
+      "x": 500,
+      "y": 160
+    },
+    {
+      "id": "auth",
+      "kind": "app-server",
+      "label": "Auth Service",
+      "x": 500,
+      "y": 280
+    }
+  ],
+  "cables": [
+    {
+      "from": "web.right",
+      "to": "gateway.left"
+    },
+    {
+      "from": "mobile.right",
+      "to": "gateway.left"
+    },
+    {
+      "from": "gateway.bottom",
+      "to": "limiter.top",
+      "label": "within quota?"
+    },
+    {
+      "from": "limiter.right",
+      "to": "counters.left",
+      "label": "count"
+    },
+    {
+      "from": "gateway.right",
+      "to": "auth.left",
+      "label": "verify token"
+    },
+    {
+      "from": "gateway.right",
+      "to": "users.left"
+    },
+    {
+      "from": "gateway.right",
+      "to": "orders.left",
+      "label": "route"
+    }
+  ]
+}

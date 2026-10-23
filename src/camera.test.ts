@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { screenToWorld, zoomAt } from './camera.ts';
+import { fitCamera, screenToWorld, zoomAt } from './camera.ts';
 
 test('screen points convert to world points with pan and zoom', () => {
   const camera = { x: 100, y: 50, scale: 2 };
@@ -23,4 +23,22 @@ test('zoom stays within a sensible range', () => {
   const camera = { x: 0, y: 0, scale: 1 };
   assert.equal(zoomAt(camera, { x: 0, y: 0 }, 100).scale, 2.5);
   assert.equal(zoomAt(camera, { x: 0, y: 0 }, 0.001).scale, 0.3);
+});
+
+test('fitting centres the content in the view', () => {
+  const bounds = { left: 0, top: 0, right: 200, bottom: 100 };
+  const camera = fitCamera(bounds, { width: 800, height: 600 });
+  const center = screenToWorld(camera, { x: 400, y: 300 });
+  assert.deepEqual(center, { x: 100, y: 50 });
+});
+
+test('fitting never zooms in past 100%', () => {
+  const bounds = { left: 0, top: 0, right: 100, bottom: 50 };
+  assert.equal(fitCamera(bounds, { width: 1600, height: 900 }).scale, 1);
+});
+
+test('fitting zooms out so wide content fits the view', () => {
+  const bounds = { left: 0, top: 0, right: 2000, bottom: 100 };
+  const camera = fitCamera(bounds, { width: 1000, height: 800 }, 0);
+  assert.equal(camera.scale, 0.5);
 });

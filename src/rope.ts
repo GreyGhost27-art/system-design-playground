@@ -1,13 +1,10 @@
-import {
-  distance,
-  distanceToSegment,
-  lerp,
-  type Point,
-} from './geometry.ts';
+import { distance, distanceToSegment, lerp, type Point } from './geometry.ts';
 
 const SEGMENTS = 16;
-// Ropes are a little longer than the gap they span so they always sag.
-const SLACK = 1.12;
+// Ropes are a little longer than the gap they span so they always sag;
+// the extra length is capped so long cables don't droop too far.
+const SLACK = 0.12;
+const MAX_SLACK = 32;
 const MIN_LENGTH = 40;
 const GRAVITY = 0.6;
 const DAMPING = 0.95;
@@ -38,7 +35,11 @@ export function stepRope(rope: Rope, start: Point, end: Point): void {
     point.y += velocityY + GRAVITY;
   }
 
-  const ropeLength = Math.max(distance(start, end) * SLACK, MIN_LENGTH);
+  const gap = distance(start, end);
+  const ropeLength = Math.max(
+    gap + Math.min(gap * SLACK, MAX_SLACK),
+    MIN_LENGTH,
+  );
   const segmentLength = ropeLength / last;
 
   for (let n = 0; n < CONSTRAINT_ITERATIONS; n++) {

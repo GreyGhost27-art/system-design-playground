@@ -1,0 +1,72 @@
+{
+  "id": "too-many-users",
+  "title": "Too many users",
+  "summary": "A load balancer spreads traffic across several servers.",
+  "lesson": {
+    "problem": "Traffic grew and one server can no longer keep up. Requests slow down and time out.",
+    "why": [
+      "Instead of buying an ever bigger machine (vertical scaling), run several identical servers and put a load balancer in front of them (horizontal scaling).",
+      "The load balancer gives clients a single address and forwards each request to a healthy server, using strategies such as round-robin or least connections. Health checks take broken servers out of rotation automatically.",
+      "For this to work the servers must be stateless: any server can handle any request, so sessions and uploads have to live in a shared store, not on one machine."
+    ],
+    "takeaways": [
+      "Horizontal scaling adds capacity and removes the single server as a point of failure.",
+      "Keep app servers stateless so they can be added and removed freely.",
+      "The load balancer itself must be redundant (usually a managed, replicated service)."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 120
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "x": 250,
+      "y": 120
+    },
+    {
+      "id": "app1",
+      "kind": "app-server",
+      "label": "App Server 1",
+      "x": 500,
+      "y": 0
+    },
+    {
+      "id": "app2",
+      "kind": "app-server",
+      "label": "App Server 2",
+      "x": 500,
+      "y": 120
+    },
+    {
+      "id": "app3",
+      "kind": "app-server",
+      "label": "App Server 3",
+      "x": 500,
+      "y": 240
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "lb.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app1.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app2.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app3.left"
+    }
+  ]
+}

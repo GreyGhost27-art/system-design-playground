@@ -10,7 +10,10 @@
     <aside class="sidebar">
       <header class="sidebar-header">
         <h1>System Design</h1>
-        <span class="mode">Free mode</span>
+        <label class="field">
+          <span>Start from</span>
+          <select id="template-select"></select>
+        </label>
       </header>
       <nav id="palette" class="palette" aria-label="Components"></nav>
       <footer class="hints">
@@ -18,10 +21,27 @@
         <p><kbd>Drag</kbd> from a port to run a cable</p>
         <p><kbd>Del</kbd> removes the selection</p>
         <p><kbd>Scroll</kbd> zooms · drag the board to pan</p>
+        <button id="copy-json" class="secondary-button" type="button">
+          Copy board as JSON
+        </button>
       </footer>
     </aside>
     <main class="board">
       <canvas id="board"></canvas>
+      <aside id="lesson" class="lesson" hidden>
+        <button
+          id="lesson-close"
+          class="icon-button"
+          type="button"
+          aria-label="Hide lesson"
+        >
+          ×
+        </button>
+        <div id="lesson-content"></div>
+      </aside>
+      <button id="lesson-open" class="lesson-open" type="button" hidden>
+        Learn why
+      </button>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

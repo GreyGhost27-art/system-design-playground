@@ -1,10 +1,13 @@
-import { screenToWorld, zoomAt } from './camera.ts';
+import { fitCamera, screenToWorld, zoomAt } from './camera.ts';
 import { Design, type PortRef } from './design.ts';
 import type { Point } from './geometry.ts';
+import { renderLesson } from './lesson.ts';
 import { DRAG_FORMAT, renderPalette } from './palette.ts';
 import { render, type Scene } from './render.ts';
 import { createRope, stepRope } from './rope.ts';
 import { findSnapTarget, portAt } from './snap.ts';
+import { TEMPLATES } from './templateLibrary.ts';
+import { loadTemplate, toTemplate, type Template } from './templates.ts';
 
 type Gesture =
   | { type: 'idle' }
@@ -15,6 +18,18 @@ type Gesture =
 const canvas = document.querySelector<HTMLCanvasElement>('#board')!;
 const ctx = canvas.getContext('2d')!;
 const palette = document.querySelector<HTMLElement>('#palette')!;
+const templateSelect =
+  document.querySelector<HTMLSelectElement>('#template-select')!;
+const lessonPanel = document.querySelector<HTMLElement>('#lesson')!;
+const lessonContent = document.querySelector<HTMLElement>('#lesson-content')!;
+const lessonOpenButton = document.querySelector<HTMLElement>('#lesson-open')!;
+const lessonCloseButton = document.querySelector<HTMLElement>('#lesson-close')!;
+const copyJsonButton = document.querySelector<HTMLElement>('#copy-json')!;
+
+// Space the lesson panel covers on the right of the board when open.
+const LESSON_PANEL_SPACE = 372;
+// Physics steps run before showing a template, so cables appear settled.
+const SETTLE_STEPS = 90;
 
 const design = new Design();
 const scene: Scene = {
@@ -27,8 +42,77 @@ const scene: Scene = {
 };
 let gesture: Gesture = { type: 'idle' };
 let pointer: Point = { x: 0, y: 0 };
+let currentTemplate: Template | null = null;
+let lessonOpen = true;
 
 renderPalette(palette, (kindId) => addAtViewCenter(kindId));
+fillTemplateSelect();
+
+function fillTemplateSelect(): void {
+  templateSelect.append(new Option('Empty board (free mode)', ''));
+  const group = document.createElement('optgroup');
+  group.label = 'Templates';
+  TEMPLATES.forEach((template, index) => {
+    group.append(new Option(`${index + 1}. ${template.title}`, template.id));
+  });
+  templateSelect.append(group);
+}
+
+function openTemplate(id: string): void {
+  currentTemplate = TEMPLATES.find((template) => template.id === id) ?? null;
+  templateSelect.value = currentTemplate?.id ?? '';
+  scene.selection = null;
+  if (currentTemplate) loadTemplate(design, currentTemplate);
+  else design.clear();
+  for (let i = 0; i < SETTLE_STEPS; i++) design.step();
+
+  if (currentTemplate) {
+    renderLesson(lessonContent, currentTemplate, {
+      number: TEMPLATES.indexOf(currentTemplate) + 1,
+      total: TEMPLATES.length,
+    });
+  }
+  updateLessonVisibility();
+  history.replaceState(null, '', currentTemplate ? `#${id}` : '#');
+  fitToDesign();
+}
+
+function updateLessonVisibility(): void {
+  lessonPanel.hidden = !currentTemplate || !lessonOpen;
+  lessonOpenButton.hidden = !currentTemplate || lessonOpen;
+}
+
+function fitToDesign(): void {
+  const bounds = design.bounds();
+  if (!bounds) {
+    scene.camera = { x: 0, y: 0, scale: 1 };
+    return;
+  }
+  const { width, height } = boardSize();
+  const covered = lessonPanel.hidden ? 0 : LESSON_PANEL_SPACE;
+  scene.camera = fitCamera(bounds, { width: width - covered, height }, 48);
+}
+
+templateSelect.addEventListener('change', () => {
+  openTemplate(templateSelect.value);
+  templateSelect.blur();
+});
+
+lessonCloseButton.addEventListener('click', () => setLessonOpen(false));
+lessonOpenButton.addEventListener('click', () => setLessonOpen(true));
+
+function setLessonOpen(open: boolean): void {
+  lessonOpen = open;
+  updateLessonVisibility();
+  fitToDesign();
+}
+
+copyJsonButton.addEventListener('click', async () => {
+  const json = JSON.stringify(toTemplate(design), null, 2);
+  await navigator.clipboard.writeText(json);
+  copyJsonButton.textContent = 'Copied!';
+  setTimeout(() => (copyJsonButton.textContent = 'Copy board as JSON'), 1500);
+});
 
 function boardSize() {
   return {
@@ -132,7 +216,9 @@ canvas.addEventListener('pointermove', (event) => {
 canvas.addEventListener('pointerup', () => {
   const draft = scene.draft;
   if (gesture.type === 'drawing-cable' && draft?.snap) {
-    const cable = design.connect(draft.from, draft.snap, draft.rope);
+    const cable = design.connect(draft.from, draft.snap, {
+      rope: draft.rope,
+    });
     if (cable) scene.selection = { type: 'cable', id: cable.id };
   }
   scene.draft = null;
@@ -174,6 +260,7 @@ canvas.addEventListener('drop', (event) => {
 });
 
 window.addEventListener('keydown', (event) => {
+  if (event.target instanceof HTMLSelectElement) return;
   if (event.key === 'Escape') {
     scene.draft = null;
     scene.selection = null;
@@ -213,4 +300,5 @@ function frame(): void {
 }
 
 resize();
+openTemplate(decodeURIComponent(location.hash.slice(1)));
 requestAnimationFrame(frame);

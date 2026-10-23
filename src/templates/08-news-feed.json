@@ -1,0 +1,131 @@
+{
+  "id": "news-feed",
+  "title": "News feed",
+  "summary": "Fan-out on write for most users, fan-out on read for celebrities.",
+  "lesson": {
+    "problem": "Users follow hundreds of accounts and open their feed many times a day. Building it on every request means querying every account they follow.",
+    "why": [
+      "Fan-out on write (push): when someone posts, workers copy the post ID into the precomputed timeline of each follower. Reading a feed becomes a single, fast cache lookup.",
+      "Fan-out on read (pull): store each post once and assemble the feed when it is opened. Writing is cheap, but reading is slow and expensive.",
+      "Push breaks for celebrities: one post would trigger millions of timeline writes. Real systems use a hybrid: push for regular accounts, pull for celebrity posts, merged when the feed is read."
+    ],
+    "takeaways": [
+      "Choose where to pay the cost: at write time or at read time.",
+      "Feeds are read far more than posts are written, so precomputing usually wins.",
+      "Handle outliers (very popular accounts) with a separate path."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 200
+    },
+    {
+      "id": "gateway",
+      "kind": "api-gateway",
+      "x": 250,
+      "y": 200
+    },
+    {
+      "id": "post",
+      "kind": "app-server",
+      "label": "Post Service",
+      "x": 500,
+      "y": 60
+    },
+    {
+      "id": "feed",
+      "kind": "app-server",
+      "label": "Feed Service",
+      "x": 500,
+      "y": 360
+    },
+    {
+      "id": "posts",
+      "kind": "nosql-database",
+      "label": "Posts DB",
+      "x": 750,
+      "y": -60
+    },
+    {
+      "id": "queue",
+      "kind": "queue",
+      "label": "Fan-out Queue",
+      "x": 750,
+      "y": 80
+    },
+    {
+      "id": "fanout",
+      "kind": "worker",
+      "label": "Fan-out Workers",
+      "x": 1000,
+      "y": 80
+    },
+    {
+      "id": "graph",
+      "kind": "nosql-database",
+      "label": "Follower Graph",
+      "x": 1000,
+      "y": -60
+    },
+    {
+      "id": "timelines",
+      "kind": "cache",
+      "label": "Timeline Cache",
+      "x": 1000,
+      "y": 360
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "gateway.left"
+    },
+    {
+      "from": "gateway.right",
+      "to": "post.left",
+      "label": "publish"
+    },
+    {
+      "from": "gateway.right",
+      "to": "feed.left",
+      "label": "open feed"
+    },
+    {
+      "from": "post.right",
+      "to": "posts.left",
+      "label": "store post"
+    },
+    {
+      "from": "post.right",
+      "to": "queue.left"
+    },
+    {
+      "from": "queue.right",
+      "to": "fanout.left"
+    },
+    {
+      "from": "fanout.top",
+      "to": "graph.bottom",
+      "label": "who follows?"
+    },
+    {
+      "from": "fanout.bottom",
+      "to": "timelines.top",
+      "label": "push (write)"
+    },
+    {
+      "from": "feed.right",
+      "to": "timelines.left",
+      "label": "precomputed feed"
+    },
+    {
+      "from": "feed.top",
+      "to": "posts.bottom",
+      "label": "pull celebrities (read)"
+    }
+  ]
+}

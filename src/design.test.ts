@@ -24,9 +24,9 @@ test('adding a component places it at the given position', () => {
 test('ports sit in the middle of each side of a component', () => {
   const node = { id: 'n', kind: 'cache', x: 0, y: 0 };
   assert.deepEqual(portPosition(node, 'top'), { x: 0, y: -26 });
-  assert.deepEqual(portPosition(node, 'right'), { x: 84, y: 0 });
+  assert.deepEqual(portPosition(node, 'right'), { x: 88, y: 0 });
   assert.deepEqual(portPosition(node, 'bottom'), { x: 0, y: 26 });
-  assert.deepEqual(portPosition(node, 'left'), { x: -84, y: 0 });
+  assert.deepEqual(portPosition(node, 'left'), { x: -88, y: 0 });
 });
 
 test('a cable connects ports on two different components', () => {
@@ -84,5 +84,42 @@ test('cables follow a component when it moves', () => {
   const cable = design.connect(port(client.id), port(server.id, 'left'))!;
   design.moveNode(server.id, { x: 400, y: 300 });
   design.step();
-  assert.deepEqual(cable.rope.points.at(-1), { x: 316, y: 300 });
+  assert.deepEqual(cable.rope.points.at(-1), { x: 312, y: 300 });
+});
+
+test('clearing the board removes components, cables and groups', () => {
+  const { design, client, server } = twoComponents();
+  design.connect(port(client.id), port(server.id));
+  design.groups.push({ label: 'EU', x: 0, y: 0, width: 10, height: 10 });
+  design.clear();
+  assert.deepEqual([design.nodes, design.cables, design.groups], [[], [], []]);
+});
+
+test('a component can be given its own name', () => {
+  const design = new Design();
+  const node = design.addNode('sql-database', { x: 0, y: 0 }, 'Primary DB');
+  assert.equal(node.label, 'Primary DB');
+});
+
+test('a cable can carry a label', () => {
+  const { design, client, server } = twoComponents();
+  const cable = design.connect(port(client.id), port(server.id), {
+    label: 'HTTP',
+  });
+  assert.equal(cable?.label, 'HTTP');
+});
+
+test('the bounds cover every component and group', () => {
+  const { design } = twoComponents();
+  design.groups.push({ label: 'EU', x: -200, y: 0, width: 50, height: 400 });
+  assert.deepEqual(design.bounds(), {
+    left: -200,
+    top: -26,
+    right: 488,
+    bottom: 400,
+  });
+});
+
+test('an empty board has no bounds', () => {
+  assert.equal(new Design().bounds(), null);
 });

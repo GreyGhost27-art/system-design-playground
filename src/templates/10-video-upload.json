@@ -1,0 +1,127 @@
+{
+  "id": "video-upload",
+  "title": "Video upload",
+  "summary": "Direct uploads to object storage, async transcoding and CDN delivery.",
+  "lesson": {
+    "problem": "Creators upload multi-gigabyte videos, and viewers around the world watch them on everything from phones to TVs.",
+    "why": [
+      "Huge files should not flow through app servers. The upload API hands the client a pre-signed URL, and the client uploads straight to object storage, in resumable chunks.",
+      "The finished upload triggers a job. Transcoding workers convert the original into several resolutions and bitrates, split into short segments (HLS/DASH), so players can switch quality as bandwidth changes.",
+      "Processed segments are served through a CDN, which caches them close to viewers. The origin storage rarely sees viewer traffic."
+    ],
+    "takeaways": [
+      "Keep large payloads off your servers: use pre-signed URLs and object storage.",
+      "Transcoding is slow and CPU-heavy, a natural fit for a queue and a worker fleet.",
+      "Video delivery is a CDN problem; storage is only the origin."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "creator",
+      "kind": "client",
+      "label": "Creator",
+      "x": 0,
+      "y": 160
+    },
+    {
+      "id": "api",
+      "kind": "app-server",
+      "label": "Upload API",
+      "x": 250,
+      "y": 40
+    },
+    {
+      "id": "meta",
+      "kind": "sql-database",
+      "label": "Video Metadata",
+      "x": 250,
+      "y": 300
+    },
+    {
+      "id": "raw",
+      "kind": "object-storage",
+      "label": "Raw Uploads",
+      "x": 500,
+      "y": 160
+    },
+    {
+      "id": "queue",
+      "kind": "queue",
+      "label": "Transcode Jobs",
+      "x": 500,
+      "y": 340
+    },
+    {
+      "id": "transcoders",
+      "kind": "worker",
+      "label": "Transcoders",
+      "x": 750,
+      "y": 340
+    },
+    {
+      "id": "processed",
+      "kind": "object-storage",
+      "label": "Processed Video",
+      "x": 750,
+      "y": 160
+    },
+    {
+      "id": "cdn",
+      "kind": "cdn",
+      "x": 1000,
+      "y": 160
+    },
+    {
+      "id": "viewer",
+      "kind": "client",
+      "label": "Viewers",
+      "x": 1000,
+      "y": 340
+    }
+  ],
+  "cables": [
+    {
+      "from": "creator.top",
+      "to": "api.left",
+      "label": "request upload URL"
+    },
+    {
+      "from": "creator.right",
+      "to": "raw.left",
+      "label": "upload (pre-signed)"
+    },
+    {
+      "from": "api.bottom",
+      "to": "meta.top"
+    },
+    {
+      "from": "raw.bottom",
+      "to": "queue.top",
+      "label": "upload done"
+    },
+    {
+      "from": "queue.right",
+      "to": "transcoders.left"
+    },
+    {
+      "from": "transcoders.left",
+      "to": "meta.right",
+      "label": "mark ready"
+    },
+    {
+      "from": "transcoders.top",
+      "to": "processed.bottom",
+      "label": "HLS renditions"
+    },
+    {
+      "from": "processed.right",
+      "to": "cdn.left",
+      "label": "origin"
+    },
+    {
+      "from": "cdn.bottom",
+      "to": "viewer.top",
+      "label": "stream"
+    }
+  ]
+}

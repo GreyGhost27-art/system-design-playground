@@ -1,0 +1,93 @@
+{
+  "id": "db-melting",
+  "title": "The DB is melting",
+  "summary": "A cache absorbs repeated reads before they reach the database.",
+  "lesson": {
+    "problem": "More app servers mean more queries, and they all land on one database. It is now the bottleneck.",
+    "why": [
+      "Most reads ask for the same popular data again and again. An in-memory cache answers those in well under a millisecond and keeps them away from the database.",
+      "The common pattern is cache-aside: the app checks the cache first; on a miss it reads the database and writes the result into the cache with a time-to-live (TTL).",
+      "A 90% hit ratio means the database sees only a tenth of the reads it used to."
+    ],
+    "takeaways": [
+      "Caches trade freshness for speed: decide how stale data may be (TTL) and when to invalidate.",
+      "Watch for stampedes: when a hot key expires, many requests may hit the database at once.",
+      "The cache is an optimisation; the database stays the source of truth."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 120
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "x": 250,
+      "y": 120
+    },
+    {
+      "id": "app1",
+      "kind": "app-server",
+      "label": "App Server 1",
+      "x": 500,
+      "y": 40
+    },
+    {
+      "id": "app2",
+      "kind": "app-server",
+      "label": "App Server 2",
+      "x": 500,
+      "y": 200
+    },
+    {
+      "id": "cache",
+      "kind": "cache",
+      "label": "Cache",
+      "x": 750,
+      "y": 0
+    },
+    {
+      "id": "db",
+      "kind": "sql-database",
+      "label": "Database",
+      "x": 750,
+      "y": 240
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "lb.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app1.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app2.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "cache.left",
+      "label": "read first"
+    },
+    {
+      "from": "app2.right",
+      "to": "cache.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "db.left"
+    },
+    {
+      "from": "app2.right",
+      "to": "db.left",
+      "label": "on cache miss"
+    }
+  ]
+}

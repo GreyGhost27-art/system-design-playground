@@ -1,0 +1,117 @@
+{
+  "id": "chat-app",
+  "title": "Chat app",
+  "summary": "WebSockets keep connections open; pub/sub routes messages between gateways.",
+  "lesson": {
+    "problem": "Messages must reach the other person instantly. With plain HTTP the server can only answer requests; it cannot push a new message to a client.",
+    "why": [
+      "A WebSocket is a long-lived, two-way connection, so the server can push messages the moment they arrive. Gateways hold those connections, often hundreds of thousands each.",
+      "Alice and Bob are usually connected to different gateways. When Alice sends a message, the chat service stores it and publishes it to a pub/sub channel; every gateway with a subscriber for that conversation delivers it.",
+      "A presence store tracks who is online and on which gateway. Offline users get the message from storage when they reconnect, or as a push notification."
+    ],
+    "takeaways": [
+      "Connections are stateful: route by who is connected where, not by round-robin.",
+      "Persist first, then deliver, so no message is lost if delivery fails.",
+      "Use heartbeats to detect dead connections and keep presence accurate."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "alice",
+      "kind": "client",
+      "label": "Alice",
+      "x": 0,
+      "y": 60
+    },
+    {
+      "id": "bob",
+      "kind": "client",
+      "label": "Bob",
+      "x": 0,
+      "y": 320
+    },
+    {
+      "id": "ws1",
+      "kind": "websocket-gateway",
+      "label": "WS Gateway 1",
+      "x": 250,
+      "y": 60
+    },
+    {
+      "id": "ws2",
+      "kind": "websocket-gateway",
+      "label": "WS Gateway 2",
+      "x": 250,
+      "y": 320
+    },
+    {
+      "id": "chat",
+      "kind": "app-server",
+      "label": "Chat Service",
+      "x": 500,
+      "y": 60
+    },
+    {
+      "id": "pubsub",
+      "kind": "pub-sub",
+      "label": "Conversations",
+      "x": 500,
+      "y": 320
+    },
+    {
+      "id": "messages",
+      "kind": "nosql-database",
+      "label": "Message Store",
+      "x": 750,
+      "y": 60
+    },
+    {
+      "id": "presence",
+      "kind": "cache",
+      "label": "Presence",
+      "x": 750,
+      "y": 320
+    }
+  ],
+  "cables": [
+    {
+      "from": "alice.right",
+      "to": "ws1.left",
+      "label": "WebSocket"
+    },
+    {
+      "from": "bob.right",
+      "to": "ws2.left",
+      "label": "WebSocket"
+    },
+    {
+      "from": "ws1.right",
+      "to": "chat.left",
+      "label": "send"
+    },
+    {
+      "from": "chat.right",
+      "to": "messages.left",
+      "label": "store first"
+    },
+    {
+      "from": "chat.bottom",
+      "to": "pubsub.top",
+      "label": "publish"
+    },
+    {
+      "from": "pubsub.left",
+      "to": "ws2.right",
+      "label": "deliver"
+    },
+    {
+      "from": "pubsub.left",
+      "to": "ws1.right"
+    },
+    {
+      "from": "ws2.bottom",
+      "to": "presence.bottom",
+      "label": "online / offline"
+    }
+  ]
+}

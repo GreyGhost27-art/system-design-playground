@@ -5,8 +5,10 @@ import {
   NODE_WIDTH,
   SIDES,
   portPosition,
+  type Cable,
   type Design,
   type DesignNode,
+  type Group,
   type PortRef,
 } from './design.ts';
 import type { Point } from './geometry.ts';
@@ -61,10 +63,12 @@ export function render(
     ratio * camera.y,
   );
   drawGrid(ctx, camera, size);
+  for (const group of scene.design.groups) drawGroup(ctx, group);
   for (const cable of scene.design.cables) {
     const selected = isSelected(scene, 'cable', cable.id);
     drawCable(ctx, scene.design, cable.from, cable.to, cable.rope, selected);
   }
+  for (const cable of scene.design.cables) drawCableLabel(ctx, cable);
   for (const node of scene.design.nodes) {
     drawNode(ctx, node, {
       selected: isSelected(scene, 'node', node.id),
@@ -201,6 +205,47 @@ function drawPlug(
   ctx.stroke();
 }
 
+function drawGroup(ctx: CanvasRenderingContext2D, group: Group): void {
+  ctx.beginPath();
+  ctx.roundRect(group.x, group.y, group.width, group.height, 16);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+  ctx.fill();
+  ctx.setLineDash([6, 6]);
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#2c3442';
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = MUTED;
+  ctx.font = `600 11px ${FONT_UI}`;
+  ctx.fillText(group.label.toUpperCase(), group.x + 14, group.y + 12);
+}
+
+/** A small pill at the middle of the rope, so it moves with the cable. */
+function drawCableLabel(ctx: CanvasRenderingContext2D, cable: Cable): void {
+  if (!cable.label) return;
+  const { points } = cable.rope;
+  const middle = points[Math.floor(points.length / 2)];
+
+  ctx.font = `500 11px ${FONT_UI}`;
+  const width = ctx.measureText(cable.label).width + 14;
+  const height = 20;
+  ctx.beginPath();
+  ctx.roundRect(middle.x - width / 2, middle.y - height / 2, width, height, 10);
+  ctx.fillStyle = 'rgba(13, 16, 22, 0.92)';
+  ctx.fill();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#2c3442';
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#b7bdc9';
+  ctx.fillText(cable.label, middle.x, middle.y + 0.5);
+}
+
 function drawNode(
   ctx: CanvasRenderingContext2D,
   node: DesignNode,
@@ -245,12 +290,29 @@ function drawNode(
 
   ctx.textAlign = 'left';
   const textLeft = badgeLeft + badgeSize + 10;
+  const textWidth = left + NODE_WIDTH - 10 - textLeft;
+  // A custom name ("Primary DB") keeps the component type as its caption.
+  const caption = node.label ? kind.label : kind.category;
   ctx.fillStyle = TEXT;
   ctx.font = `600 13px ${FONT_UI}`;
-  ctx.fillText(kind.label, textLeft, node.y - 7);
+  const title = fitText(ctx, node.label ?? kind.label, textWidth);
+  ctx.fillText(title, textLeft, node.y - 7);
   ctx.fillStyle = MUTED;
   ctx.font = `500 11px ${FONT_UI}`;
-  ctx.fillText(kind.category, textLeft, node.y + 10);
+  ctx.fillText(fitText(ctx, caption, textWidth), textLeft, node.y + 10);
+}
+
+function fitText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string {
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  let shortened = text;
+  while (shortened && ctx.measureText(`${shortened}…`).width > maxWidth) {
+    shortened = shortened.slice(0, -1);
+  }
+  return `${shortened.trimEnd()}…`;
 }
 
 /**

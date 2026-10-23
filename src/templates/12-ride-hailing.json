@@ -1,0 +1,136 @@
+{
+  "id": "ride-hailing",
+  "title": "Ride-hailing",
+  "summary": "Live driver locations in an in-memory geo index, sharded by area.",
+  "lesson": {
+    "problem": "Hundreds of thousands of drivers report their position every few seconds, and each ride request must find the nearest available drivers in milliseconds.",
+    "why": [
+      "Location updates are a firehose of writes (1 million drivers every 4 seconds is 250,000 writes per second), and only the latest position matters. So they live in memory, not in a relational database.",
+      "To answer \"who is near me?\" quickly, the map is divided into cells (geohash, S2 or H3). Drivers are indexed by cell, and a search only looks at the rider's cell and its neighbours.",
+      "The index is sharded by geography, so one city's traffic lands on one shard. The shard router maps a cell to its shard. Busy areas get smaller cells or their own shards."
+    ],
+    "takeaways": [
+      "Shard by the key your queries use: here, location.",
+      "Expect hot spots (city centres, stadiums) and split them further.",
+      "Riders near a shard boundary need results from neighbouring cells too."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "rider",
+      "kind": "client",
+      "label": "Rider App",
+      "x": 0,
+      "y": 60
+    },
+    {
+      "id": "driver",
+      "kind": "client",
+      "label": "Driver App",
+      "x": 0,
+      "y": 320
+    },
+    {
+      "id": "gateway",
+      "kind": "api-gateway",
+      "x": 250,
+      "y": 190
+    },
+    {
+      "id": "matching",
+      "kind": "app-server",
+      "label": "Matching Service",
+      "x": 500,
+      "y": 60
+    },
+    {
+      "id": "location",
+      "kind": "app-server",
+      "label": "Location Service",
+      "x": 500,
+      "y": 320
+    },
+    {
+      "id": "trips",
+      "kind": "sql-database",
+      "label": "Trips DB",
+      "x": 750,
+      "y": -60
+    },
+    {
+      "id": "router",
+      "kind": "shard-router",
+      "x": 750,
+      "y": 190
+    },
+    {
+      "id": "lisbon",
+      "kind": "cache",
+      "label": "Lisbon Shard",
+      "x": 1000,
+      "y": 50
+    },
+    {
+      "id": "porto",
+      "kind": "cache",
+      "label": "Porto Shard",
+      "x": 1000,
+      "y": 190
+    },
+    {
+      "id": "madrid",
+      "kind": "cache",
+      "label": "Madrid Shard",
+      "x": 1000,
+      "y": 330
+    }
+  ],
+  "cables": [
+    {
+      "from": "rider.right",
+      "to": "gateway.left",
+      "label": "request ride"
+    },
+    {
+      "from": "driver.right",
+      "to": "gateway.left",
+      "label": "GPS every 4 s"
+    },
+    {
+      "from": "gateway.right",
+      "to": "matching.left"
+    },
+    {
+      "from": "gateway.right",
+      "to": "location.left"
+    },
+    {
+      "from": "matching.right",
+      "to": "trips.left",
+      "label": "create trip"
+    },
+    {
+      "from": "matching.right",
+      "to": "router.left",
+      "label": "drivers nearby?"
+    },
+    {
+      "from": "location.right",
+      "to": "router.left",
+      "label": "update position"
+    },
+    {
+      "from": "router.right",
+      "to": "lisbon.left"
+    },
+    {
+      "from": "router.right",
+      "to": "porto.left",
+      "label": "by cell"
+    },
+    {
+      "from": "router.right",
+      "to": "madrid.left"
+    }
+  ]
+}

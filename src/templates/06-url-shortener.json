@@ -1,0 +1,140 @@
+{
+  "id": "url-shortener",
+  "title": "URL shortener",
+  "summary": "Load balancing, caching, a key-value store and async analytics together.",
+  "lesson": {
+    "problem": "Build a service that turns long URLs into short codes and redirects millions of clicks a day.",
+    "why": [
+      "Redirects vastly outnumber new links (often 100:1), so the read path is what matters. Hot links are served from the cache; the rest come from a key-value store that maps code → URL.",
+      "Short codes come from an ID generator: a counter encoded in base62 gives short, unique codes with no collisions to check.",
+      "Counting clicks must not slow down redirects, so each click is published to a queue and an analytics worker aggregates them later."
+    ],
+    "takeaways": [
+      "Design for the dominant path: here, fast cached reads.",
+      "A simple key-value access pattern fits a NoSQL store that scales horizontally.",
+      "Use 302 redirects if you need to count every click; 301s are cached by browsers."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 200
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "x": 250,
+      "y": 200
+    },
+    {
+      "id": "app1",
+      "kind": "app-server",
+      "label": "Shortener API 1",
+      "x": 500,
+      "y": 110
+    },
+    {
+      "id": "app2",
+      "kind": "app-server",
+      "label": "Shortener API 2",
+      "x": 500,
+      "y": 290
+    },
+    {
+      "id": "ids",
+      "kind": "app-server",
+      "label": "ID Generator",
+      "x": 750,
+      "y": -40
+    },
+    {
+      "id": "cache",
+      "kind": "cache",
+      "label": "Hot Links Cache",
+      "x": 750,
+      "y": 100
+    },
+    {
+      "id": "store",
+      "kind": "nosql-database",
+      "label": "Links Store",
+      "x": 750,
+      "y": 240
+    },
+    {
+      "id": "queue",
+      "kind": "queue",
+      "label": "Click Events",
+      "x": 750,
+      "y": 400
+    },
+    {
+      "id": "analytics",
+      "kind": "worker",
+      "label": "Analytics Worker",
+      "x": 1000,
+      "y": 400
+    },
+    {
+      "id": "stats",
+      "kind": "sql-database",
+      "label": "Stats DB",
+      "x": 1000,
+      "y": 240
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "lb.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app1.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app2.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "ids.left",
+      "label": "new code"
+    },
+    {
+      "from": "app1.right",
+      "to": "cache.left",
+      "label": "lookup"
+    },
+    {
+      "from": "app2.right",
+      "to": "cache.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "store.left"
+    },
+    {
+      "from": "app2.right",
+      "to": "store.left",
+      "label": "code → URL"
+    },
+    {
+      "from": "app2.right",
+      "to": "queue.left",
+      "label": "click"
+    },
+    {
+      "from": "queue.right",
+      "to": "analytics.left"
+    },
+    {
+      "from": "analytics.top",
+      "to": "stats.bottom",
+      "label": "aggregate"
+    }
+  ]
+}

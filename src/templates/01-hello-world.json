@@ -1,0 +1,40 @@
+{
+  "id": "hello-world",
+  "title": "Hello World",
+  "summary": "A client talks to a single server.",
+  "lesson": {
+    "problem": "A user wants to reach your application. Where does the request go?",
+    "why": [
+      "Every system starts here: one client sends a request, one server handles it and sends back a response. The server runs the code, keeps the data, and does everything else.",
+      "This is the right design for a prototype, an internal tool or anything with a handful of users. It is cheap, easy to deploy and easy to reason about."
+    ],
+    "takeaways": [
+      "The server is a single point of failure: if it goes down, everything goes down.",
+      "It can only grow vertically (a bigger machine), and that has a ceiling.",
+      "Start simple. Add components only when a real problem asks for them."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Browser",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "server",
+      "kind": "app-server",
+      "label": "Server",
+      "x": 250,
+      "y": 0
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "server.left",
+      "label": "HTTP"
+    }
+  ]
+}

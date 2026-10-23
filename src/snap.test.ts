@@ -9,7 +9,7 @@ const nodes = [server, database];
 const anyPort = () => true;
 
 test('a port is grabbed when the pointer is on it', () => {
-  assert.deepEqual(portAt(nodes, { x: 86, y: 2 }), {
+  assert.deepEqual(portAt(nodes, { x: 90, y: 2 }), {
     nodeId: 'server',
     side: 'right',
   });
@@ -39,5 +39,5 @@ test('a cable dropped on a component snaps to its closest port', () => {
 
 test('ports that cannot accept the cable are skipped', () => {
   const notServer = (port: { nodeId: string }) => port.nodeId !== 'server';
-  assert.equal(findSnapTarget(nodes, { x: 86, y: 0 }, notServer), null);
+  assert.equal(findSnapTarget(nodes, { x: 90, y: 0 }, notServer), null);
 });

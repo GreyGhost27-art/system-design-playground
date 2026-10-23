@@ -1,0 +1,136 @@
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { test } from 'node:test';
+import { Design } from './design.ts';
+import {
+  loadTemplate,
+  toTemplate,
+  validateTemplate,
+  type Template,
+} from './templates.ts';
+
+const templatesFolder = new URL('./templates/', import.meta.url);
+const templateFiles = readdirSync(templatesFolder).filter((file) =>
+  file.endsWith('.json'),
+);
+
+function readTemplate(file: string): Template {
+  return JSON.parse(readFileSync(new URL(file, templatesFolder), 'utf8'));
+}
+
+function tinyTemplate(overrides: Partial<Template> = {}): Template {
+  return {
+    id: 'tiny',
+    title: 'Tiny',
+    summary: 'A client and a server.',
+    lesson: { problem: 'p', why: ['w'], takeaways: ['t'] },
+    nodes: [
+      { id: 'client', kind: 'client', x: 0, y: 0 },
+      { id: 'server', kind: 'app-server', label: 'API', x: 300, y: 0 },
+    ],
+    cables: [{ from: 'client.right', to: 'server.left', label: 'HTTP' }],
+    ...overrides,
+  };
+}
+
+test('every template file is valid', () => {
+  assert.ok(templateFiles.length >= 13);
+  for (const file of templateFiles) {
+    assert.deepEqual(validateTemplate(readTemplate(file)), [], file);
+  }
+});
+
+test('every template has a unique id and a complete lesson', () => {
+  const templates = templateFiles.map(readTemplate);
+  const ids = new Set(templates.map((template) => template.id));
+  assert.equal(ids.size, templates.length);
+  for (const { id, title, summary, lesson } of templates) {
+    assert.ok(title && summary && lesson.problem, id);
+    assert.ok(lesson.why.length > 0 && lesson.takeaways.length > 0, id);
+  }
+});
+
+test('loading a template replaces the board with its components', () => {
+  const design = new Design();
+  design.addNode('cache', { x: 999, y: 999 });
+  loadTemplate(design, tinyTemplate());
+  assert.deepEqual(
+    design.nodes.map(({ kind, label, x, y }) => ({ kind, label, x, y })),
+    [
+      { kind: 'client', label: undefined, x: 0, y: 0 },
+      { kind: 'app-server', label: 'API', x: 300, y: 0 },
+    ],
+  );
+});
+
+test('loading a template connects its cables with their labels', () => {
+  const design = new Design();
+  loadTemplate(design, tinyTemplate());
+  const [cable] = design.cables;
+  assert.equal(design.cables.length, 1);
+  assert.equal(cable.label, 'HTTP');
+  assert.equal(cable.from.side, 'right');
+  assert.equal(design.getNode(cable.to.nodeId).label, 'API');
+});
+
+test('loading a template brings its groups along', () => {
+  const design = new Design();
+  const region = { label: 'EU', x: 0, y: 0, width: 400, height: 300 };
+  loadTemplate(design, tinyTemplate({ groups: [region] }));
+  assert.deepEqual(design.groups, [region]);
+});
+
+test('an invalid template is refused and leaves the board untouched', () => {
+  const design = new Design();
+  design.addNode('cache', { x: 0, y: 0 });
+  const broken = tinyTemplate({
+    cables: [{ from: 'client.right', to: 'ghost.left' }],
+  });
+  assert.throws(() => loadTemplate(design, broken), /unknown node "ghost"/);
+  assert.equal(design.nodes.length, 1);
+});
+
+test('validation reports unknown kinds, bad ends and duplicate cables', () => {
+  const problems = validateTemplate(
+    tinyTemplate({
+      nodes: [
+        { id: 'client', kind: 'client', x: 0, y: 0 },
+        { id: 'server', kind: 'mainframe', x: 300, y: 0 },
+      ],
+      cables: [
+        { from: 'client.right', to: 'server.left' },
+        { from: 'server.top', to: 'client.bottom' },
+        { from: 'client', to: 'server.middle' },
+        { from: 'client.top', to: 'client.left' },
+      ],
+    }),
+  );
+  assert.deepEqual(problems, [
+    'Node "server" has unknown kind "mainframe"',
+    'Cable server.top → client.bottom is a duplicate',
+    'Cable client → server.middle must use "nodeId.side" ends',
+    'Cable client → server.middle must use "nodeId.side" ends',
+    'Cable client.top → client.left loops to itself',
+  ]);
+});
+
+test('the board exported as JSON loads back into the same design', () => {
+  const original = new Design();
+  loadTemplate(original, tinyTemplate());
+  const exported = toTemplate(original);
+  assert.deepEqual(validateTemplate(exported), []);
+
+  const copy = new Design();
+  loadTemplate(copy, exported);
+  const shape = (design: Design) => ({
+    nodes: design.nodes.map(({ kind, label, x, y }) => [kind, label, x, y]),
+    cables: design.cables.map(({ from, to, label }) => [
+      design.getNode(from.nodeId).kind,
+      from.side,
+      design.getNode(to.nodeId).kind,
+      to.side,
+      label,
+    ]),
+  });
+  assert.deepEqual(shape(copy), shape(original));
+});

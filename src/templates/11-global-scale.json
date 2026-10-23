@@ -1,0 +1,168 @@
+{
+  "id": "global-scale",
+  "title": "Global scale",
+  "summary": "Two regions, geo-DNS routing and cross-region replication.",
+  "lesson": {
+    "problem": "Users in Europe wait 150 ms or more for every round trip to servers in the US, and one region failing takes the whole product down.",
+    "why": [
+      "Run the stack in several regions. Geo-DNS (or anycast) answers each user with the address of the nearest healthy region, so most requests stay local.",
+      "Data has to be in both places. Here the US holds the primary database and Europe a replica: local reads are fast, but writes still cross the ocean to the primary.",
+      "Replication between regions is asynchronous, so Europe can briefly see stale data. Multi-primary setups avoid the slow writes but must resolve conflicting updates."
+    ],
+    "takeaways": [
+      "The speed of light is a real constraint: keep users near their data.",
+      "Cross-region replication means choosing between consistency and latency.",
+      "Regions are also failure domains; DNS can fail traffic over to another region.",
+      "Data residency laws (such as GDPR) may decide where some data is allowed to live."
+    ]
+  },
+  "groups": [
+    {
+      "label": "US region",
+      "x": -40,
+      "y": 20,
+      "width": 500,
+      "height": 420
+    },
+    {
+      "label": "EU region",
+      "x": 540,
+      "y": 20,
+      "width": 500,
+      "height": 420
+    }
+  ],
+  "nodes": [
+    {
+      "id": "usUser",
+      "kind": "client",
+      "label": "US Users",
+      "x": 90,
+      "y": -150
+    },
+    {
+      "id": "dns",
+      "kind": "dns",
+      "label": "Geo DNS",
+      "x": 500,
+      "y": -150
+    },
+    {
+      "id": "euUser",
+      "kind": "client",
+      "label": "EU Users",
+      "x": 910,
+      "y": -150
+    },
+    {
+      "id": "usLb",
+      "kind": "load-balancer",
+      "label": "US Load Balancer",
+      "x": 90,
+      "y": 100
+    },
+    {
+      "id": "usApp",
+      "kind": "app-server",
+      "label": "US App Servers",
+      "x": 90,
+      "y": 240
+    },
+    {
+      "id": "usCache",
+      "kind": "cache",
+      "label": "US Cache",
+      "x": 330,
+      "y": 240
+    },
+    {
+      "id": "usDb",
+      "kind": "sql-database",
+      "label": "Primary DB",
+      "x": 90,
+      "y": 380
+    },
+    {
+      "id": "euLb",
+      "kind": "load-balancer",
+      "label": "EU Load Balancer",
+      "x": 910,
+      "y": 100
+    },
+    {
+      "id": "euApp",
+      "kind": "app-server",
+      "label": "EU App Servers",
+      "x": 910,
+      "y": 240
+    },
+    {
+      "id": "euCache",
+      "kind": "cache",
+      "label": "EU Cache",
+      "x": 670,
+      "y": 240
+    },
+    {
+      "id": "euDb",
+      "kind": "sql-database",
+      "label": "Replica DB",
+      "x": 910,
+      "y": 380
+    }
+  ],
+  "cables": [
+    {
+      "from": "usUser.right",
+      "to": "dns.left",
+      "label": "nearest region?"
+    },
+    {
+      "from": "euUser.left",
+      "to": "dns.right"
+    },
+    {
+      "from": "usUser.bottom",
+      "to": "usLb.top"
+    },
+    {
+      "from": "euUser.bottom",
+      "to": "euLb.top"
+    },
+    {
+      "from": "usLb.bottom",
+      "to": "usApp.top"
+    },
+    {
+      "from": "euLb.bottom",
+      "to": "euApp.top"
+    },
+    {
+      "from": "usApp.right",
+      "to": "usCache.left"
+    },
+    {
+      "from": "euApp.left",
+      "to": "euCache.right"
+    },
+    {
+      "from": "usApp.bottom",
+      "to": "usDb.top"
+    },
+    {
+      "from": "euApp.bottom",
+      "to": "euDb.top",
+      "label": "local reads"
+    },
+    {
+      "from": "usDb.right",
+      "to": "euDb.left",
+      "label": "async replication (lag)"
+    },
+    {
+      "from": "euApp.left",
+      "to": "usDb.right",
+      "label": "writes to primary"
+    }
+  ]
+}

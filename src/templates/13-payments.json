@@ -1,0 +1,128 @@
+{
+  "id": "payments",
+  "title": "Payments",
+  "summary": "Idempotency keys, a ledger and an outbox for effectively-exactly-once payments.",
+  "lesson": {
+    "problem": "The network drops the response to \"charge €50\". The client retries. Did the customer just pay twice?",
+    "why": [
+      "Every payment request carries an idempotency key chosen by the client. The payment service stores the key with the result in the same transaction; a retry with the same key gets the stored result instead of a second charge.",
+      "Exactly-once delivery is impossible over an unreliable network. What you can build is at-least-once delivery plus idempotent handling, which behaves like exactly-once.",
+      "Updating the database and publishing an event are two writes that can half-fail. The transactional outbox writes the event into the database with the payment; a relay publishes it afterwards, retrying until it succeeds."
+    ],
+    "takeaways": [
+      "Make every payment operation idempotent and safe to retry.",
+      "Record money movements in an append-only, double-entry ledger.",
+      "Reconcile against the payment provider regularly: trust, but verify."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "checkout",
+      "kind": "client",
+      "label": "Checkout",
+      "x": 0,
+      "y": 160
+    },
+    {
+      "id": "gateway",
+      "kind": "api-gateway",
+      "x": 250,
+      "y": 160
+    },
+    {
+      "id": "payments",
+      "kind": "app-server",
+      "label": "Payment Service",
+      "x": 500,
+      "y": 160
+    },
+    {
+      "id": "ledger",
+      "kind": "sql-database",
+      "label": "Ledger + Keys",
+      "x": 750,
+      "y": 40
+    },
+    {
+      "id": "psp",
+      "kind": "external-service",
+      "label": "Payment Provider",
+      "x": 750,
+      "y": 300
+    },
+    {
+      "id": "relay",
+      "kind": "worker",
+      "label": "Outbox Relay",
+      "x": 1000,
+      "y": 40
+    },
+    {
+      "id": "events",
+      "kind": "stream",
+      "label": "Payment Events",
+      "x": 1000,
+      "y": -100
+    },
+    {
+      "id": "orders",
+      "kind": "app-server",
+      "label": "Order Service",
+      "x": 750,
+      "y": -100
+    },
+    {
+      "id": "recon",
+      "kind": "worker",
+      "label": "Reconciliation",
+      "x": 1000,
+      "y": 300
+    }
+  ],
+  "cables": [
+    {
+      "from": "checkout.right",
+      "to": "gateway.left",
+      "label": "pay + key"
+    },
+    {
+      "from": "gateway.right",
+      "to": "payments.left"
+    },
+    {
+      "from": "payments.right",
+      "to": "ledger.left",
+      "label": "key + entry, one transaction"
+    },
+    {
+      "from": "payments.right",
+      "to": "psp.left",
+      "label": "charge / webhook"
+    },
+    {
+      "from": "ledger.right",
+      "to": "relay.left",
+      "label": "outbox"
+    },
+    {
+      "from": "relay.top",
+      "to": "events.bottom",
+      "label": "publish"
+    },
+    {
+      "from": "events.left",
+      "to": "orders.right",
+      "label": "at-least-once"
+    },
+    {
+      "from": "recon.left",
+      "to": "psp.right",
+      "label": "settlements"
+    },
+    {
+      "from": "recon.top",
+      "to": "ledger.bottom",
+      "label": "compare"
+    }
+  ]
+}

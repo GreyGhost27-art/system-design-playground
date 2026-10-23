@@ -1,7 +1,7 @@
 import type { Point } from './geometry.ts';
 import { createRope, distanceToRope, stepRope, type Rope } from './rope.ts';
 
-export const NODE_WIDTH = 168;
+export const NODE_WIDTH = 176;
 export const NODE_HEIGHT = 52;
 
 export const SIDES = ['top', 'right', 'bottom', 'left'] as const;
@@ -10,6 +10,8 @@ export type Side = (typeof SIDES)[number];
 export interface DesignNode {
   id: string;
   kind: string;
+  /** Overrides the component's default name, e.g. "Primary DB". */
+  label?: string;
   x: number;
   y: number;
 }
@@ -23,7 +25,24 @@ export interface Cable {
   id: string;
   from: PortRef;
   to: PortRef;
+  label?: string;
   rope: Rope;
+}
+
+/** A labelled area drawn behind components, such as a region. */
+export interface Group {
+  label: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface Bounds {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
 }
 
 export function portPosition(node: DesignNode, side: Side): Point {
@@ -51,10 +70,18 @@ export function containsPoint(node: DesignNode, point: Point): boolean {
 export class Design {
   nodes: DesignNode[] = [];
   cables: Cable[] = [];
+  groups: Group[] = [];
   private lastId = 0;
 
-  addNode(kind: string, position: Point): DesignNode {
-    const node = { id: this.newId('node'), kind, ...position };
+  clear(): void {
+    this.nodes = [];
+    this.cables = [];
+    this.groups = [];
+  }
+
+  addNode(kind: string, position: Point, label?: string): DesignNode {
+    const node: DesignNode = { id: this.newId('node'), kind, ...position };
+    if (label) node.label = label;
     this.nodes.push(node);
     return node;
   }
@@ -95,14 +122,20 @@ export class Design {
     );
   }
 
-  connect(from: PortRef, to: PortRef, rope?: Rope): Cable | null {
+  connect(
+    from: PortRef,
+    to: PortRef,
+    details: { label?: string; rope?: Rope } = {},
+  ): Cable | null {
     if (!this.canConnect(from, to)) return null;
-    const cable = {
+    const cable: Cable = {
       id: this.newId('cable'),
       from,
       to,
-      rope: rope ?? createRope(this.portPoint(from), this.portPoint(to)),
+      rope:
+        details.rope ?? createRope(this.portPoint(from), this.portPoint(to)),
     };
+    if (details.label) cable.label = details.label;
     this.cables.push(cable);
     return cable;
   }
@@ -123,6 +156,31 @@ export class Design {
     const isNear = (cable: Cable) =>
       distanceToRope(cable.rope, point) <= tolerance;
     return this.cables.findLast(isNear) ?? null;
+  }
+
+  /** The area covered by components and groups, or null when empty. */
+  bounds(): Bounds | null {
+    const boxes: Bounds[] = [
+      ...this.nodes.map((node) => ({
+        left: node.x - NODE_WIDTH / 2,
+        top: node.y - NODE_HEIGHT / 2,
+        right: node.x + NODE_WIDTH / 2,
+        bottom: node.y + NODE_HEIGHT / 2,
+      })),
+      ...this.groups.map((group) => ({
+        left: group.x,
+        top: group.y,
+        right: group.x + group.width,
+        bottom: group.y + group.height,
+      })),
+    ];
+    if (boxes.length === 0) return null;
+    return {
+      left: Math.min(...boxes.map((box) => box.left)),
+      top: Math.min(...boxes.map((box) => box.top)),
+      right: Math.max(...boxes.map((box) => box.right)),
+      bottom: Math.max(...boxes.map((box) => box.bottom)),
+    };
   }
 
   step(): void {

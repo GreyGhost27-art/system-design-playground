@@ -33,10 +33,13 @@ npm run dev
   direction. `Ctrl+Z` plugs it back.
 - **Label a cable:** double-click it (or long-press on touch screens), type
   and press `Enter`. `Esc` cancels; an empty label removes it.
-- **Learn a component:** click any component (or add one) and the drawer
-  explains it in plain words: what it is, why it's used, an everyday
-  comparison and three well-known examples. Close it to return to the lesson.
-- **Select / delete:** click a component or cable, then press `Delete`.
+- **Learn a component:** select it and press _Info_ in the wheel above it (or
+  double-click it). The drawer explains it in plain words: what it is, why
+  it's used, an everyday comparison and three well-known examples. Close it
+  to return to the lesson.
+- **Select / delete:** click a component or cable, then press `Delete` or
+  use the wheel of options that fans out above it (components can also be
+  duplicated there).
 - **Copy & paste:** select a component and press `Ctrl+C`, then `Ctrl+V`
   for each copy (`Cmd` on macOS). Copies keep the name and land diagonally
   below the original.
@@ -177,7 +180,8 @@ be unique across templates and foundations (a test checks).
 | `src/design.ts`          | The design model: components, ports, cables, groups |
 | `src/history.ts`         | Undo steps                                          |
 | `src/labelEditor.ts`     | The text field for naming a cable                   |
-| `src/cableToolbar.ts`    | The buttons over a selected cable                   |
+| `src/cableToolbar.ts`    | The options wheel over a selected cable             |
+| `src/radialMenu.ts`      | Cuts a menu's buttons into slices of a wheel        |
 | `src/templates.ts`       | Validating, loading and exporting templates         |
 | `src/templateLibrary.ts` | Collects the Foundations and Templates sections     |
 | `src/lesson.ts`          | The template lesson shown in the drawer             |
@@ -205,6 +209,7 @@ node --test tests/rope.test.ts    # one file
 
 | Source file                                                                                                                                                                    | Test file                                                  |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| `src/radialMenu.ts`                                                                                                                                                            | `tests/radialMenu.test.ts`                                 |
 | `src/rope.ts`                                                                                                                                                                  | `tests/rope.test.ts`                                       |
 | `src/flow.ts`, `src/settings.json`                                                                                                                                             | `tests/flow.test.ts`                                       |
 | `src/design.ts`                                                                                                                                                                | `tests/design.test.ts`                                     |

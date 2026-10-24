@@ -67,15 +67,29 @@
           ＋ Blank board
         </button>
       </div>
-      <button
-        id="node-info"
-        class="node-info"
-        type="button"
-        aria-label="About this component"
+      <div
+        id="node-toolbar"
+        class="radial-menu"
+        role="toolbar"
+        aria-label="Component"
         hidden
       >
-        i
-      </button>
+        <button type="button" data-action="info" aria-pressed="false">
+          <span class="radial-content"
+            ><span class="radial-icon">ⓘ</span>Info</span
+          >
+        </button>
+        <button type="button" data-action="duplicate">
+          <span class="radial-content"
+            ><span class="radial-icon">⧉</span>Duplicate</span
+          >
+        </button>
+        <button type="button" data-action="delete">
+          <span class="radial-content"
+            ><span class="radial-icon">✕</span>Delete</span
+          >
+        </button>
+      </div>
       <details class="shortcuts">
         <summary>⌨ Shortcuts</summary>
         <ul>
@@ -86,6 +100,7 @@
             port) to unplug it
           </li>
           <li><kbd>Click</kbd> a cable to set its traffic or label it</li>
+          <li><kbd>Double-click</kbd> a component to read about it</li>
           <li><kbd>Del</kbd> removes the selection</li>
           <li>
             <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copies a component
@@ -116,7 +131,7 @@
       />
       <div
         id="cable-toolbar"
-        class="cable-toolbar"
+        class="radial-menu"
         role="toolbar"
         aria-label="Cable"
         hidden
@@ -126,16 +141,30 @@
           data-action="two-way"
           title="Request and response"
         >
-          ⇄ Two-way
+          <span class="radial-content"
+            ><span class="radial-icon">⇄</span>Two-way</span
+          >
         </button>
         <button type="button" data-action="one-way" title="No response back">
-          → One-way
+          <span class="radial-content"
+            ><span class="radial-icon">→</span>One-way</span
+          >
         </button>
         <button type="button" data-action="flip" title="Reverse the direction">
-          Flip
+          <span class="radial-content"
+            ><span class="radial-icon">⇆</span>Flip</span
+          >
         </button>
-        <button type="button" data-action="label">Label</button>
-        <button type="button" data-action="delete">Delete</button>
+        <button type="button" data-action="label">
+          <span class="radial-content"
+            ><span class="radial-icon">✎</span>Label</span
+          >
+        </button>
+        <button type="button" data-action="delete">
+          <span class="radial-content"
+            ><span class="radial-icon">✕</span>Delete</span
+          >
+        </button>
       </div>
       <article id="nutshell" class="nutshell" hidden>
         <button

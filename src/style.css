@@ -425,44 +425,79 @@ kbd {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
-.cable-toolbar {
+/*
+ * A wheel of slice-shaped buttons, centred on what it acts on. Each button
+ * covers the whole wheel and is cut to its slice (see radialMenu.ts), so
+ * only the slice itself can be pressed.
+ */
+.radial-menu {
   position: absolute;
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--panel);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-  /* Sits above the cable's middle, clear of its label. */
-  transform: translate(-50%, calc(-100% - 18px));
+  pointer-events: none;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.5));
+  transform: translate(-50%, -50%);
+  animation: radial-open 0.14s ease-out;
 }
 
-.cable-toolbar[hidden] {
+.radial-menu[hidden] {
   display: none;
 }
 
-.cable-toolbar button {
-  min-height: 32px;
-  padding: 0 10px;
+@keyframes radial-open {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+}
+
+.radial-menu button {
+  position: absolute;
+  inset: 0;
+  padding: 0;
   border: 0;
-  border-radius: 7px;
-  background: none;
+  background: rgba(24, 29, 39, 0.96);
   color: var(--muted);
   font: inherit;
-  font-size: var(--text-ui);
-  white-space: nowrap;
+  font-size: var(--text-small);
+  pointer-events: auto;
   cursor: pointer;
+  transition:
+    background 0.1s,
+    color 0.1s;
 }
 
-.cable-toolbar button:hover {
-  background: var(--panel-raised);
+.radial-menu button:hover,
+.radial-menu button:focus-visible {
+  background: #232a36;
   color: var(--text);
+  outline: none;
 }
 
-.cable-toolbar button[aria-pressed='true'] {
-  background: var(--panel-raised);
+.radial-menu button[aria-pressed='true'] {
+  background: #10303c;
   color: #8fe3ff;
+}
+
+.radial-menu button[data-action='delete']:hover,
+.radial-menu button[data-action='delete']:focus-visible {
+  background: #3a1a20;
+  color: #ff8a95;
+}
+
+.radial-content {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+
+.radial-icon {
+  font-size: 20px;
+  line-height: 1;
 }
 
 .sample {
@@ -599,22 +634,6 @@ kbd {
   cursor: pointer;
 }
 
-.node-info {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border: 1px solid #2d6a80;
-  border-radius: 50%;
-  background: #10303c;
-  color: #8fe3ff;
-  font: 700 20px / 1 var(--font-ui);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
-  /* Centred just above the component's top edge. */
-  transform: translate(-50%, calc(-100% - 8px));
-  cursor: pointer;
-}
-
-.node-info[hidden],
 .zoom-controls,
 .blank-board[hidden],
 .back-to-nutshell[hidden],

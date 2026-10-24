@@ -10,6 +10,7 @@ import { renderLesson } from './lesson.ts';
 import { renderNutshell } from './nutshell.ts';
 import { DRAG_FORMAT, renderPalette } from './palette.ts';
 import { render, type CableDraft, type Scene } from './render.ts';
+import { createWheelPlacement, layoutRadialMenu } from './radialMenu.ts';
 import { createRope, reverseRope, stepRope } from './rope.ts';
 import settings from './settings.json' with { type: 'json' };
 import { findSnapTarget, portAt } from './snap.ts';
@@ -46,7 +47,12 @@ const blankBoardButton = document.querySelector<HTMLElement>('#blank-board')!;
 const backToNutshellButton =
   document.querySelector<HTMLElement>('#back-to-nutshell')!;
 const toast = document.querySelector<HTMLElement>('#toast')!;
-const nodeInfoButton = document.querySelector<HTMLElement>('#node-info')!;
+const nodeToolbar = document.querySelector<HTMLElement>('#node-toolbar')!;
+layoutRadialMenu(nodeToolbar);
+const placeNodeWheel = createWheelPlacement(nodeToolbar.children.length);
+const nodeInfoButton = nodeToolbar.querySelector<HTMLElement>(
+  '[data-action="info"]',
+)!;
 const nutshell = document.querySelector<HTMLElement>('#nutshell')!;
 const nutshellOpenButton =
   document.querySelector<HTMLElement>('#nutshell-open')!;
@@ -96,7 +102,10 @@ let copied: { kind: string; label?: string; x: number; y: number } | null =
   null;
 let longPress: { timer: number; start: Point } | null = null;
 let toastTimer = 0;
-// On phones, the component whose explanation was asked for with its ⓘ.
+// Where the pointer last pressed on the board (world units), so a wheel
+// opens clear of it. Presses elsewhere, like the sidebar, don't count.
+let lastPress: Point | null = null;
+// The component whose explanation was asked for (Info or double-click).
 let infoRequestedFor: string | null = null;
 // The Nutshell row a board was opened from, to land back on it.
 let nutshellReturnRow: HTMLElement | null = null;
@@ -303,46 +312,83 @@ toastUndoButton.addEventListener('click', () => {
 });
 
 /**
- * The selected component, if its explanation should show. On phones the
- * drawer would cover the board, so it waits for a tap on the ⓘ button.
+ * The selected component, if its explanation was asked for. Selecting
+ * alone doesn't open the drawer, so it never covers what you're arranging.
  */
 function nodeToExplain() {
   const selection = scene.selection;
-  if (selection?.type !== 'node') return null;
-  if (isPhoneLayout() && infoRequestedFor !== selection.id) return null;
+  if (selection?.type !== 'node' || infoRequestedFor !== selection.id) {
+    return null;
+  }
   return design.getNode(selection.id);
 }
 
-drawerCloseButton.addEventListener('click', () => {
-  // Closing a component's explanation falls back to the lesson. On phones
-  // the component stays selected, with its ⓘ ready to reopen it.
-  if (nodeToExplain()) {
-    if (isPhoneLayout()) infoRequestedFor = null;
-    else scene.selection = null;
-  } else setLessonOpen(false);
-  syncDrawer();
-});
-
-nodeInfoButton.addEventListener('click', () => {
-  if (scene.selection?.type === 'node') infoRequestedFor = scene.selection.id;
-  syncDrawer();
-});
-
-/** Floats the ⓘ above the selected component while it sits still. */
-function syncNodeInfoButton(): void {
+/**
+ * Info is asked for one selection only. Once anything else is selected the
+ * request is forgotten, so clicking that component again later just selects
+ * it instead of reopening the drawer.
+ */
+function forgetInfoOnceDeselected(): void {
   const selection = scene.selection;
-  const show =
-    isPhoneLayout() &&
-    selection?.type === 'node' &&
-    gesture.type === 'idle' &&
-    !nodeToExplain();
-  nodeInfoButton.hidden = !show;
-  if (!show) return;
+  const selectedNodeId = selection?.type === 'node' ? selection.id : null;
+  if (infoRequestedFor !== selectedNodeId) infoRequestedFor = null;
+}
+
+function setInfoOpen(nodeId: string | null): void {
+  infoRequestedFor = nodeId;
+  syncDrawer();
+}
+
+drawerCloseButton.addEventListener('click', () => {
+  // Closing a component's explanation falls back to the lesson; the
+  // component stays selected, with Info ready to reopen it.
+  if (nodeToExplain()) setInfoOpen(null);
+  else setLessonOpen(false);
+});
+
+nodeToolbar.addEventListener('click', (event) => {
+  const action = (event.target as HTMLElement).closest<HTMLElement>(
+    '[data-action]',
+  )?.dataset.action;
+  const selection = scene.selection;
+  if (selection?.type !== 'node') return;
+  if (action === 'info') setInfoOpen(nodeToExplain() ? null : selection.id);
+  if (action === 'duplicate' && copySelectedComponent()) pasteComponent();
+  if (action === 'delete') deleteSelection();
+});
+
+for (const type of ['pointerdown', 'pointerup'] as const) {
+  document.addEventListener(
+    type,
+    (event) => {
+      const onBoard = (event.target as Element).closest('.board') !== null;
+      lastPress = onBoard ? toWorld(event) : null;
+    },
+    { capture: true },
+  );
+}
+
+function pressOnScreen(): Point | null {
+  return lastPress && worldToScreen(scene.camera, lastPress);
+}
+
+/** Fans the component's options out above it while it sits still. */
+function syncNodeToolbar(): void {
+  const selection = scene.selection;
+  const show = selection?.type === 'node' && gesture.type === 'idle';
+  nodeToolbar.hidden = !show;
+  if (!show) {
+    placeNodeWheel(null, { x: 0, y: 0 }, null);
+    return;
+  }
   const node = design.getNode(selection.id);
-  const top = { x: node.x, y: node.y - NODE_HEIGHT / 2 };
-  const { x, y } = worldToScreen(scene.camera, top);
-  nodeInfoButton.style.left = `${x}px`;
-  nodeInfoButton.style.top = `${y}px`;
+  // The wheel's centre sits just above the component, so the fan clears it.
+  const top = { x: node.x, y: node.y - NODE_HEIGHT / 2 - 6 };
+  const target = worldToScreen(scene.camera, top);
+  const { x, y } = placeNodeWheel(node.id, target, pressOnScreen());
+  nodeToolbar.style.left = `${x}px`;
+  nodeToolbar.style.top = `${y}px`;
+  nodeInfoButton.ariaPressed = String(nodeToExplain() !== null);
 }
 lessonOpenButton.addEventListener('click', () => setLessonOpen(true));
 
@@ -478,7 +524,10 @@ function cancelLongPress(): void {
 
 canvas.addEventListener('dblclick', (event) => {
   cancelLongPress();
-  const cable = design.cableAt(toWorld(event));
+  const point = toWorld(event);
+  const node = design.nodeAt(point);
+  if (node) return setInfoOpen(node.id);
+  const cable = design.cableAt(point);
   if (cable) labelEditor.open(cable.id);
 });
 
@@ -708,7 +757,7 @@ function syncCableToolbar(): void {
   const selection = scene.selection;
   const busy = gesture.type !== 'idle' || !labelInput.hidden;
   const cableId = selection?.type === 'cable' && !busy ? selection.id : null;
-  cableToolbar.show(cableId);
+  cableToolbar.show(cableId, pressOnScreen());
 }
 
 function frame(now: number): void {
@@ -719,10 +768,11 @@ function frame(now: number): void {
     const end = snap ? design.portPoint(snap) : pointer;
     stepRope(rope, design.portPoint(from), end);
   }
+  forgetInfoOnceDeselected();
   syncDrawer();
   labelEditor.follow();
   syncCableToolbar();
-  syncNodeInfoButton();
+  syncNodeToolbar();
   // Nothing to clear on a blank board that is already showing.
   blankBoardButton.hidden = !currentTemplate && design.nodes.length === 0;
   backToNutshellButton.hidden = !nutshellReturnRow;

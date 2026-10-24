@@ -1,5 +1,6 @@
 import type { Design } from './design.ts';
 import type { Point } from './geometry.ts';
+import { createWheelPlacement, layoutRadialMenu } from './radialMenu.ts';
 
 export interface CableActions {
   setOneWay(cableId: string, oneWay: boolean): void;
@@ -8,14 +9,16 @@ export interface CableActions {
   remove(cableId: string): void;
 }
 
-/** Buttons floating above the selected cable; big enough for touch. */
+/** A wheel of options over the selected cable's middle. */
 export function createCableToolbar(options: {
   element: HTMLElement;
   design: Design;
   toScreen: (world: Point) => Point;
   actions: CableActions;
-}): { show(cableId: string | null): void } {
+}): { show(cableId: string | null, press: Point | null): void } {
   const { element, design, toScreen, actions } = options;
+  layoutRadialMenu(element);
+  const place = createWheelPlacement(element.children.length);
   const twoWayButton = button('two-way');
   const oneWayButton = button('one-way');
   let cableId: string | null = null;
@@ -32,16 +35,23 @@ export function createCableToolbar(options: {
     if (action === 'delete') actions.remove(cableId);
   });
 
-  /** Call every frame, so the toolbar follows the rope as it swings. */
-  function show(id: string | null): void {
+  /**
+   * Call every frame, so the wheel follows the rope as it swings. `press`
+   * is where the pointer last pressed, in screen pixels.
+   */
+  function show(id: string | null, press: Point | null): void {
     const cable = design.cables.find((candidate) => candidate.id === id);
     cableId = cable?.id ?? null;
     element.hidden = !cable;
-    if (!cable) return;
+    if (!cable) {
+      place(null, { x: 0, y: 0 }, null);
+      return;
+    }
     const { points } = cable.rope;
     const middle = toScreen(points[Math.floor(points.length / 2)]);
-    element.style.left = `${middle.x}px`;
-    element.style.top = `${middle.y}px`;
+    const center = place(cable.id, middle, press);
+    element.style.left = `${center.x}px`;
+    element.style.top = `${center.y}px`;
     twoWayButton.ariaPressed = String(!cable.oneWay);
     oneWayButton.ariaPressed = String(Boolean(cable.oneWay));
   }

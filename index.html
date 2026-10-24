@@ -26,18 +26,7 @@
         </label>
       </header>
       <nav id="palette" class="palette" aria-label="Components"></nav>
-      <footer class="hints">
-        <p><kbd>Drag</kbd> a component onto the board</p>
-        <p><kbd>Drag</kbd> from a port to run a cable</p>
-        <p>
-          <kbd>Drag</kbd> a cable near its end (or <kbd>Shift</kbd>+drag a port)
-          to unplug it
-        </p>
-        <p><kbd>Click</kbd> a cable to set its traffic or label it</p>
-        <p><kbd>Del</kbd> removes the selection</p>
-        <p><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copies a component</p>
-        <p><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the last change</p>
-        <p><kbd>Scroll</kbd> zooms · drag the board to pan</p>
+      <footer class="sidebar-footer">
         <label class="toggle">
           <input id="flow-toggle" type="checkbox" />
           Show traffic
@@ -87,6 +76,24 @@
       >
         i
       </button>
+      <details class="shortcuts">
+        <summary>⌨ Shortcuts</summary>
+        <ul>
+          <li><kbd>Drag</kbd> a component onto the board</li>
+          <li><kbd>Drag</kbd> from a port to run a cable</li>
+          <li>
+            <kbd>Drag</kbd> a cable near its end (or <kbd>Shift</kbd>+drag a
+            port) to unplug it
+          </li>
+          <li><kbd>Click</kbd> a cable to set its traffic or label it</li>
+          <li><kbd>Del</kbd> removes the selection</li>
+          <li>
+            <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copies a component
+          </li>
+          <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the last change</li>
+          <li><kbd>Scroll</kbd> zooms · drag the board to pan</li>
+        </ul>
+      </details>
       <div class="zoom-controls" role="toolbar" aria-label="Zoom">
         <button type="button" data-zoom="in" aria-label="Zoom in">＋</button>
         <button type="button" data-zoom="out" aria-label="Zoom out">−</button>

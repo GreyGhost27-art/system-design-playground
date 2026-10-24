@@ -208,7 +208,7 @@ select {
   font-weight: 700;
 }
 
-.hints {
+.sidebar-footer {
   flex: none;
   padding: 14px 18px 18px;
   border-top: 1px solid var(--border);
@@ -216,8 +216,43 @@ select {
   color: var(--muted);
 }
 
-.hints p {
-  margin: 4px 0;
+/* Help that stays out of the way until asked for. */
+.shortcuts {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  max-width: 360px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(18, 22, 30, 0.94);
+  color: var(--muted);
+  font-size: var(--text-ui);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.shortcuts summary {
+  padding: 6px 12px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.shortcuts summary::-webkit-details-marker {
+  display: none;
+}
+
+.shortcuts summary:hover,
+.shortcuts[open] summary {
+  color: var(--text);
+}
+
+.shortcuts ul {
+  margin: 0;
+  padding: 2px 14px 12px;
+  list-style: none;
+}
+
+.shortcuts li {
+  margin: 6px 0;
 }
 
 kbd {
@@ -755,7 +790,8 @@ kbd {
     left: 62px;
   }
 
-  .wide-only {
+  .wide-only,
+  .shortcuts {
     display: none;
   }
 

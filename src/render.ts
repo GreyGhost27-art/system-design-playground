@@ -24,9 +24,8 @@ import type { Point } from './geometry.ts';
 import type { Rope } from './rope.ts';
 import { PORT_RADIUS } from './snap.ts';
 
-const GRID_DOT = '#1f2531';
+const GRID_DOT = '#2a2a2a';
 const GRID_SPACING = 24;
-const NODE_FILL = '#161b24';
 const CABLE_SHADOW = 'rgba(0, 0, 0, 0.55)';
 // The canvas uses the page's fonts and colours, defined once in style.css.
 const rootStyle = getComputedStyle(document.documentElement);
@@ -35,6 +34,9 @@ const FONT_MONO = rootStyle.getPropertyValue('--font-mono');
 const BACKGROUND = rootStyle.getPropertyValue('--bg').trim();
 const TEXT = rootStyle.getPropertyValue('--text').trim();
 const MUTED = rootStyle.getPropertyValue('--muted').trim();
+const NODE_FILL = rootStyle.getPropertyValue('--surface-node').trim();
+// Group outlines and label pills: quiet lines on the board.
+const SUBTLE_LINE = '#3a3a3a';
 
 export type Selection = { type: 'node' | 'cable'; id: string };
 
@@ -245,7 +247,7 @@ function drawGroup(ctx: CanvasRenderingContext2D, group: Group): void {
   ctx.fill();
   ctx.setLineDash([6, 6]);
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = '#2c3442';
+  ctx.strokeStyle = SUBTLE_LINE;
   ctx.stroke();
   ctx.setLineDash([]);
 
@@ -293,15 +295,15 @@ function drawCableLabel(ctx: CanvasRenderingContext2D, cable: Cable): void {
   const height = 20;
   ctx.beginPath();
   ctx.roundRect(middle.x - width / 2, middle.y - height / 2, width, height, 10);
-  ctx.fillStyle = 'rgba(13, 16, 22, 0.92)';
+  ctx.fillStyle = 'rgba(18, 18, 18, 0.92)';
   ctx.fill();
   ctx.lineWidth = 1;
-  ctx.strokeStyle = '#2c3442';
+  ctx.strokeStyle = SUBTLE_LINE;
   ctx.stroke();
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#b7bdc9';
+  ctx.fillStyle = TEXT;
   ctx.fillText(cable.label, middle.x, middle.y + 0.5);
 }
 

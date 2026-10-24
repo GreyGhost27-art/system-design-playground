@@ -1,7 +1,7 @@
 import { fitCamera, screenToWorld, worldToScreen, zoomAt } from './camera.ts';
 import { renderComponentInfo } from './componentInfo.ts';
 import { findKind } from './components.ts';
-import { Design, type PortRef } from './design.ts';
+import { Design, NODE_HEIGHT, type PortRef } from './design.ts';
 import type { Point } from './geometry.ts';
 import { UndoHistory } from './history.ts';
 import { createCableToolbar } from './cableToolbar.ts';
@@ -46,6 +46,7 @@ const blankBoardButton = document.querySelector<HTMLElement>('#blank-board')!;
 const backToNutshellButton =
   document.querySelector<HTMLElement>('#back-to-nutshell')!;
 const toast = document.querySelector<HTMLElement>('#toast')!;
+const nodeInfoButton = document.querySelector<HTMLElement>('#node-info')!;
 const nutshell = document.querySelector<HTMLElement>('#nutshell')!;
 const nutshellOpenButton =
   document.querySelector<HTMLElement>('#nutshell-open')!;
@@ -56,13 +57,15 @@ const cableToolbarElement =
   document.querySelector<HTMLElement>('#cable-toolbar')!;
 
 // Space the drawer covers on the right of the board when open.
-const DRAWER_SPACE = 372;
+const DRAWER_SPACE = 472;
 // Gap between the drawer and the bottom of the board on phones.
 const DRAWER_GAP = 8;
 // Physics steps run before showing a template, so cables appear settled.
 const SETTLE_STEPS = 90;
 // Each paste lands this far down and right of the last copy.
 const PASTE_OFFSET = 40;
+// Each tap on a zoom button zooms this much.
+const ZOOM_STEP = 1.25;
 // How long the "Board cleared" message offers its Undo button.
 const TOAST_MS = 6000;
 // Holding still on a cable this long (touch screens) opens its label field.
@@ -93,6 +96,8 @@ let copied: { kind: string; label?: string; x: number; y: number } | null =
   null;
 let longPress: { timer: number; start: Point } | null = null;
 let toastTimer = 0;
+// On phones, the component whose explanation was asked for with its ⓘ.
+let infoRequestedFor: string | null = null;
 // The Nutshell row a board was opened from, to land back on it.
 let nutshellReturnRow: HTMLElement | null = null;
 
@@ -141,6 +146,18 @@ renderNutshell(document.querySelector('#nutshell-content')!, (id, row) => {
 });
 
 backToNutshellButton.addEventListener('click', () => history.back());
+
+// Phones have no scroll wheel, so zooming gets buttons there.
+document.querySelector('.zoom-controls')!.addEventListener('click', (event) => {
+  const zoom = (event.target as HTMLElement).closest<HTMLElement>('[data-zoom]')
+    ?.dataset.zoom;
+  if (zoom === 'fit') return fitToDesign();
+  if (!zoom) return;
+  const { width, height } = visibleBoardSize();
+  const factor = zoom === 'in' ? ZOOM_STEP : 1 / ZOOM_STEP;
+  const center = { x: width / 2, y: height / 2 };
+  scene.camera = zoomAt(scene.camera, center, factor);
+});
 
 window.addEventListener('popstate', () => {
   const hash = decodeURIComponent(location.hash.slice(1));
@@ -202,8 +219,7 @@ function openTemplate(id: string): void {
  * shows the template's lesson, unless the lesson was closed.
  */
 function syncDrawer(): void {
-  const selection = scene.selection;
-  const node = selection?.type === 'node' ? design.getNode(selection.id) : null;
+  const node = nodeToExplain();
   const showLesson = !node && currentTemplate !== null && lessonOpen;
   const showing = node
     ? `node:${node.id}:${node.label ?? ''}`
@@ -211,7 +227,8 @@ function syncDrawer(): void {
       ? `lesson:${currentTemplate!.id}`
       : '';
 
-  lessonOpenButton.hidden = !currentTemplate || lessonOpen || node !== null;
+  lessonOpenButton.hidden =
+    !currentTemplate || lessonOpen || scene.selection?.type === 'node';
   if (showing === drawerShowing) return;
   drawerShowing = showing;
   drawer.hidden = showing === '';
@@ -285,12 +302,48 @@ toastUndoButton.addEventListener('click', () => {
   fitToDesign();
 });
 
+/**
+ * The selected component, if its explanation should show. On phones the
+ * drawer would cover the board, so it waits for a tap on the ⓘ button.
+ */
+function nodeToExplain() {
+  const selection = scene.selection;
+  if (selection?.type !== 'node') return null;
+  if (isPhoneLayout() && infoRequestedFor !== selection.id) return null;
+  return design.getNode(selection.id);
+}
+
 drawerCloseButton.addEventListener('click', () => {
-  // Closing a component's explanation falls back to the lesson.
-  if (scene.selection?.type === 'node') scene.selection = null;
-  else setLessonOpen(false);
+  // Closing a component's explanation falls back to the lesson. On phones
+  // the component stays selected, with its ⓘ ready to reopen it.
+  if (nodeToExplain()) {
+    if (isPhoneLayout()) infoRequestedFor = null;
+    else scene.selection = null;
+  } else setLessonOpen(false);
   syncDrawer();
 });
+
+nodeInfoButton.addEventListener('click', () => {
+  if (scene.selection?.type === 'node') infoRequestedFor = scene.selection.id;
+  syncDrawer();
+});
+
+/** Floats the ⓘ above the selected component while it sits still. */
+function syncNodeInfoButton(): void {
+  const selection = scene.selection;
+  const show =
+    isPhoneLayout() &&
+    selection?.type === 'node' &&
+    gesture.type === 'idle' &&
+    !nodeToExplain();
+  nodeInfoButton.hidden = !show;
+  if (!show) return;
+  const node = design.getNode(selection.id);
+  const top = { x: node.x, y: node.y - NODE_HEIGHT / 2 };
+  const { x, y } = worldToScreen(scene.camera, top);
+  nodeInfoButton.style.left = `${x}px`;
+  nodeInfoButton.style.top = `${y}px`;
+}
 lessonOpenButton.addEventListener('click', () => setLessonOpen(true));
 
 function setLessonOpen(open: boolean): void {
@@ -313,10 +366,14 @@ copyJsonButton.addEventListener('click', async () => {
 function visibleBoardSize(): { width: number; height: number } {
   const { width, height } = boardSize();
   if (drawer.hidden) return { width, height };
-  const phoneLayout = menuToggle.offsetParent !== null;
-  return phoneLayout
+  return isPhoneLayout()
     ? { width, height: height - drawer.offsetHeight - DRAWER_GAP }
     : { width: width - DRAWER_SPACE, height };
+}
+
+/** Phones get the menu button, the bottom sheet and tap-for-info. */
+function isPhoneLayout(): boolean {
+  return menuToggle.offsetParent !== null;
 }
 
 function boardSize() {
@@ -665,6 +722,7 @@ function frame(now: number): void {
   syncDrawer();
   labelEditor.follow();
   syncCableToolbar();
+  syncNodeInfoButton();
   // Nothing to clear on a blank board that is already showing.
   blankBoardButton.hidden = !currentTemplate && design.nodes.length === 0;
   backToNutshellButton.hidden = !nutshellReturnRow;

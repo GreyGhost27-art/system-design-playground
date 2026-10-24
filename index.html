@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>System Design Playground</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&display=swap"
+    />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
@@ -70,6 +76,22 @@
           title="Clear the board and build your own design"
         >
           ＋ Blank board
+        </button>
+      </div>
+      <button
+        id="node-info"
+        class="node-info"
+        type="button"
+        aria-label="About this component"
+        hidden
+      >
+        i
+      </button>
+      <div class="zoom-controls" role="toolbar" aria-label="Zoom">
+        <button type="button" data-zoom="in" aria-label="Zoom in">＋</button>
+        <button type="button" data-zoom="out" aria-label="Zoom out">−</button>
+        <button type="button" data-zoom="fit" aria-label="Fit the design">
+          ⤢
         </button>
       </div>
       <div id="toast" class="toast" role="status" hidden>

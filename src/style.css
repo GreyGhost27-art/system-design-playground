@@ -5,8 +5,19 @@
   --border: #232a36;
   --text: #e6e9ef;
   --muted: #7d8596;
-  --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
+  --font-ui: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+  /*
+   * Sizes chosen for readability, including for low vision: 16px is the
+   * common minimum for interface text, 19px is recommended for readers
+   * with vision problems (health.gov), and comprehension keeps improving up
+   * to about 24px (Rello et al., CHI 2016). Small is for short uppercase
+   * labels and badges only.
+   */
+  --text-small: 14px;
+  --text-ui: 16px;
+  --text-read: 19px;
+  --text-lede: 21px;
   color-scheme: dark;
 }
 
@@ -22,7 +33,7 @@ body {
 
 body {
   display: grid;
-  grid-template-columns: 248px 1fr;
+  grid-template-columns: 280px 1fr;
   /* One row exactly as tall as the window, so the sidebar can't outgrow it. */
   grid-template-rows: minmax(0, 1fr);
   background: var(--bg);
@@ -51,7 +62,7 @@ body {
 
 .sidebar-header h1 {
   margin: 0;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 650;
   letter-spacing: 0.01em;
 }
@@ -66,14 +77,14 @@ body {
   background: #10303c;
   color: #8fe3ff;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-ui);
   text-align: left;
   cursor: pointer;
 }
 
 .nutshell-open span {
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: var(--text-small);
 }
 
 .nutshell-open:hover,
@@ -85,7 +96,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--text-small);
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
@@ -100,7 +111,7 @@ select {
   background: var(--panel-raised);
   color: var(--text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-ui);
   text-transform: none;
   letter-spacing: normal;
   cursor: pointer;
@@ -114,7 +125,7 @@ select {
   background: var(--panel-raised);
   color: var(--text);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--text-ui);
   cursor: pointer;
 }
 
@@ -152,7 +163,7 @@ select {
 
 .palette-group h2 {
   margin: 14px 6px 6px;
-  font-size: 11px;
+  font-size: var(--text-small);
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
@@ -170,7 +181,7 @@ select {
   background: none;
   color: var(--text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-ui);
   text-align: left;
   cursor: grab;
 }
@@ -193,7 +204,7 @@ select {
   background: color-mix(in srgb, var(--color) 16%, transparent);
   color: var(--color);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--text-small);
   font-weight: 700;
 }
 
@@ -201,7 +212,7 @@ select {
   flex: none;
   padding: 14px 18px 18px;
   border-top: 1px solid var(--border);
-  font-size: 12px;
+  font-size: var(--text-ui);
   color: var(--muted);
 }
 
@@ -216,7 +227,7 @@ kbd {
   background: var(--panel-raised);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .board {
@@ -236,7 +247,7 @@ kbd {
   top: 16px;
   right: 16px;
   bottom: 16px;
-  width: 340px;
+  width: 440px;
   overflow-y: auto;
   padding: 22px 24px;
   border: 1px solid var(--border);
@@ -244,7 +255,7 @@ kbd {
   background: rgba(18, 22, 30, 0.94);
   backdrop-filter: blur(8px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
-  font-size: 13.5px;
+  font-size: var(--text-read);
   line-height: 1.55;
 }
 
@@ -263,7 +274,7 @@ kbd {
   border-radius: 6px;
   background: none;
   color: var(--muted);
-  font-size: 20px;
+  font-size: 24px;
   line-height: 1;
   cursor: pointer;
 }
@@ -275,7 +286,7 @@ kbd {
 
 .eyebrow {
   margin: 0 0 6px;
-  font-size: 11px;
+  font-size: var(--text-small);
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
@@ -284,7 +295,7 @@ kbd {
 
 .drawer-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 650;
 }
 
@@ -295,7 +306,7 @@ kbd {
 
 .drawer-section h3 {
   margin: 22px 0 6px;
-  font-size: 12px;
+  font-size: var(--text-small);
   font-weight: 650;
   color: #b48cff;
   text-transform: uppercase;
@@ -333,7 +344,7 @@ kbd {
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: var(--text-ui);
 }
 
 .component-header .eyebrow {
@@ -342,7 +353,7 @@ kbd {
 
 .drawer-lede {
   margin: 18px 0 0;
-  font-size: 15px;
+  font-size: var(--text-lede);
   line-height: 1.5;
 }
 
@@ -360,19 +371,19 @@ kbd {
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--panel-raised);
-  font-size: 12.5px;
+  font-size: var(--text-ui);
 }
 
 .label-editor {
   position: absolute;
-  width: 160px;
+  width: 200px;
   padding: 4px 12px;
   border: 1px solid #8fe3ff;
   border-radius: 999px;
   background: var(--bg);
   color: var(--text);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--text-ui);
   text-align: center;
   outline: none;
   transform: translate(-50%, -50%);
@@ -404,7 +415,7 @@ kbd {
   background: none;
   color: var(--muted);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--text-ui);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -429,14 +440,14 @@ kbd {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 6px;
-  font-size: 12px;
+  font-size: var(--text-ui);
   color: var(--muted);
 }
 
 .sample-language {
   flex: none;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--text-small);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -452,7 +463,7 @@ kbd {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: var(--text-ui);
   white-space: nowrap;
 }
 
@@ -477,7 +488,7 @@ kbd {
   margin: 0;
   padding: 10px 12px;
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: var(--text-ui);
   line-height: 1.55;
   color: #d6dae3;
 }
@@ -498,7 +509,7 @@ kbd {
   background: var(--panel);
   color: var(--text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-ui);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
   cursor: pointer;
 }
@@ -515,7 +526,7 @@ kbd {
   background: #10303c;
   color: #8fe3ff;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-ui);
   font-weight: 600;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
   cursor: pointer;
@@ -536,7 +547,7 @@ kbd {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--panel-raised);
-  font-size: 13px;
+  font-size: var(--text-ui);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
   transform: translateX(-50%);
 }
@@ -553,6 +564,23 @@ kbd {
   cursor: pointer;
 }
 
+.node-info {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #2d6a80;
+  border-radius: 50%;
+  background: #10303c;
+  color: #8fe3ff;
+  font: 700 20px / 1 var(--font-ui);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  /* Centred just above the component's top edge. */
+  transform: translate(-50%, calc(-100% - 8px));
+  cursor: pointer;
+}
+
+.node-info[hidden],
+.zoom-controls,
 .blank-board[hidden],
 .back-to-nutshell[hidden],
 .toast[hidden],
@@ -585,25 +613,25 @@ kbd {
   max-width: 680px;
   margin: 0 auto;
   padding: 48px 24px 64px;
-  font-size: 14.5px;
+  font-size: var(--text-read);
   line-height: 1.6;
 }
 
 .nutshell-title {
   margin: 0;
-  font-size: 26px;
+  font-size: 32px;
   font-weight: 650;
 }
 
 .nutshell-lede {
   margin: 10px 0 0;
   color: var(--muted);
-  font-size: 16px;
+  font-size: var(--text-lede);
 }
 
 .nutshell-section h3 {
   margin: 36px 0 10px;
-  font-size: 12px;
+  font-size: var(--text-small);
   font-weight: 650;
   color: #b48cff;
   text-transform: uppercase;
@@ -703,7 +731,7 @@ kbd {
     border-radius: 10px;
     background: var(--panel);
     color: var(--text);
-    font-size: 18px;
+    font-size: 20px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
     cursor: pointer;
   }
@@ -729,6 +757,45 @@ kbd {
 
   .wide-only {
     display: none;
+  }
+
+  /* Mid-height, where the thumb rests; above the bottom sheet when open. */
+  .zoom-controls {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    transition: top 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+  }
+
+  .board:has(.drawer:not([hidden])) .zoom-controls {
+    top: 25%;
+  }
+
+  .zoom-controls button {
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 22px;
+    cursor: pointer;
+  }
+
+  .zoom-controls button + button {
+    border-top: 1px solid var(--border);
+  }
+
+  .zoom-controls button:active {
+    background: var(--panel-raised);
   }
 
   .nutshell-signal {

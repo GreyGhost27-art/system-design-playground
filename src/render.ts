@@ -31,8 +31,10 @@ const NODE_FILL = '#161b24';
 const TEXT = '#e6e9ef';
 const MUTED = '#7d8596';
 const CABLE_SHADOW = 'rgba(0, 0, 0, 0.55)';
-const FONT_UI = "system-ui, -apple-system, 'Segoe UI', sans-serif";
-const FONT_MONO = "ui-monospace, 'Cascadia Code', Consolas, monospace";
+// The canvas uses the same fonts as the page, defined once in style.css.
+const rootStyle = getComputedStyle(document.documentElement);
+const FONT_UI = rootStyle.getPropertyValue('--font-ui');
+const FONT_MONO = rootStyle.getPropertyValue('--font-mono');
 
 export type Selection = { type: 'node' | 'cable'; id: string };
 
@@ -250,7 +252,7 @@ function drawGroup(ctx: CanvasRenderingContext2D, group: Group): void {
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   ctx.fillStyle = MUTED;
-  ctx.font = `600 11px ${FONT_UI}`;
+  ctx.font = `600 13px ${FONT_UI}`;
   ctx.fillText(group.label.toUpperCase(), group.x + 14, group.y + 12);
 }
 
@@ -286,7 +288,7 @@ function drawCableLabel(ctx: CanvasRenderingContext2D, cable: Cable): void {
   const { points } = cable.rope;
   const middle = points[Math.floor(points.length / 2)];
 
-  ctx.font = `500 11px ${FONT_UI}`;
+  ctx.font = `500 13px ${FONT_UI}`;
   const width = ctx.measureText(cable.label).width + 14;
   const height = 20;
   ctx.beginPath();
@@ -342,7 +344,7 @@ function drawNode(
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
   ctx.fillStyle = color;
-  ctx.font = `700 11px ${FONT_MONO}`;
+  ctx.font = `700 12px ${FONT_MONO}`;
   ctx.fillText(kind.badge, badgeLeft + badgeSize / 2, node.y + 0.5);
 
   ctx.textAlign = 'left';
@@ -351,12 +353,12 @@ function drawNode(
   // A custom name ("Primary DB") keeps the component type as its caption.
   const caption = node.label ? kind.label : kind.category;
   ctx.fillStyle = TEXT;
-  ctx.font = `600 13px ${FONT_UI}`;
+  ctx.font = `600 15px ${FONT_UI}`;
   const title = fitText(ctx, node.label ?? kind.label, textWidth);
-  ctx.fillText(title, textLeft, node.y - 7);
+  ctx.fillText(title, textLeft, node.y - 8);
   ctx.fillStyle = MUTED;
-  ctx.font = `500 11px ${FONT_UI}`;
-  ctx.fillText(fitText(ctx, caption, textWidth), textLeft, node.y + 10);
+  ctx.font = `500 13px ${FONT_UI}`;
+  ctx.fillText(fitText(ctx, caption, textWidth), textLeft, node.y + 11);
 }
 
 function fitText(
@@ -432,7 +434,7 @@ function drawEmptyState(
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = MUTED;
-  ctx.font = `500 14px ${FONT_UI}`;
+  ctx.font = `500 18px ${FONT_UI}`;
   ctx.fillText(
     'Click or drag a component to start building',
     size.width / 2,

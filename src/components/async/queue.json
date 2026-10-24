@@ -3,6 +3,7 @@
   "label": "Queue",
   "badge": "Q",
   "category": "async",
+  "capacity": 50000,
   "info": {
     "what": "Holds tasks in line until a worker is ready to take them.",
     "why": "The app can hand off work and reply right away. If workers are slow or down, tasks wait safely instead of being lost.",

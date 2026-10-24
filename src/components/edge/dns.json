@@ -3,6 +3,7 @@
   "label": "DNS",
   "badge": "DNS",
   "category": "edge",
+  "capacity": 1000000,
   "info": {
     "what": "Turns a name like example.com into the numeric address of a server.",
     "why": "People remember names; computers connect to IP addresses. DNS can also send each user to the nearest or healthiest server.",

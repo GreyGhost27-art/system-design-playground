@@ -3,6 +3,7 @@
   "label": "Pub/Sub",
   "badge": "PS",
   "category": "async",
+  "capacity": 50000,
   "info": {
     "what": "Delivers each message to everyone who subscribed to a topic.",
     "why": "Senders don't need to know who is listening, and new listeners can join without changing the sender.",

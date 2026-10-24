@@ -3,6 +3,7 @@
   "label": "NoSQL Database",
   "badge": "NO",
   "category": "data",
+  "capacity": 20000,
   "info": {
     "what": "Stores data in flexible forms, like documents or key–value pairs, without a fixed table layout.",
     "why": "Spreads easily across many machines and suits huge volumes of simple lookups, or data whose shape changes often.",

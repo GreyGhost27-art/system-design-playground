@@ -3,6 +3,7 @@
   "label": "Search Index",
   "badge": "IDX",
   "category": "data",
+  "capacity": 2000,
   "info": {
     "what": "Organises text so it can be searched quickly, like a search engine for your own data.",
     "why": "Databases are slow at \"find everything mentioning these words\". A search index does it fast and handles typos, ranking and filters.",

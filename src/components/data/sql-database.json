@@ -3,6 +3,7 @@
   "label": "SQL Database",
   "badge": "SQL",
   "category": "data",
+  "capacity": 2000,
   "info": {
     "what": "Stores data in tables of rows and columns, with strict rules about its shape.",
     "why": "Ideal when data is related (users, orders, payments) and must stay correct: transactions make a group of changes happen completely or not at all.",

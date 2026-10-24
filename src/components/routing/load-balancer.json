@@ -3,6 +3,7 @@
   "label": "Load Balancer",
   "badge": "LB",
   "category": "routing",
+  "capacity": 100000,
   "info": {
     "what": "Spreads incoming requests across several identical servers.",
     "why": "No single server gets overwhelmed, and if one breaks, traffic simply goes to the others.",

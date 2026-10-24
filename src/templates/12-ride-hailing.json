@@ -37,18 +37,32 @@
       "y": 190
     },
     {
-      "id": "matching",
+      "id": "matching1",
       "kind": "app-server",
-      "label": "Matching Service",
+      "label": "Matching Service 1",
       "x": 500,
-      "y": 60
+      "y": 0
     },
     {
-      "id": "location",
+      "id": "matching2",
       "kind": "app-server",
-      "label": "Location Service",
+      "label": "Matching Service 2",
       "x": 500,
-      "y": 320
+      "y": 110
+    },
+    {
+      "id": "location1",
+      "kind": "app-server",
+      "label": "Location Service 1",
+      "x": 500,
+      "y": 270
+    },
+    {
+      "id": "location2",
+      "kind": "app-server",
+      "label": "Location Service 2",
+      "x": 500,
+      "y": 380
     },
     {
       "id": "trips",
@@ -98,26 +112,46 @@
     },
     {
       "from": "gateway.right",
-      "to": "matching.left"
+      "to": "matching1.left"
     },
     {
       "from": "gateway.right",
-      "to": "location.left"
+      "to": "matching2.left"
     },
     {
-      "from": "matching.right",
+      "from": "gateway.right",
+      "to": "location1.left"
+    },
+    {
+      "from": "gateway.right",
+      "to": "location2.left"
+    },
+    {
+      "from": "matching1.right",
       "to": "trips.left",
       "label": "create trip"
     },
     {
-      "from": "matching.right",
+      "from": "matching2.right",
+      "to": "trips.left"
+    },
+    {
+      "from": "matching1.right",
       "to": "router.left",
       "label": "drivers nearby?"
     },
     {
-      "from": "location.right",
+      "from": "matching2.right",
+      "to": "router.left"
+    },
+    {
+      "from": "location1.right",
       "to": "router.left",
       "label": "update position"
+    },
+    {
+      "from": "location2.right",
+      "to": "router.left"
     },
     {
       "from": "router.right",

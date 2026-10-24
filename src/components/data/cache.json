@@ -3,6 +3,7 @@
   "label": "Cache",
   "badge": "CA",
   "category": "data",
+  "capacity": 100000,
   "info": {
     "what": "Keeps frequently used data in fast memory.",
     "why": "Answers repeated questions in a fraction of a millisecond and takes load off the database. The trade-off: cached data can be slightly out of date.",

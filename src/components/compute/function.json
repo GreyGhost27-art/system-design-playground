@@ -3,6 +3,7 @@
   "label": "Function",
   "badge": "λ",
   "category": "compute",
+  "capacity": 20000,
   "info": {
     "what": "A small piece of code that runs only when something triggers it, with no server for you to manage.",
     "why": "You pay only while it runs, and it scales up and down automatically. Handy for occasional or spiky work.",

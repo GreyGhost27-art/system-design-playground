@@ -3,6 +3,7 @@
   "label": "Rate Limiter",
   "badge": "RL",
   "category": "routing",
+  "capacity": 100000,
   "info": {
     "what": "Caps how many requests someone can make in a period of time.",
     "why": "Protects the system from abuse and from buggy clients that send too much, and keeps things fair between users.",

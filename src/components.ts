@@ -29,6 +29,11 @@ export interface ComponentKind {
   label: string;
   badge: string;
   category: Category;
+  /**
+   * Roughly how many requests a second one of these handles before it gets
+   * too busy. Clients have none: they send traffic rather than receive it.
+   */
+  capacity?: number;
   info: ComponentInfo;
 }
 

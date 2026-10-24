@@ -3,6 +3,7 @@
   "label": "Error Tracking",
   "badge": "ERR",
   "category": "observability",
+  "capacity": 100000,
   "info": {
     "what": "Catches crashes and exceptions, groups identical ones and shows the code that failed.",
     "why": "Turns thousands of scattered error messages into a short list of bugs, ranked by how many users they affect.",

@@ -24,18 +24,25 @@
       "y": 160
     },
     {
-      "id": "api",
+      "id": "api1",
       "kind": "app-server",
-      "label": "Upload API",
+      "label": "Upload API 1",
       "x": 250,
-      "y": 40
+      "y": -40
+    },
+    {
+      "id": "api2",
+      "kind": "app-server",
+      "label": "Upload API 2",
+      "x": 250,
+      "y": 80
     },
     {
       "id": "meta",
       "kind": "sql-database",
       "label": "Video Metadata",
-      "x": 250,
-      "y": 300
+      "x": 500,
+      "y": 10
     },
     {
       "id": "raw",
@@ -54,7 +61,7 @@
     {
       "id": "transcoders",
       "kind": "worker",
-      "label": "Transcoders",
+      "label": "Transcoder",
       "x": 750,
       "y": 340
     },
@@ -82,8 +89,12 @@
   "cables": [
     {
       "from": "creator.top",
-      "to": "api.left",
+      "to": "api1.left",
       "label": "request upload URL"
+    },
+    {
+      "from": "creator.top",
+      "to": "api2.left"
     },
     {
       "from": "creator.right",
@@ -91,8 +102,12 @@
       "label": "upload (pre-signed)"
     },
     {
-      "from": "api.bottom",
-      "to": "meta.top"
+      "from": "api1.right",
+      "to": "meta.left"
+    },
+    {
+      "from": "api2.right",
+      "to": "meta.left"
     },
     {
       "from": "raw.bottom",

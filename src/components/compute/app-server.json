@@ -3,6 +3,7 @@
   "label": "App Server",
   "badge": "APP",
   "category": "compute",
+  "capacity": 700,
   "info": {
     "what": "Runs your application's code: the business logic.",
     "why": "It receives a request, applies your rules (log in, place an order), talks to databases and other services, and sends back the answer.",

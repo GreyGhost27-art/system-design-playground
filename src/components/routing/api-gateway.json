@@ -3,6 +3,7 @@
   "label": "API Gateway",
   "badge": "GW",
   "category": "routing",
+  "capacity": 50000,
   "info": {
     "what": "The single front door to all your backend services.",
     "why": "It checks who is calling, applies shared rules like rate limits, and forwards each request to the right service, so every service doesn't have to do it.",

@@ -17,6 +17,8 @@ export interface TemplateNode {
   id: string;
   kind: string;
   label?: string;
+  /** For clients: how many users they stand for. */
+  users?: number;
   x: number;
   y: number;
 }
@@ -86,6 +88,7 @@ export function loadTemplate(design: Design, template: Template): void {
   for (const node of template.nodes) {
     const position = { x: node.x, y: node.y };
     const added = design.addNode(node.kind, position, node.label);
+    if (node.users !== undefined) design.setUsers(added.id, node.users);
     designIds.set(node.id, added.id);
   }
 
@@ -114,6 +117,7 @@ export function toTemplate(design: Design): Template {
       y: Math.round(node.y),
     };
     if (node.label) templateNode.label = node.label;
+    if (node.users !== undefined) templateNode.users = node.users;
     return templateNode;
   });
 
@@ -169,7 +173,8 @@ export function parseBoard(
       typeof node.kind !== 'string' ||
       !isNumber(node.x) ||
       !isNumber(node.y) ||
-      !isOptional(node.label, 'string'),
+      !isOptional(node.label, 'string') ||
+      !(node.users === undefined || isNumber(node.users)),
   );
   if (badNode >= 0) {
     return {

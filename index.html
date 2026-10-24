@@ -31,6 +31,13 @@
           <input id="flow-toggle" type="checkbox" />
           Show traffic
         </label>
+        <label class="toggle">
+          <input id="worst-toggle" type="checkbox" />
+          Worst day
+        </label>
+        <p class="toggle-hint">
+          A rush: 3× the traffic, and 4 database queries per request.
+        </p>
         <div class="file-actions" role="group" aria-label="Board file">
           <button
             id="export-board"
@@ -137,6 +144,16 @@
         aria-label="Component"
         hidden
       >
+        <button type="button" data-action="users" hidden>
+          <span class="radial-content"
+            ><span class="radial-icon">👥</span>Users</span
+          >
+        </button>
+        <button type="button" data-action="fix" aria-pressed="false" hidden>
+          <span class="radial-content"
+            ><span class="radial-icon">🛠</span>Fix</span
+          >
+        </button>
         <button type="button" data-action="info" aria-pressed="false">
           <span class="radial-content"
             ><span class="radial-icon">ⓘ</span>Info</span
@@ -153,6 +170,50 @@
           >
         </button>
       </div>
+      <details id="legend" class="legend" open>
+        <summary>Legend</summary>
+        <div class="legend-body">
+          <p id="legend-worst" class="legend-worst" hidden>
+            <strong>Worst day:</strong> 3× the usual traffic, and 4 database
+            queries per request.
+          </p>
+          <p class="legend-heading">Bar under a component: how busy it is</p>
+          <ul>
+            <li>
+              <span
+                class="legend-bar"
+                style="--fill: 35%; --color: var(--status-fine)"
+              ></span
+              >Fine
+            </li>
+            <li>
+              <span
+                class="legend-bar"
+                style="--fill: 85%; --color: var(--status-busy)"
+              ></span
+              >Busy: 75% full or more
+            </li>
+            <li>
+              <span
+                class="legend-bar"
+                style="--fill: 100%; --color: var(--status-over)"
+              ></span
+              >Too busy: more than it can handle
+            </li>
+          </ul>
+          <p class="legend-heading">Dot on a client: how its users are doing</p>
+          <ul>
+            <li><span class="legend-dot legend-fine">✓</span>Fast</li>
+            <li><span class="legend-dot legend-busy">!</span>Slow</li>
+            <li><span class="legend-dot legend-over">✕</span>Errors</li>
+          </ul>
+          <p class="legend-note">
+            Click a client, then <strong>Users</strong>, to change the traffic.
+            Orange or red? Click it, then <strong>Fix</strong>, to see what to
+            try.
+          </p>
+        </div>
+      </details>
       <details id="shortcuts" class="shortcuts">
         <summary>⌨ Shortcuts</summary>
         <button
@@ -191,6 +252,14 @@
                 menu; dragging moves it without opening the menu
               </li>
               <li><kbd>Double-click</kbd> a component to read about it</li>
+              <li>
+                <kbd>Click</kbd> a client, then <strong>Users</strong>, to set
+                how many people use it; components show how busy they get
+              </li>
+              <li>
+                <kbd>Click</kbd> anything orange or red, then
+                <strong>Fix</strong>, to see why and what to try
+              </li>
               <li>
                 <kbd>Double-click</kbd> a cable or group name to rename it
               </li>
@@ -241,6 +310,31 @@
         <button type="button" data-zoom="fit" aria-label="Fit the design">
           ⤢
         </button>
+      </div>
+      <div id="status-chip" class="status-chip" hidden>
+        <p class="status-line">
+          <span class="status-dot" aria-hidden="true"></span
+          ><strong id="status-label"></strong><span id="status-measure"></span>
+        </p>
+        <p id="status-figures" class="status-figures"></p>
+        <p id="status-detail" class="status-detail"></p>
+      </div>
+      <div
+        id="users-picker"
+        class="users-picker"
+        role="dialog"
+        aria-labelledby="users-picker-title"
+        hidden
+      >
+        <p id="users-picker-title" class="users-picker-title">
+          How many users?
+        </p>
+        <div
+          id="users-options"
+          class="users-options"
+          role="radiogroup"
+          aria-labelledby="users-picker-title"
+        ></div>
       </div>
       <div id="toast" class="toast" role="status" hidden>
         <span id="toast-message"></span>

@@ -3,6 +3,7 @@
   "label": "Logs",
   "badge": "LOG",
   "category": "observability",
+  "capacity": 100000,
   "info": {
     "what": "Collects what every service writes down and makes it searchable in one place.",
     "why": "When something goes wrong you can read exactly what happened, across all servers, instead of logging into each machine one by one.",

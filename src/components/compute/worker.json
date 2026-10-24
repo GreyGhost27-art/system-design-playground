@@ -3,6 +3,7 @@
   "label": "Worker",
   "badge": "WK",
   "category": "compute",
+  "capacity": 300,
   "info": {
     "what": "Runs background jobs that don't need an immediate answer.",
     "why": "Slow tasks like sending emails or resizing images happen behind the scenes, so users don't have to wait for them.",

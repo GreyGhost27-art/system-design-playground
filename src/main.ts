@@ -1,5 +1,7 @@
 import { fitCamera, screenToWorld, worldToScreen, zoomAt } from './camera.ts';
 import { renderComponentInfo } from './componentInfo.ts';
+import { renderClientFix, renderComponentFix } from './fixCard.ts';
+import { describeStatus } from './status.ts';
 import { findKind } from './components.ts';
 import {
   Design,
@@ -11,6 +13,15 @@ import { rectBetween, type Point } from './geometry.ts';
 import { UndoHistory } from './history.ts';
 import { createCableToolbar } from './cableToolbar.ts';
 import { createLabelEditor } from './labelEditor.ts';
+import {
+  AVERAGE_DAY,
+  BUSY_AT,
+  computeLoad,
+  WORST_DAY,
+  describeUsers,
+  usersOf,
+  USER_LEVELS,
+} from './load.ts';
 import { renderLesson } from './lesson.ts';
 import { renderNutshell } from './nutshell.ts';
 import { DRAG_FORMAT, renderPalette } from './palette.ts';
@@ -70,6 +81,8 @@ const drawerCloseButton = document.querySelector<HTMLElement>('#drawer-close')!;
 const lessonOpenButton = document.querySelector<HTMLElement>('#lesson-open')!;
 const copyJsonButton = document.querySelector<HTMLElement>('#copy-json')!;
 const flowToggle = document.querySelector<HTMLInputElement>('#flow-toggle')!;
+const worstToggle = document.querySelector<HTMLInputElement>('#worst-toggle')!;
+const legendWorst = document.querySelector<HTMLElement>('#legend-worst')!;
 const labelInput = document.querySelector<HTMLInputElement>('#label-editor')!;
 const menuToggle = document.querySelector<HTMLElement>('#menu-toggle')!;
 const menuBackdrop = document.querySelector<HTMLElement>('#menu-backdrop')!;
@@ -80,6 +93,7 @@ const backToNutshellButton =
   document.querySelector<HTMLElement>('#back-to-nutshell')!;
 const toast = document.querySelector<HTMLElement>('#toast')!;
 const shortcuts = document.querySelector<HTMLDetailsElement>('#shortcuts')!;
+const legend = document.querySelector<HTMLDetailsElement>('#legend')!;
 const nodeToolbar = document.querySelector<HTMLElement>('#node-toolbar')!;
 const groupToolbar = document.querySelector<HTMLElement>('#group-toolbar')!;
 layoutRadialMenu(nodeToolbar);
@@ -89,6 +103,19 @@ const resizeButton = groupToolbar.querySelector<HTMLElement>(
   '[data-action="resize"]',
 )!;
 const placeNodeWheel = createWheelPlacement(nodeToolbar.children.length);
+const usersButton = nodeToolbar.querySelector<HTMLElement>(
+  '[data-action="users"]',
+)!;
+const usersPicker = document.querySelector<HTMLElement>('#users-picker')!;
+const statusChip = document.querySelector<HTMLElement>('#status-chip')!;
+const statusLabel = document.querySelector<HTMLElement>('#status-label')!;
+const statusMeasure = document.querySelector<HTMLElement>('#status-measure')!;
+const statusFigures = document.querySelector<HTMLElement>('#status-figures')!;
+const statusDetail = document.querySelector<HTMLElement>('#status-detail')!;
+const usersOptions = document.querySelector<HTMLElement>('#users-options')!;
+const fixButton = nodeToolbar.querySelector<HTMLElement>(
+  '[data-action="fix"]',
+)!;
 const nodeInfoButton = nodeToolbar.querySelector<HTMLElement>(
   '[data-action="info"]',
 )!;
@@ -119,6 +146,9 @@ const PASTE_OFFSET = 40;
 const DEFAULT_GROUP_SIZE = { width: 420, height: 280 };
 // Drags smaller than this count as a tap when drawing a group.
 const MIN_GROUP_SIZE = 60;
+// Room between the status chip and the wheel above it: the widest fans
+// reach about this far below their centre.
+const WHEEL_ABOVE_STATUS = 30;
 // Each tap on a zoom button zooms this much.
 const ZOOM_STEP = 1.25;
 // How long a message stays; errors stay longer, so they can be read.
@@ -139,6 +169,7 @@ const scene: Scene = {
   hoveredGroup: null,
   groupDraft: null,
   openWheel: null,
+  load: null,
   resizingGroup: null,
   hoveredPort: null,
   draft: null,
@@ -152,10 +183,17 @@ let currentSection: TemplateSection | null = null;
 let lessonOpen = true;
 // What the drawer currently shows, so it is only rebuilt when that changes.
 let drawerShowing = '';
-let copied: { kind: string; label?: string; x: number; y: number } | null =
-  null;
+let copied: {
+  kind: string;
+  label?: string;
+  users?: number;
+  x: number;
+  y: number;
+} | null = null;
 let longPress: { timer: number; start: Point } | null = null;
 let toastTimer = 0;
+// The client whose "How many users?" picker is open.
+let usersPickerFor: string | null = null;
 // Whether the message's button undoes (or just dismisses the message).
 let toastUndoes = false;
 // While on, pressing the board draws a new group instead.
@@ -163,8 +201,9 @@ let groupMode = false;
 // Where the pointer last pressed on the board (world units), so a wheel
 // opens clear of it. Presses elsewhere, like the sidebar, don't count.
 let lastPress: Point | null = null;
-// The component whose explanation was asked for (Info or double-click).
-let infoRequestedFor: string | null = null;
+// What the drawer explains about the selected component, when asked:
+// what it is (Info, or a double-click) or how to unclog it (Fix).
+let drawerRequest: { nodeId: string; view: 'info' | 'fix' } | null = null;
 // The Nutshell row a board was opened from, to land back on it.
 let nutshellReturnRow: HTMLElement | null = null;
 
@@ -465,7 +504,7 @@ function syncDrawer(): void {
   const node = nodeToExplain();
   const showLesson = !node && currentTemplate !== null && lessonOpen;
   const showing = node
-    ? `node:${node.id}:${node.label ?? ''}`
+    ? `${drawerRequest!.view}:${node.id}:${node.label ?? ''}:${fixState(node.id)}`
     : showLesson
       ? `lesson:${currentTemplate!.id}`
       : '';
@@ -476,7 +515,9 @@ function syncDrawer(): void {
   drawerShowing = showing;
   drawer.hidden = showing === '';
 
-  if (node) {
+  if (node && drawerRequest!.view === 'fix') {
+    renderFix(node.id);
+  } else if (node) {
     renderComponentInfo(drawerContent, findKind(node.kind), node.label);
   } else if (showLesson) {
     renderLesson(drawerContent, currentTemplate!, currentSection!);
@@ -563,10 +604,80 @@ toastAction.addEventListener('click', () => {
  */
 function nodeToExplain() {
   const selection = scene.selection;
-  if (selection?.type !== 'node' || infoRequestedFor !== selection.id) {
+  if (selection?.type !== 'node' || drawerRequest?.nodeId !== selection.id) {
     return null;
   }
   return design.getNode(selection.id);
+}
+
+/**
+ * What the Fix card's words depend on, so it is redrawn as soon as they
+ * change: after adding a copy, or changing the number of users.
+ */
+function fixState(nodeId: string): string {
+  if (drawerRequest?.view !== 'fix') return '';
+  const node = design.getNode(nodeId);
+  const load = scene.load?.nodes.get(nodeId);
+  const weakest = scene.load?.weakestLink.get(nodeId);
+  return [
+    Math.round(load?.requests ?? 0),
+    design.nodes.length,
+    usersOf(node),
+    scene.load?.health.get(nodeId),
+    weakest,
+  ].join(':');
+}
+
+function renderFix(nodeId: string): void {
+  const node = design.getNode(nodeId);
+  const actions = {
+    addCopy: () => {
+      undoHistory.record(design);
+      design.copyWithConnections(nodeId);
+    },
+    boardName: (id: string) => {
+      for (const { itemName, templates } of SECTIONS) {
+        const index = templates.findIndex((template) => template.id === id);
+        if (index >= 0) {
+          return `${itemName} ${index + 1}, ${templates[index].title}`;
+        }
+      }
+      return null;
+    },
+    showMe: (id: string) => {
+      scene.selection = { type: 'node', id };
+      scene.openWheel = `node:${id}`;
+      drawerRequest = { nodeId: id, view: 'fix' };
+    },
+  };
+  if (node.kind === 'client') {
+    const weakestId = scene.load?.weakestLink.get(nodeId);
+    renderClientFix(
+      drawerContent,
+      node,
+      scene.load?.health.get(nodeId),
+      weakestId ? design.getNode(weakestId) : undefined,
+      weakestId ? scene.load?.nodes.get(weakestId) : undefined,
+      actions,
+    );
+  } else {
+    renderComponentFix(
+      drawerContent,
+      node,
+      scene.load?.nodes.get(nodeId),
+      actions,
+    );
+  }
+}
+
+/** Busy components, and clients whose users suffer, offer a Fix. */
+function needsFix(nodeId: string): boolean {
+  const node = design.getNode(nodeId);
+  if (node.kind === 'client') {
+    const health = scene.load?.health.get(nodeId);
+    return health === 'slow' || health === 'failing';
+  }
+  return (scene.load?.nodes.get(nodeId)?.ratio ?? 0) >= BUSY_AT;
 }
 
 /**
@@ -577,11 +688,21 @@ function nodeToExplain() {
 function forgetInfoOnceDeselected(): void {
   const selection = scene.selection;
   const selectedNodeId = selection?.type === 'node' ? selection.id : null;
-  if (infoRequestedFor !== selectedNodeId) infoRequestedFor = null;
+  if (drawerRequest?.nodeId !== selectedNodeId) drawerRequest = null;
+  // A Fix card speaks about traffic, so it closes when traffic is hidden.
+  if (drawerRequest?.view === 'fix' && !scene.load) drawerRequest = null;
+}
+
+/** Opens the drawer on a component's Info or Fix; the same again closes it. */
+function toggleDrawer(nodeId: string, view: 'info' | 'fix'): void {
+  const isOpen =
+    drawerRequest?.nodeId === nodeId && drawerRequest.view === view;
+  drawerRequest = isOpen ? null : { nodeId, view };
+  syncDrawer();
 }
 
 function setInfoOpen(nodeId: string | null): void {
-  infoRequestedFor = nodeId;
+  drawerRequest = nodeId ? { nodeId, view: 'info' } : null;
   syncDrawer();
 }
 
@@ -598,7 +719,9 @@ nodeToolbar.addEventListener('click', (event) => {
   )?.dataset.action;
   const selection = scene.selection;
   if (selection?.type !== 'node') return;
-  if (action === 'info') setInfoOpen(nodeToExplain() ? null : selection.id);
+  if (action === 'users') usersPickerFor = selection.id;
+  if (action === 'info') toggleDrawer(selection.id, 'info');
+  if (action === 'fix') toggleDrawer(selection.id, 'fix');
   if (action === 'duplicate' && copySelectedComponent()) pasteComponent();
   if (action === 'delete') deleteSelection();
 });
@@ -664,21 +787,125 @@ function syncGroupToolbar(): void {
 function syncNodeToolbar(): void {
   const selection = scene.selection;
   const show =
-    selection?.type === 'node' && gesture.type === 'idle' && isWheelOpen();
+    selection?.type === 'node' &&
+    gesture.type === 'idle' &&
+    isWheelOpen() &&
+    usersPickerFor === null;
   nodeToolbar.hidden = !show;
   if (!show) {
     placeNodeWheel(null, { x: 0, y: 0 }, null);
     return;
   }
   const node = design.getNode(selection.id);
-  // The wheel's centre sits just above the component, so the fan clears it.
+  // Only clients have users, and only struggling things need a fix, so
+  // only their wheels offer those options.
+  const fixOpen =
+    drawerRequest?.nodeId === node.id && drawerRequest.view === 'fix';
+  const offersUsers = node.kind === 'client';
+  const offersFix = needsFix(node.id) || fixOpen;
+  if (usersButton.hidden === offersUsers || fixButton.hidden === offersFix) {
+    usersButton.hidden = !offersUsers;
+    fixButton.hidden = !offersFix;
+    layoutRadialMenu(nodeToolbar);
+  }
+  fixButton.ariaPressed = String(fixOpen);
+  // The wheel's centre sits just above the component, so the fan clears
+  // it, and above the status chip when that shows.
   const top = { x: node.x, y: node.y - NODE_HEIGHT / 2 - 6 };
   const target = worldToScreen(scene.camera, top);
+  if (!statusChip.hidden) {
+    target.y -= statusChip.offsetHeight + WHEEL_ABOVE_STATUS;
+  }
   const { x, y } = placeNodeWheel(node.id, target, pressOnScreen());
   nodeToolbar.style.left = `${x}px`;
   nodeToolbar.style.top = `${y}px`;
-  nodeInfoButton.ariaPressed = String(nodeToExplain() !== null);
+  nodeInfoButton.ariaPressed = String(
+    drawerRequest?.nodeId === node.id && drawerRequest.view === 'info',
+  );
 }
+// One choice per user level, each with what that size feels like.
+for (const { users, story } of USER_LEVELS) {
+  const option = document.createElement('button');
+  option.type = 'button';
+  option.role = 'radio';
+  option.dataset.users = String(users);
+  option.innerHTML = '<strong></strong><span></span>';
+  option.children[0].textContent = describeUsers(users).replace(' users', '');
+  option.children[1].textContent = story;
+  usersOptions.append(option);
+}
+
+usersOptions.addEventListener('click', (event) => {
+  const option = (event.target as HTMLElement).closest<HTMLElement>(
+    '[data-users]',
+  );
+  if (!option || !usersPickerFor) return;
+  const users = Number(option.dataset.users);
+  if (usersOf(design.getNode(usersPickerFor)) !== users) {
+    undoHistory.record(design);
+    design.setUsers(usersPickerFor, users);
+  }
+  // Done: back to the board, to watch what the new traffic does.
+  usersPickerFor = null;
+  scene.openWheel = null;
+});
+
+/** How the selected component is doing, in two lines just above it. */
+function syncStatusChip(): void {
+  const selection = scene.selection;
+  const node = selection?.type === 'node' ? design.getNode(selection.id) : null;
+  const load = scene.load;
+  statusChip.hidden = !node || !load || usersPickerFor !== null;
+  if (!node || !load || statusChip.hidden) return;
+
+  const weakestId = load.weakestLink.get(node.id);
+  const weakest = weakestId ? design.getNode(weakestId) : undefined;
+  const status = describeStatus(
+    node,
+    load.nodes.get(node.id),
+    load.health.get(node.id),
+    weakest && (weakest.label ?? findKind(weakest.kind).label),
+    scenario(),
+  );
+  statusChip.dataset.tone = status.tone;
+  // Only touched when the words change, not on every frame.
+  setText(statusLabel, status.label);
+  setText(statusMeasure, status.measure ? `· ${status.measure}` : '');
+  setText(statusFigures, status.figures);
+  setText(statusDetail, status.detail);
+  statusDetail.hidden = status.detail === '';
+
+  const top = { x: node.x, y: node.y - NODE_HEIGHT / 2 };
+  const { x, y } = worldToScreen(scene.camera, top);
+  statusChip.style.left = `${x}px`;
+  statusChip.style.top = `${y}px`;
+}
+
+function setText(element: HTMLElement, text: string): void {
+  if (element.textContent !== text) element.textContent = text;
+}
+
+/** Shows the picker above its client while that client stays selected. */
+function syncUsersPicker(): void {
+  const selection = scene.selection;
+  const stillSelected =
+    selection?.type === 'node' && selection.id === usersPickerFor;
+  if (!stillSelected || !design.nodes.some((n) => n.id === usersPickerFor)) {
+    usersPickerFor = null;
+  }
+  usersPicker.hidden = usersPickerFor === null;
+  if (usersPickerFor === null) return;
+  const node = design.getNode(usersPickerFor);
+  const top = { x: node.x, y: node.y - NODE_HEIGHT / 2 };
+  const { x, y } = worldToScreen(scene.camera, top);
+  usersPicker.style.left = `${x}px`;
+  usersPicker.style.top = `${y}px`;
+  for (const option of usersOptions.children) {
+    const chosen = Number((option as HTMLElement).dataset.users);
+    option.ariaChecked = String(chosen === usersOf(node));
+  }
+}
+
 lessonOpenButton.addEventListener('click', () => setLessonOpen(true));
 
 function setLessonOpen(open: boolean): void {
@@ -1098,8 +1325,8 @@ function deleteSelection(): void {
 
 function copySelectedComponent(): boolean {
   if (scene.selection?.type !== 'node') return false;
-  const { kind, label, x, y } = design.getNode(scene.selection.id);
-  copied = { kind, label, x, y };
+  const { kind, label, users, x, y } = design.getNode(scene.selection.id);
+  copied = { kind, label, users, x, y };
   return true;
 }
 
@@ -1111,6 +1338,7 @@ function pasteComponent(): void {
   undoHistory.record(design);
   const position = { x: copied.x, y: copied.y };
   const node = design.addNode(copied.kind, position, copied.label);
+  if (copied.users !== undefined) design.setUsers(node.id, copied.users);
   scene.selection = { type: 'node', id: node.id };
 }
 
@@ -1162,6 +1390,11 @@ function cursorFor(overPort: boolean, grabbable: boolean): string {
   return grabbable ? 'grab' : 'default';
 }
 
+/** The worst day pushes designs the way real rushes do. */
+function scenario() {
+  return worstToggle.checked ? WORST_DAY : AVERAGE_DAY;
+}
+
 flowToggle.checked = scene.flow.enabled;
 flowToggle.addEventListener('change', () => {
   scene.flow.enabled = flowToggle.checked;
@@ -1184,10 +1417,18 @@ function frame(now: number): void {
     const end = snap ? design.portPoint(snap) : pointer;
     stepRope(rope, design.portPoint(from), end);
   }
+  // Load follows the "Show traffic" toggle: both are about traffic.
+  scene.load = scene.flow.enabled ? computeLoad(design, scenario()) : null;
+  legendWorst.hidden = !worstToggle.checked;
+  // The legend explains what traffic looks like, so it shows with it.
+  legend.hidden = scene.load === null || design.nodes.length === 0;
   forgetInfoOnceDeselected();
   syncDrawer();
   labelEditor.follow();
   syncCableToolbar();
+  syncUsersPicker();
+  // Before the wheel, which makes room above the chip.
+  syncStatusChip();
   syncNodeToolbar();
   forgetResizeOnceDeselected();
   syncGroupToolbar();
@@ -1199,6 +1440,9 @@ function frame(now: number): void {
 }
 
 resize();
+// Phones have little room: the legend starts folded there.
+if (isPhoneLayout()) legend.open = false;
+
 const startHash = decodeURIComponent(location.hash.slice(1));
 openTemplate(startHash);
 if (startHash === 'nutshell') setNutshellOpen(true);

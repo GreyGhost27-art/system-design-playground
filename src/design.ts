@@ -1,3 +1,4 @@
+import { findKind } from './components.ts';
 import { distance, type Point } from './geometry.ts';
 import {
   createRope,
@@ -9,6 +10,8 @@ import {
 
 export const NODE_WIDTH = 176;
 export const NODE_HEIGHT = 52;
+/** Space left between a component and a copy placed next to it. */
+const COPY_GAP = 36;
 /** A group is grabbed by its title strip, so dragging inside it still pans. */
 export const GROUP_HANDLE_HEIGHT = 40;
 /** The smallest a group can be resized to, so its name always fits. */
@@ -22,6 +25,8 @@ export interface DesignNode {
   kind: string;
   /** Overrides the component's default name, e.g. "Primary DB". */
   label?: string;
+  /** For clients: how many users this client stands for. */
+  users?: number;
   x: number;
   y: number;
 }
@@ -113,6 +118,60 @@ export class Design {
     if (label) node.label = label;
     this.nodes.push(node);
     return node;
+  }
+
+  /**
+   * A new box just like `id`, in the nearest free spot below it, numbered
+   * ("App Server 2") and wired to everything the original is wired to, the
+   * same way round, so it shares the original's work.
+   */
+  copyWithConnections(id: string): DesignNode {
+    const original = this.getNode(id);
+    const label = nextCopyLabel(
+      original.label ?? findKind(original.kind).label,
+      this.nodes.map((node) => node.label ?? findKind(node.kind).label),
+    );
+    const copy = this.addNode(
+      original.kind,
+      this.freeSpotBelow(original),
+      label,
+    );
+    if (original.users !== undefined) copy.users = original.users;
+    const swap = (end: PortRef) =>
+      end.nodeId === id ? { nodeId: copy.id, side: end.side } : end;
+    for (const cable of this.cablesOf(id)) {
+      this.connect(swap(cable.from), swap(cable.to), {
+        label: cable.label,
+        oneWay: cable.oneWay,
+      });
+    }
+    return copy;
+  }
+
+  /** Cables with either end on this component. */
+  cablesOf(id: string): Cable[] {
+    return this.cables.filter(
+      ({ from, to }) => from.nodeId === id || to.nodeId === id,
+    );
+  }
+
+  /** The first spot below `node`, one row at a time, where no box sits. */
+  freeSpotBelow(node: DesignNode): Point {
+    const row = NODE_HEIGHT + COPY_GAP;
+    for (let step = 1; ; step++) {
+      const spot = { x: node.x, y: node.y + step * row };
+      const taken = this.nodes.some(
+        (other) =>
+          Math.abs(other.x - spot.x) < NODE_WIDTH + COPY_GAP &&
+          Math.abs(other.y - spot.y) < row,
+      );
+      if (!taken) return spot;
+    }
+  }
+
+  /** Sets how many users a client stands for. */
+  setUsers(id: string, users: number): void {
+    this.getNode(id).users = users;
   }
 
   getNode(id: string): DesignNode {
@@ -363,4 +422,16 @@ export class Design {
     this.lastId += 1;
     return `${prefix}-${this.lastId}`;
   }
+}
+
+/**
+ * The name for a copy: the next number after the original's ("App Server 2"
+ * becomes "App Server 3"), skipping names already on the board.
+ */
+export function nextCopyLabel(original: string, taken: string[]): string {
+  const match = original.match(/^(.*?)\s+(\d+)$/);
+  const base = match ? match[1] : original;
+  let number = match ? Number(match[2]) + 1 : 2;
+  while (taken.includes(`${base} ${number}`)) number += 1;
+  return `${base} ${number}`;
 }

@@ -3,6 +3,7 @@
   "label": "Tracing",
   "badge": "TRC",
   "category": "observability",
+  "capacity": 100000,
   "info": {
     "what": "Follows a single request as it travels through every service, timing each step.",
     "why": "With many services involved, it shows exactly where a slow or failed request got stuck.",

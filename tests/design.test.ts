@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { Design, portPosition, type PortRef } from '../src/design.ts';
+import {
+  Design,
+  nextCopyLabel,
+  portPosition,
+  type PortRef,
+} from '../src/design.ts';
 import { rectBetween } from '../src/geometry.ts';
 
 function twoComponents() {
@@ -306,4 +311,33 @@ test('dragging a corner past the fixed one flips the group over', () => {
       height: 350,
     },
   );
+});
+
+test('a copy is a new box below the original, wired the same way', () => {
+  const { design, client, server } = twoComponents();
+  design.connect(port(client.id), port(server.id, 'left'), {
+    label: 'HTTP',
+    oneWay: true,
+  });
+  const copy = design.copyWithConnections(server.id);
+  assert.equal(copy.kind, 'app-server');
+  assert.deepEqual([copy.x, copy.y], [400, 88]);
+  const cable = design.cablesOf(copy.id)[0];
+  assert.deepEqual(cable.from, port(client.id));
+  assert.deepEqual(cable.to, port(copy.id, 'left'));
+  assert.equal(cable.label, 'HTTP');
+  assert.equal(cable.oneWay, true);
+});
+
+test('a copy skips spots that are already taken', () => {
+  const { design, server } = twoComponents();
+  design.addNode('cache', { x: 400, y: 88 });
+  const copy = design.copyWithConnections(server.id);
+  assert.deepEqual([copy.x, copy.y], [400, 176]);
+});
+
+test('copies are numbered after the original', () => {
+  assert.equal(nextCopyLabel('App Server', []), 'App Server 2');
+  assert.equal(nextCopyLabel('App Server 2', ['App Server 3']), 'App Server 4');
+  assert.equal(nextCopyLabel('Database', ['Database 2']), 'Database 3');
 });

@@ -3,6 +3,7 @@
   "label": "Object Storage",
   "badge": "OBJ",
   "category": "data",
+  "capacity": 1000000,
   "info": {
     "what": "Stores files of any size, like images, videos and backups, which you fetch by name.",
     "why": "Cheap, practically unlimited and very durable. The right home for big files that don't belong in a database.",

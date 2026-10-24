@@ -22,59 +22,79 @@
       "kind": "client",
       "label": "Users",
       "x": 0,
-      "y": 140
+      "y": 340
     },
     {
-      "id": "app",
+      "id": "app1",
       "kind": "app-server",
-      "label": "App Servers",
+      "label": "App Server 1",
       "x": 250,
-      "y": 0
+      "y": 60
+    },
+    {
+      "id": "app2",
+      "kind": "app-server",
+      "label": "App Server 2",
+      "x": 250,
+      "y": 260
     },
     {
       "id": "db",
       "kind": "sql-database",
       "label": "Database",
-      "x": 500,
-      "y": 0
+      "x": 750,
+      "y": 60
     },
     {
       "id": "queue",
       "kind": "queue",
       "label": "Task Queue",
-      "x": 250,
-      "y": 140
+      "x": 500,
+      "y": 260
     },
     {
       "id": "worker",
       "kind": "worker",
-      "label": "Workers",
-      "x": 500,
-      "y": 140
+      "label": "Worker",
+      "x": 750,
+      "y": 260
     },
     {
       "id": "email",
       "kind": "external-service",
       "label": "Email Provider",
-      "x": 500,
-      "y": 280
+      "x": 750,
+      "y": 420
     }
   ],
   "cables": [
     {
       "from": "client.right",
-      "to": "app.left",
+      "to": "app1.left",
       "label": "place order"
     },
     {
-      "from": "app.right",
+      "from": "client.right",
+      "to": "app2.left"
+    },
+    {
+      "from": "app1.right",
       "to": "db.left",
       "label": "save order"
     },
     {
-      "from": "app.bottom",
-      "to": "queue.top",
+      "from": "app2.right",
+      "to": "db.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "queue.left",
       "label": "receipt, invoice",
+      "oneWay": true
+    },
+    {
+      "from": "app2.right",
+      "to": "queue.left",
       "oneWay": true
     },
     {

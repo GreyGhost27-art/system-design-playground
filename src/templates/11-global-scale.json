@@ -58,29 +58,36 @@
       "id": "usLb",
       "kind": "load-balancer",
       "label": "US Load Balancer",
-      "x": 90,
+      "x": 210,
       "y": 100
     },
     {
-      "id": "usApp",
+      "id": "usApp1",
       "kind": "app-server",
-      "label": "US App Servers",
+      "label": "US App Server 1",
       "x": 90,
-      "y": 240
+      "y": 230
+    },
+    {
+      "id": "usApp2",
+      "kind": "app-server",
+      "label": "US App Server 2",
+      "x": 330,
+      "y": 230
     },
     {
       "id": "usCache",
       "kind": "cache",
       "label": "US Cache",
-      "x": 330,
-      "y": 240
+      "x": 90,
+      "y": 370
     },
     {
       "id": "usDb",
       "kind": "sql-database",
       "label": "Primary DB",
-      "x": 90,
-      "y": 380
+      "x": 330,
+      "y": 370
     },
     {
       "id": "euLb",
@@ -90,18 +97,25 @@
       "y": 100
     },
     {
-      "id": "euApp",
+      "id": "euApp1",
       "kind": "app-server",
-      "label": "EU App Servers",
-      "x": 910,
-      "y": 240
+      "label": "EU App Server 1",
+      "x": 670,
+      "y": 190
+    },
+    {
+      "id": "euApp2",
+      "kind": "app-server",
+      "label": "EU App Server 2",
+      "x": 670,
+      "y": 310
     },
     {
       "id": "euCache",
       "kind": "cache",
       "label": "EU Cache",
-      "x": 670,
-      "y": 240
+      "x": 910,
+      "y": 250
     },
     {
       "id": "euDb",
@@ -131,39 +145,67 @@
     },
     {
       "from": "usLb.bottom",
-      "to": "usApp.top"
+      "to": "usApp1.top"
     },
     {
-      "from": "euLb.bottom",
-      "to": "euApp.top"
+      "from": "usLb.bottom",
+      "to": "usApp2.top"
     },
     {
-      "from": "usApp.right",
-      "to": "usCache.left"
+      "from": "usApp1.bottom",
+      "to": "usCache.top"
     },
     {
-      "from": "euApp.left",
-      "to": "euCache.right"
-    },
-    {
-      "from": "usApp.bottom",
+      "from": "usApp2.bottom",
       "to": "usDb.top"
     },
     {
-      "from": "euApp.bottom",
-      "to": "euDb.top",
+      "from": "usApp1.right",
+      "to": "usDb.left"
+    },
+    {
+      "from": "usApp2.left",
+      "to": "usCache.right"
+    },
+    {
+      "from": "euLb.left",
+      "to": "euApp1.right"
+    },
+    {
+      "from": "euLb.left",
+      "to": "euApp2.right"
+    },
+    {
+      "from": "euApp1.right",
+      "to": "euCache.left"
+    },
+    {
+      "from": "euApp2.right",
+      "to": "euCache.left"
+    },
+    {
+      "from": "euApp1.right",
+      "to": "euDb.left",
       "label": "local reads"
     },
     {
-      "from": "usDb.right",
-      "to": "euDb.left",
-      "label": "async replication (lag)",
-      "oneWay": true
+      "from": "euApp2.right",
+      "to": "euDb.left"
     },
     {
-      "from": "euApp.left",
+      "from": "euApp1.left",
       "to": "usDb.right",
       "label": "writes to primary"
+    },
+    {
+      "from": "euApp2.left",
+      "to": "usDb.right"
+    },
+    {
+      "from": "usDb.bottom",
+      "to": "euDb.bottom",
+      "label": "async replication (lag)",
+      "oneWay": true
     }
   ]
 }

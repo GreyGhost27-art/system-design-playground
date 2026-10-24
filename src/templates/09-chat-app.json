@@ -45,31 +45,38 @@
       "y": 320
     },
     {
-      "id": "chat",
+      "id": "pubsub",
+      "kind": "pub-sub",
+      "label": "Conversations",
+      "x": 250,
+      "y": 190
+    },
+    {
+      "id": "chat1",
       "kind": "app-server",
-      "label": "Chat Service",
+      "label": "Chat Service 1",
       "x": 500,
       "y": 60
     },
     {
-      "id": "pubsub",
-      "kind": "pub-sub",
-      "label": "Conversations",
+      "id": "chat2",
+      "kind": "app-server",
+      "label": "Chat Service 2",
       "x": 500,
-      "y": 320
+      "y": 180
     },
     {
       "id": "messages",
       "kind": "nosql-database",
       "label": "Message Store",
       "x": 750,
-      "y": 60
+      "y": 120
     },
     {
       "id": "presence",
       "kind": "cache",
       "label": "Presence",
-      "x": 750,
+      "x": 500,
       "y": 320
     }
   ],
@@ -86,34 +93,47 @@
     },
     {
       "from": "ws1.right",
-      "to": "chat.left",
+      "to": "chat1.left",
       "label": "send"
     },
     {
-      "from": "chat.right",
+      "from": "ws1.right",
+      "to": "chat2.left"
+    },
+    {
+      "from": "chat1.right",
       "to": "messages.left",
       "label": "store first"
     },
     {
-      "from": "chat.bottom",
-      "to": "pubsub.top",
+      "from": "chat2.right",
+      "to": "messages.left"
+    },
+    {
+      "from": "chat1.left",
+      "to": "pubsub.right",
       "label": "publish",
       "oneWay": true
     },
     {
-      "from": "pubsub.left",
-      "to": "ws2.right",
+      "from": "chat2.left",
+      "to": "pubsub.right",
+      "oneWay": true
+    },
+    {
+      "from": "pubsub.bottom",
+      "to": "ws2.top",
       "label": "deliver",
       "oneWay": true
     },
     {
-      "from": "pubsub.left",
-      "to": "ws1.right",
+      "from": "pubsub.top",
+      "to": "ws1.bottom",
       "oneWay": true
     },
     {
-      "from": "ws2.bottom",
-      "to": "presence.bottom",
+      "from": "ws2.right",
+      "to": "presence.left",
       "label": "online / offline"
     }
   ]

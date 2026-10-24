@@ -21,52 +21,59 @@
       "kind": "client",
       "label": "Users",
       "x": 0,
-      "y": 0
+      "y": 60
     },
     {
       "id": "lb",
       "kind": "load-balancer",
       "x": 250,
+      "y": 60
+    },
+    {
+      "id": "app1",
+      "kind": "app-server",
+      "label": "App Server 1",
+      "x": 500,
       "y": 0
     },
     {
-      "id": "app",
+      "id": "app2",
       "kind": "app-server",
-      "label": "App Servers",
+      "label": "App Server 2",
       "x": 500,
-      "y": 0
+      "y": 120
     },
     {
       "id": "db",
       "kind": "sql-database",
       "label": "Database",
       "x": 750,
-      "y": 0
-    },
-    {
-      "id": "metrics",
-      "kind": "metrics",
-      "x": 500,
-      "y": 140
+      "y": -60
     },
     {
       "id": "logs",
       "kind": "logs",
       "x": 750,
-      "y": 140
+      "y": 60
+    },
+    {
+      "id": "metrics",
+      "kind": "metrics",
+      "x": 750,
+      "y": 180
     },
     {
       "id": "alerting",
       "kind": "alerting",
-      "x": 500,
-      "y": 280
+      "x": 750,
+      "y": 320
     },
     {
       "id": "dev",
       "kind": "client",
       "label": "On-call Developer",
-      "x": 750,
-      "y": 280
+      "x": 1000,
+      "y": 320
     }
   ],
   "cables": [
@@ -76,21 +83,39 @@
     },
     {
       "from": "lb.right",
-      "to": "app.left"
+      "to": "app1.left"
     },
     {
-      "from": "app.right",
+      "from": "lb.right",
+      "to": "app2.left"
+    },
+    {
+      "from": "app1.right",
       "to": "db.left"
     },
     {
-      "from": "app.bottom",
-      "to": "metrics.top",
+      "from": "app2.right",
+      "to": "db.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "logs.left",
+      "oneWay": true
+    },
+    {
+      "from": "app2.right",
+      "to": "logs.left",
+      "oneWay": true
+    },
+    {
+      "from": "app1.right",
+      "to": "metrics.left",
       "label": "orders, errors",
       "oneWay": true
     },
     {
-      "from": "app.right",
-      "to": "logs.top",
+      "from": "app2.right",
+      "to": "metrics.left",
       "oneWay": true
     },
     {

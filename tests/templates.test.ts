@@ -127,6 +127,14 @@ test('one-way cables stay one-way when loaded and exported', () => {
   assert.equal(toTemplate(design).cables[0].oneWay, true);
 });
 
+test('a client keeps its number of users when loaded and exported', () => {
+  const design = new Design();
+  const nodes = [{ id: 'client', kind: 'client', users: 100_000, x: 0, y: 0 }];
+  loadTemplate(design, tinyTemplate({ nodes, cables: [] }));
+  assert.equal(design.nodes[0].users, 100_000);
+  assert.equal(toTemplate(design).nodes[0].users, 100_000);
+});
+
 test('the board exported as JSON loads back into the same design', () => {
   const original = new Design();
   loadTemplate(original, tinyTemplate());

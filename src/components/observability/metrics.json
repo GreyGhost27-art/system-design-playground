@@ -3,6 +3,7 @@
   "label": "Metrics",
   "badge": "MET",
   "category": "observability",
+  "capacity": 100000,
   "info": {
     "what": "Records numbers over time, like requests per second, error rate and response time.",
     "why": "Shows at a glance whether the system is healthy, and reveals trends, like slowly growing response times, before users complain.",

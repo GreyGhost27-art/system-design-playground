@@ -32,32 +32,39 @@
       "y": 120
     },
     {
-      "id": "app",
+      "id": "app1",
       "kind": "app-server",
-      "label": "App Servers",
+      "label": "App Server 1",
       "x": 500,
-      "y": 120
+      "y": 40
+    },
+    {
+      "id": "app2",
+      "kind": "app-server",
+      "label": "App Server 2",
+      "x": 500,
+      "y": 200
     },
     {
       "id": "cache",
       "kind": "cache",
       "label": "Menu Cache",
-      "x": 500,
-      "y": -20
+      "x": 750,
+      "y": -80
     },
     {
       "id": "primary",
       "kind": "sql-database",
       "label": "Main DB",
       "x": 750,
-      "y": 40
+      "y": 80
     },
     {
       "id": "replica",
       "kind": "sql-database",
       "label": "Read Replica",
       "x": 750,
-      "y": 200
+      "y": 240
     }
   ],
   "cables": [
@@ -67,22 +74,38 @@
     },
     {
       "from": "lb.right",
-      "to": "app.left"
+      "to": "app1.left"
     },
     {
-      "from": "app.top",
-      "to": "cache.bottom",
+      "from": "lb.right",
+      "to": "app2.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "cache.left",
       "label": "menus"
     },
     {
-      "from": "app.right",
+      "from": "app2.right",
+      "to": "cache.left"
+    },
+    {
+      "from": "app1.right",
       "to": "primary.left",
       "label": "writes"
     },
     {
-      "from": "app.right",
+      "from": "app2.right",
+      "to": "primary.left"
+    },
+    {
+      "from": "app1.right",
       "to": "replica.left",
       "label": "history, reports"
+    },
+    {
+      "from": "app2.right",
+      "to": "replica.left"
     },
     {
       "from": "primary.bottom",

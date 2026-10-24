@@ -3,6 +3,7 @@
   "label": "Shard Router",
   "badge": "SR",
   "category": "routing",
+  "capacity": 100000,
   "info": {
     "what": "Knows which part of a split-up database holds each piece of data, and sends queries there.",
     "why": "When data is too big for one machine it is split into shards. The router hides that split, so the app talks to it as if it were one database.",

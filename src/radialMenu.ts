@@ -71,7 +71,10 @@ function sliceAngle(count: number): number {
 /** Cuts each button of `menu` into its slice of the wheel. */
 export function layoutRadialMenu(menu: HTMLElement): void {
   menu.style.width = menu.style.height = `${OUTER * 2}px`;
-  const buttons = [...menu.querySelectorAll<HTMLElement>(':scope > button')];
+  // Hidden buttons (options that don't apply here) take no slice.
+  const buttons = [
+    ...menu.querySelectorAll<HTMLElement>(':scope > button:not([hidden])'),
+  ];
   radialSlices(buttons.length).forEach(({ path, center }, i) => {
     buttons[i].style.clipPath = `path('${path}')`;
     buttons[i].style.setProperty('--x', `${center.x}px`);

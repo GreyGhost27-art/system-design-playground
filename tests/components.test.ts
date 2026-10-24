@@ -12,6 +12,13 @@ test('every component has a unique id and a known category', () => {
   }
 });
 
+test('every component except the client knows how busy it can get', () => {
+  for (const { id, capacity } of COMPONENT_KINDS) {
+    if (id === 'client') assert.equal(capacity, undefined);
+    else assert.ok(capacity && capacity > 0, `${id} has no capacity`);
+  }
+});
+
 test('every component explains what it is, why and what it is like', () => {
   for (const { id, info } of COMPONENT_KINDS) {
     assert.ok(info.what.trim(), `${id} is missing "what"`);

@@ -1,0 +1,195 @@
+{
+  "app-server": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the requests. In a real system a load balancer in front shares them out.",
+      "action": "add-copy"
+    },
+    {
+      "title": "Learn why copies need a load balancer",
+      "why": "Copies only help if something shares the requests out between them, and skips any copy that breaks.",
+      "board": "more-users"
+    }
+  ],
+  "function": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "worker": [
+    {
+      "title": "Add a copy",
+      "why": "A second worker appears, taking tasks from the same queue, so twice as many get done.",
+      "action": "add-copy"
+    },
+    {
+      "title": "Learn how queues and workers fit together",
+      "why": "The queue holds tasks while workers are busy, so nobody waits for them.",
+      "board": "slow-work"
+    }
+  ],
+  "sql-database": [
+    {
+      "title": "Put a cache in front of it",
+      "why": "Add a Cache and connect the server to it: most reads are then answered from fast memory, and far fewer reach the database.",
+      "board": "database-bottleneck"
+    },
+    {
+      "title": "Add a read replica",
+      "why": "Add a second SQL Database, connect the server to both, and a cable from the main one to the copy. Reads are shared; the main one keeps the writes.",
+      "board": "database-bottleneck"
+    },
+    {
+      "title": "Split the data across databases",
+      "why": "Put a Shard Router in front of several databases, each holding part of the data (sharding). A bigger step, for when the others aren't enough.",
+      "board": "ride-hailing"
+    }
+  ],
+  "nosql-database": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    },
+    {
+      "title": "Put a cache in front of it",
+      "why": "Add a Cache and connect the server to it, so most reads never reach the database.",
+      "board": "database-bottleneck"
+    }
+  ],
+  "search-index": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "external-service": [
+    {
+      "title": "Call it from the background, through a queue",
+      "why": "Put a Queue and Workers between your server and this service: only actions reach it, at a pace it can take, instead of every request.",
+      "board": "slow-work"
+    }
+  ],
+  "cache": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "load-balancer": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "api-gateway": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "rate-limiter": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "shard-router": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "websocket-gateway": [
+    {
+      "title": "Add a copy",
+      "why": "A second gateway appears, wired up like the first, and holds half of the open connections.",
+      "action": "add-copy"
+    }
+  ],
+  "dns": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "cdn": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "object-storage": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "queue": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "pub-sub": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "stream": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "metrics": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "logs": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "tracing": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "error-tracking": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ],
+  "alerting": [
+    {
+      "title": "Add a copy",
+      "why": "A second one appears, wired up like the first, and takes half the work.",
+      "action": "add-copy"
+    }
+  ]
+}

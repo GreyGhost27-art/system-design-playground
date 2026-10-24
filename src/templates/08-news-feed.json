@@ -60,7 +60,7 @@
     {
       "id": "fanout",
       "kind": "worker",
-      "label": "Fan-out Workers",
+      "label": "Fan-out Worker",
       "x": 1000,
       "y": 80
     },
@@ -126,7 +126,7 @@
     },
     {
       "from": "feed.top",
-      "to": "posts.bottom",
+      "to": "posts.left",
       "label": "pull celebrities (read)"
     }
   ]

@@ -1,6 +1,14 @@
 import type { Camera } from './camera.ts';
 import { categoryColor, findKind } from './components.ts';
 import {
+  BUSY_AT,
+  describeUsers,
+  usersOf,
+  type Health,
+  type LoadReport,
+  type NodeLoad,
+} from './load.ts';
+import {
   NODE_HEIGHT,
   NODE_WIDTH,
   SIDES,
@@ -44,6 +52,17 @@ export const GROUP_CORNER_RADIUS = 9;
 const NODE_FILL = rootStyle.getPropertyValue('--surface-node').trim();
 // Group outlines and label pills: quiet lines on the board.
 const SUBTLE_LINE = '#3a3a3a';
+// Load and health colours, the same ones the legend uses.
+const LOAD_FINE = rootStyle.getPropertyValue('--status-fine').trim();
+const LOAD_BUSY = rootStyle.getPropertyValue('--status-busy').trim();
+const LOAD_OVER = rootStyle.getPropertyValue('--status-over').trim();
+// Each health state has its own colour and its own symbol, so it reads
+// without relying on colour alone.
+const HEALTH_DOT: Record<Health, { color: string; symbol: string }> = {
+  fast: { color: LOAD_FINE, symbol: '✓' },
+  slow: { color: LOAD_BUSY, symbol: '!' },
+  failing: { color: LOAD_OVER, symbol: '✕' },
+};
 
 /** Groups have no ids, so a selected group's `id` is its index. */
 export type Selection = { type: 'node' | 'cable' | 'group'; id: string };
@@ -73,6 +92,8 @@ export interface Scene {
    * every selection, so dragging something doesn't pop one up.
    */
   openWheel: string | null;
+  /** How busy each component is, while traffic is shown. */
+  load: LoadReport | null;
   /** The group showing corner handles for resizing, as an index. */
   resizingGroup: number | null;
   flow: FlowSettings;
@@ -125,6 +146,8 @@ export function render(
     drawNode(ctx, node, {
       selected: isSelected(scene, 'node', node.id),
       hovered: scene.hoveredNodeId === node.id,
+      load: scene.load?.nodes.get(node.id),
+      health: scene.load?.health.get(node.id),
     });
   }
   drawPorts(ctx, scene);
@@ -374,12 +397,20 @@ function drawCableLabel(ctx: CanvasRenderingContext2D, cable: Cable): void {
 function drawNode(
   ctx: CanvasRenderingContext2D,
   node: DesignNode,
-  state: { selected: boolean; hovered: boolean },
+  state: {
+    selected: boolean;
+    hovered: boolean;
+    load?: NodeLoad;
+    health?: Health;
+  },
 ): void {
   const kind = findKind(node.kind);
   const color = categoryColor(kind.category);
   const left = node.x - NODE_WIDTH / 2;
   const top = node.y - NODE_HEIGHT / 2;
+  const ratio = state.load?.ratio ?? 0;
+  const overloaded = ratio > 1;
+  const busy = !overloaded && ratio >= BUSY_AT;
 
   ctx.save();
   ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
@@ -393,11 +424,13 @@ function drawNode(
 
   ctx.beginPath();
   ctx.roundRect(left, top, NODE_WIDTH, NODE_HEIGHT, 10);
-  ctx.lineWidth = state.selected ? 2 : 1;
-  ctx.strokeStyle = state.selected
-    ? color
-    : // Strong enough to see each component's edge (3 : 1 or more).
-      withAlpha(color, state.hovered ? 0.85 : 0.6);
+  ctx.lineWidth = state.selected || overloaded ? 2 : 1;
+  ctx.strokeStyle = overloaded
+    ? LOAD_OVER
+    : state.selected
+      ? color
+      : // Strong enough to see each component's edge (3 : 1 or more).
+        withAlpha(color, state.hovered ? 0.85 : 0.6);
   ctx.stroke();
 
   const badgeSize = 32;
@@ -414,18 +447,74 @@ function drawNode(
   ctx.font = `700 12px ${FONT_MONO}`;
   ctx.fillText(kind.badge, badgeLeft + badgeSize / 2, node.y + 0.5);
 
+  if (state.health) {
+    drawHealthDot(ctx, left + NODE_WIDTH - 20, node.y, state.health);
+  }
+
   ctx.textAlign = 'left';
   const textLeft = badgeLeft + badgeSize + 10;
-  const textWidth = left + NODE_WIDTH - 10 - textLeft;
-  // A custom name ("Primary DB") keeps the component type as its caption.
-  const caption = node.label ? kind.label : kind.category;
+  // Leave room for the health dot on clients.
+  const textRight = left + NODE_WIDTH - (state.health ? 36 : 10);
+  const textWidth = textRight - textLeft;
   ctx.fillStyle = TEXT;
   ctx.font = `600 15px ${FONT_UI}`;
   const title = fitText(ctx, node.label ?? kind.label, textWidth);
   ctx.fillText(title, textLeft, node.y - 8);
-  ctx.fillStyle = MUTED;
+
+  // Load speaks in words too, so it never relies on colour alone.
+  const [caption, captionColor] = overloaded
+    ? ['Too busy', LOAD_OVER]
+    : busy
+      ? ['Busy', LOAD_BUSY]
+      : node.kind === 'client'
+        ? [describeUsers(usersOf(node)), MUTED]
+        : // A custom name ("Primary DB") keeps the type as its caption.
+          [node.label ? kind.label : kind.category, MUTED];
+  ctx.fillStyle = captionColor;
   ctx.font = `500 13px ${FONT_UI}`;
   ctx.fillText(fitText(ctx, caption, textWidth), textLeft, node.y + 11);
+
+  if (state.load) drawLoadBar(ctx, left, node.y + NODE_HEIGHT / 2 - 5, ratio);
+}
+
+/** A client's health: a coloured dot holding its own symbol. */
+function drawHealthDot(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  health: Health,
+): void {
+  const { color, symbol } = HEALTH_DOT[health];
+  ctx.beginPath();
+  ctx.arc(x, y, 10, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = BACKGROUND;
+  ctx.font = `700 13px ${FONT_UI}`;
+  ctx.fillText(symbol, x, y + 0.5);
+}
+
+/** A slim bar along the bottom of a component: how full it is. */
+function drawLoadBar(
+  ctx: CanvasRenderingContext2D,
+  left: number,
+  y: number,
+  ratio: number,
+): void {
+  const width = NODE_WIDTH - 20;
+  ctx.beginPath();
+  ctx.roundRect(left + 10, y - 1.5, width, 3, 1.5);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.fill();
+  ctx.beginPath();
+  // A sliver always shows, so even a quiet component reads as "in use".
+  const filled = Math.max(4, width * Math.min(ratio, 1));
+  ctx.roundRect(left + 10, y - 1.5, filled, 3, 1.5);
+  ctx.fillStyle =
+    ratio > 1 ? LOAD_OVER : ratio >= BUSY_AT ? LOAD_BUSY : LOAD_FINE;
+  ctx.fill();
 }
 
 function fitText(

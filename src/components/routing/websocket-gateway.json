@@ -3,6 +3,7 @@
   "label": "WebSocket Gateway",
   "badge": "WS",
   "category": "routing",
+  "capacity": 20000,
   "info": {
     "what": "Keeps a live, two-way connection open with each user.",
     "why": "The server can push new messages or updates the moment they happen, instead of waiting for the user to ask.",

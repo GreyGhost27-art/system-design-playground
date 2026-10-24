@@ -30,11 +30,18 @@
       "y": 160
     },
     {
-      "id": "payments",
+      "id": "payments1",
       "kind": "app-server",
-      "label": "Payment Service",
+      "label": "Payment Service 1",
       "x": 500,
-      "y": 160
+      "y": 100
+    },
+    {
+      "id": "payments2",
+      "kind": "app-server",
+      "label": "Payment Service 2",
+      "x": 500,
+      "y": 220
     },
     {
       "id": "ledger",
@@ -87,17 +94,29 @@
     },
     {
       "from": "gateway.right",
-      "to": "payments.left"
+      "to": "payments1.left"
     },
     {
-      "from": "payments.right",
+      "from": "gateway.right",
+      "to": "payments2.left"
+    },
+    {
+      "from": "payments1.right",
       "to": "ledger.left",
       "label": "key + entry, one transaction"
     },
     {
-      "from": "payments.right",
+      "from": "payments2.right",
+      "to": "ledger.left"
+    },
+    {
+      "from": "payments1.right",
       "to": "psp.left",
       "label": "charge / webhook"
+    },
+    {
+      "from": "payments2.right",
+      "to": "psp.left"
     },
     {
       "from": "ledger.right",

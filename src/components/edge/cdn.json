@@ -3,6 +3,7 @@
   "label": "CDN",
   "badge": "CDN",
   "category": "edge",
+  "capacity": 1000000,
   "info": {
     "what": "A network of servers around the world that keeps copies of your files close to users.",
     "why": "Images, videos and scripts load much faster from nearby, and your own servers handle far less traffic.",

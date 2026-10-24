@@ -11,6 +11,8 @@ export const NODE_WIDTH = 176;
 export const NODE_HEIGHT = 52;
 /** A group is grabbed by its title strip, so dragging inside it still pans. */
 export const GROUP_HANDLE_HEIGHT = 40;
+/** The smallest a group can be resized to, so its name always fits. */
+export const MIN_GROUP_SIZE = { width: 160, height: 80 };
 
 export const SIDES = ['top', 'right', 'bottom', 'left'] as const;
 export type Side = (typeof SIDES)[number];
@@ -236,6 +238,57 @@ export class Design {
       right: Math.max(...boxes.map((box) => box.right)),
       bottom: Math.max(...boxes.map((box) => box.bottom)),
     };
+  }
+
+  /** Adds a group and returns its index. */
+  addGroup(group: Group): number {
+    this.groups.push({ ...group });
+    return this.groups.length - 1;
+  }
+
+  renameGroup(groupIndex: number, label: string): void {
+    this.groups[groupIndex].label = label;
+  }
+
+  /** Removes a group; the components inside it stay where they are. */
+  removeGroup(groupIndex: number): void {
+    this.groups.splice(groupIndex, 1);
+  }
+
+  /**
+   * The corner opposite the one near `point` (within `reach`), which stays
+   * put while that corner is dragged; null when no corner is that close.
+   */
+  groupCornerAt(groupIndex: number, point: Point, reach: number): Point | null {
+    const { x, y, width, height } = this.groups[groupIndex];
+    for (const [cornerX, oppositeX] of [
+      [x, x + width],
+      [x + width, x],
+    ]) {
+      for (const [cornerY, oppositeY] of [
+        [y, y + height],
+        [y + height, y],
+      ]) {
+        if (distance(point, { x: cornerX, y: cornerY }) <= reach) {
+          return { x: oppositeX, y: oppositeY };
+        }
+      }
+    }
+    return null;
+  }
+
+  /** Stretches a group between a fixed corner and a dragged one. */
+  resizeGroup(groupIndex: number, fixedCorner: Point, dragged: Point): void {
+    const dx = dragged.x - fixedCorner.x;
+    const dy = dragged.y - fixedCorner.y;
+    const width = Math.max(Math.abs(dx), MIN_GROUP_SIZE.width);
+    const height = Math.max(Math.abs(dy), MIN_GROUP_SIZE.height);
+    Object.assign(this.groups[groupIndex], {
+      x: dx < 0 ? fixedCorner.x - width : fixedCorner.x,
+      y: dy < 0 ? fixedCorner.y - height : fixedCorner.y,
+      width,
+      height,
+    });
   }
 
   /** The group whose title strip is under `point`, as an index, or -1. */

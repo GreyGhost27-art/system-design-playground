@@ -1,29 +1,33 @@
-import type { Design } from './design.ts';
 import type { Point } from './geometry.ts';
 
-export interface CableLabelEditor {
-  open(cableId: string): void;
-  /** Keeps the field over the cable's middle while the rope swings. */
+/** Something on the board that can be named in place. */
+export interface LabelTarget {
+  text: string;
+  placeholder: string;
+  /** Where the field sits, in board units; null once the thing is gone. */
+  position(): Point | null;
+  save(text: string): void;
+}
+
+export interface LabelEditor {
+  open(target: LabelTarget): void;
+  /** Keeps the field over its target while the board or a rope moves. */
   follow(): void;
 }
 
-/** A small text field floating over a cable, for naming it. */
-export function createCableLabelEditor(options: {
+/** A small text field floating over the board, for naming things. */
+export function createLabelEditor(options: {
   input: HTMLInputElement;
-  design: Design;
   toScreen: (world: Point) => Point;
-  onSave: (cableId: string, label: string) => void;
-}): CableLabelEditor {
-  const { input, design, toScreen, onSave } = options;
-  let cableId: string | null = null;
+}): LabelEditor {
+  const { input, toScreen } = options;
+  let target: LabelTarget | null = null;
 
-  const findCable = () => design.cables.find((cable) => cable.id === cableId);
-
-  function open(id: string): void {
-    cableId = id;
-    const cable = findCable();
-    if (!cable) return close(false);
-    input.value = cable.label ?? '';
+  function open(next: LabelTarget): void {
+    target = next;
+    input.value = next.text;
+    input.placeholder = next.placeholder;
+    input.ariaLabel = next.placeholder;
     input.hidden = false;
     follow();
     input.focus();
@@ -31,22 +35,21 @@ export function createCableLabelEditor(options: {
   }
 
   function close(save: boolean): void {
-    if (cableId === null) return;
-    const id = cableId;
-    cableId = null;
+    if (!target) return;
+    const closing = target;
+    target = null;
     input.hidden = true;
-    if (save) onSave(id, input.value);
+    if (save) closing.save(input.value);
   }
 
   function follow(): void {
-    if (cableId === null) return;
-    const cable = findCable();
-    // The cable may have been deleted or undone while the field was open.
-    if (!cable) return close(false);
-    const { points } = cable.rope;
-    const middle = toScreen(points[Math.floor(points.length / 2)]);
-    input.style.left = `${middle.x}px`;
-    input.style.top = `${middle.y}px`;
+    if (!target) return;
+    const position = target.position();
+    // The thing may have been deleted or undone while the field was open.
+    if (!position) return close(false);
+    const { x, y } = toScreen(position);
+    input.style.left = `${x}px`;
+    input.style.top = `${y}px`;
   }
 
   input.addEventListener('keydown', (event) => {

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { Design, portPosition, type PortRef } from '../src/design.ts';
+import { rectBetween } from '../src/geometry.ts';
 
 function twoComponents() {
   const design = new Design();
@@ -241,4 +242,68 @@ test('moving a group carries its components and leaves others behind', () => {
   });
   assert.deepEqual([inside.x, inside.y], [250, 130]);
   assert.deepEqual([outside.x, outside.y], [800, 150]);
+});
+
+test('a new group can be added and renamed', () => {
+  const design = new Design();
+  const area = { x: 10, y: 20, width: 300, height: 200 };
+  const index = design.addGroup({ label: 'Group', ...area });
+  design.renameGroup(index, 'EU region');
+  assert.deepEqual(design.groups, [{ label: 'EU region', ...area }]);
+});
+
+test('a dragged area is the same whichever corner it starts from', () => {
+  const expected = { x: 10, y: 20, width: 90, height: 60 };
+  assert.deepEqual(rectBetween({ x: 10, y: 20 }, { x: 100, y: 80 }), expected);
+  assert.deepEqual(rectBetween({ x: 100, y: 80 }, { x: 10, y: 20 }), expected);
+});
+
+test('removing a group leaves its components on the board', () => {
+  const { design, inside } = designWithRegion();
+  design.removeGroup(0);
+  assert.deepEqual(design.groups, []);
+  assert.ok(design.nodes.includes(inside));
+});
+
+test('grabbing near a corner of a group gives the opposite corner', () => {
+  const { design } = designWithRegion();
+  assert.deepEqual(design.groupCornerAt(0, { x: 398, y: 302 }, 10), {
+    x: 0,
+    y: 0,
+  });
+  assert.deepEqual(design.groupCornerAt(0, { x: 4, y: 296 }, 10), {
+    x: 400,
+    y: 0,
+  });
+  assert.equal(design.groupCornerAt(0, { x: 200, y: 150 }, 10), null);
+});
+
+test('a group resizes from its fixed corner, never below its minimum', () => {
+  const { design } = designWithRegion();
+  design.resizeGroup(0, { x: 0, y: 0 }, { x: 500, y: 350 });
+  assert.deepEqual(design.groups[0], {
+    label: 'EU',
+    x: 0,
+    y: 0,
+    width: 500,
+    height: 350,
+  });
+  design.resizeGroup(0, { x: 0, y: 0 }, { x: 20, y: 10 });
+  assert.equal(design.groups[0].width, 160);
+  assert.equal(design.groups[0].height, 80);
+});
+
+test('dragging a corner past the fixed one flips the group over', () => {
+  const { design } = designWithRegion();
+  design.resizeGroup(0, { x: 400, y: 300 }, { x: 100, y: -50 });
+  const { x, y, width, height } = design.groups[0];
+  assert.deepEqual(
+    { x, y, width, height },
+    {
+      x: 100,
+      y: -50,
+      width: 300,
+      height: 350,
+    },
+  );
 });

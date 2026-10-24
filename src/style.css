@@ -612,7 +612,7 @@ kbd {
   gap: 8px;
 }
 
-.back-to-nutshell {
+.board-button {
   min-height: 36px;
   padding: 0 14px;
   border: 1px solid var(--border-control);
@@ -625,7 +625,13 @@ kbd {
   cursor: pointer;
 }
 
-.back-to-nutshell:hover {
+.board-button[aria-pressed='true'] {
+  border-color: var(--accent-border);
+  background: var(--accent-fill);
+  color: var(--accent);
+}
+
+.board-button:hover {
   background: var(--panel-raised);
 }
 
@@ -677,7 +683,7 @@ kbd {
 
 .zoom-controls,
 .blank-board[hidden],
-.back-to-nutshell[hidden],
+.board-button[hidden],
 .toast[hidden],
 .menu-toggle,
 .menu-backdrop {

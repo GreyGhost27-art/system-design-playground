@@ -1,15 +1,25 @@
 import { fitCamera, screenToWorld, worldToScreen, zoomAt } from './camera.ts';
 import { renderComponentInfo } from './componentInfo.ts';
 import { findKind } from './components.ts';
-import { Design, NODE_HEIGHT, type PortRef } from './design.ts';
-import type { Point } from './geometry.ts';
+import {
+  Design,
+  GROUP_HANDLE_HEIGHT,
+  NODE_HEIGHT,
+  type PortRef,
+} from './design.ts';
+import { rectBetween, type Point } from './geometry.ts';
 import { UndoHistory } from './history.ts';
 import { createCableToolbar } from './cableToolbar.ts';
-import { createCableLabelEditor } from './labelEditor.ts';
+import { createLabelEditor } from './labelEditor.ts';
 import { renderLesson } from './lesson.ts';
 import { renderNutshell } from './nutshell.ts';
 import { DRAG_FORMAT, renderPalette } from './palette.ts';
-import { render, type CableDraft, type Scene } from './render.ts';
+import {
+  GROUP_CORNER_RADIUS,
+  render,
+  type CableDraft,
+  type Scene,
+} from './render.ts';
 import { createWheelPlacement, layoutRadialMenu } from './radialMenu.ts';
 import { createRope, reverseRope, stepRope } from './rope.ts';
 import settings from './settings.json' with { type: 'json' };
@@ -35,6 +45,13 @@ type Gesture =
       last: Point;
       moved: boolean;
     }
+  | { type: 'drawing-group'; start: Point }
+  | {
+      type: 'resizing-group';
+      index: number;
+      fixedCorner: Point;
+      moved: boolean;
+    }
   | { type: 'panning'; last: Point };
 
 const canvas = document.querySelector<HTMLCanvasElement>('#board')!;
@@ -52,11 +69,18 @@ const labelInput = document.querySelector<HTMLInputElement>('#label-editor')!;
 const menuToggle = document.querySelector<HTMLElement>('#menu-toggle')!;
 const menuBackdrop = document.querySelector<HTMLElement>('#menu-backdrop')!;
 const blankBoardButton = document.querySelector<HTMLElement>('#blank-board')!;
+const addGroupButton = document.querySelector<HTMLElement>('#add-group')!;
 const backToNutshellButton =
   document.querySelector<HTMLElement>('#back-to-nutshell')!;
 const toast = document.querySelector<HTMLElement>('#toast')!;
 const nodeToolbar = document.querySelector<HTMLElement>('#node-toolbar')!;
+const groupToolbar = document.querySelector<HTMLElement>('#group-toolbar')!;
 layoutRadialMenu(nodeToolbar);
+layoutRadialMenu(groupToolbar);
+const placeGroupWheel = createWheelPlacement(groupToolbar.children.length);
+const resizeButton = groupToolbar.querySelector<HTMLElement>(
+  '[data-action="resize"]',
+)!;
 const placeNodeWheel = createWheelPlacement(nodeToolbar.children.length);
 const nodeInfoButton = nodeToolbar.querySelector<HTMLElement>(
   '[data-action="info"]',
@@ -78,6 +102,10 @@ const DRAWER_GAP = 8;
 const SETTLE_STEPS = 90;
 // Each paste lands this far down and right of the last copy.
 const PASTE_OFFSET = 40;
+// A tap, rather than a drag, places a group this big.
+const DEFAULT_GROUP_SIZE = { width: 420, height: 280 };
+// Drags smaller than this count as a tap when drawing a group.
+const MIN_GROUP_SIZE = 60;
 // Each tap on a zoom button zooms this much.
 const ZOOM_STEP = 1.25;
 // How long the "Board cleared" message offers its Undo button.
@@ -95,6 +123,8 @@ const scene: Scene = {
   selection: null,
   hoveredNodeId: null,
   hoveredGroup: null,
+  groupDraft: null,
+  resizingGroup: null,
   hoveredPort: null,
   draft: null,
   flow: { ...settings.flow },
@@ -111,6 +141,8 @@ let copied: { kind: string; label?: string; x: number; y: number } | null =
   null;
 let longPress: { timer: number; start: Point } | null = null;
 let toastTimer = 0;
+// While on, pressing the board draws a new group instead.
+let groupMode = false;
 // Where the pointer last pressed on the board (world units), so a wheel
 // opens clear of it. Presses elsewhere, like the sidebar, don't count.
 let lastPress: Point | null = null;
@@ -119,17 +151,72 @@ let infoRequestedFor: string | null = null;
 // The Nutshell row a board was opened from, to land back on it.
 let nutshellReturnRow: HTMLElement | null = null;
 
-const labelEditor = createCableLabelEditor({
+const labelEditor = createLabelEditor({
   input: labelInput,
-  design,
   toScreen: (world) => worldToScreen(scene.camera, world),
-  onSave: (cableId, label) => {
-    const cable = design.cables.find((candidate) => candidate.id === cableId);
-    if (!cable || (cable.label ?? '') === label.trim()) return;
-    undoHistory.record(design);
-    design.setCableLabel(cableId, label);
-  },
 });
+
+function editCableLabel(cableId: string): void {
+  const findCable = () => design.cables.find((cable) => cable.id === cableId);
+  labelEditor.open({
+    text: findCable()?.label ?? '',
+    placeholder: 'Label this cable',
+    position: () => {
+      const points = findCable()?.rope.points;
+      return points ? points[Math.floor(points.length / 2)] : null;
+    },
+    save: (label) => {
+      const cable = findCable();
+      if (!cable || (cable.label ?? '') === label.trim()) return;
+      undoHistory.record(design);
+      design.setCableLabel(cableId, label);
+    },
+  });
+}
+
+/** Opens the name field over a group's title, where its name is drawn. */
+function editGroupName(groupIndex: number): void {
+  labelEditor.open({
+    text: design.groups[groupIndex].label,
+    placeholder: 'Name this group',
+    position: () => {
+      const group = design.groups[groupIndex];
+      // The field is centred, so half its width (100) lines it up left.
+      return group
+        ? { x: group.x + 114, y: group.y + GROUP_HANDLE_HEIGHT / 2 }
+        : null;
+    },
+    save: (name) => {
+      const group = design.groups[groupIndex];
+      const trimmed = name.trim();
+      // A group always keeps a name, so its title strip can be grabbed.
+      if (!group || !trimmed || trimmed === group.label) return;
+      undoHistory.record(design);
+      design.renameGroup(groupIndex, trimmed);
+    },
+  });
+}
+
+/** In group mode the next press on the board draws a group. */
+function setGroupMode(on: boolean): void {
+  groupMode = on;
+  addGroupButton.ariaPressed = String(on);
+  addGroupButton.textContent = on ? 'Drag an area…' : '▭ Group';
+  if (!on) scene.groupDraft = null;
+}
+addGroupButton.addEventListener('click', () => setGroupMode(!groupMode));
+
+function finishGroup(start: Point, end: Point): void {
+  let area = rectBetween(start, end);
+  if (area.width < MIN_GROUP_SIZE || area.height < MIN_GROUP_SIZE) {
+    const { width, height } = DEFAULT_GROUP_SIZE;
+    area = { x: start.x - width / 2, y: start.y - height / 2, width, height };
+  }
+  undoHistory.record(design);
+  const index = design.addGroup({ label: 'Group', ...area });
+  setGroupMode(false);
+  editGroupName(index);
+}
 
 const cableToolbar = createCableToolbar({
   element: cableToolbarElement,
@@ -145,7 +232,7 @@ const cableToolbar = createCableToolbar({
       undoHistory.record(design);
       design.flipCable(cableId);
     },
-    label: (cableId) => labelEditor.open(cableId),
+    label: (cableId) => editCableLabel(cableId),
     remove: () => deleteSelection(),
   },
 });
@@ -208,6 +295,7 @@ function fillTemplateSelect(): void {
  * lesson would be confusing.
  */
 function openTemplate(id: string): void {
+  setGroupMode(false);
   currentSection =
     SECTIONS.find(({ templates }) =>
       templates.some((candidate) => candidate.id === id),
@@ -381,6 +469,48 @@ function pressOnScreen(): Point | null {
   return lastPress && worldToScreen(scene.camera, lastPress);
 }
 
+groupToolbar.addEventListener('click', (event) => {
+  const action = (event.target as HTMLElement).closest<HTMLElement>(
+    '[data-action]',
+  )?.dataset.action;
+  const index = selectedGroup();
+  if (index === null) return;
+  if (action === 'rename') editGroupName(index);
+  if (action === 'resize') {
+    scene.resizingGroup = scene.resizingGroup === index ? null : index;
+  }
+  if (action === 'delete') deleteSelection();
+});
+
+function selectedGroup(): number | null {
+  const selection = scene.selection;
+  return selection?.type === 'group' ? Number(selection.id) : null;
+}
+
+/** Resize handles belong to the selected group; selecting else hides them. */
+function forgetResizeOnceDeselected(): void {
+  if (scene.resizingGroup !== selectedGroup()) scene.resizingGroup = null;
+}
+
+/** Fans the group's options out above its name while it sits still. */
+function syncGroupToolbar(): void {
+  const index = selectedGroup();
+  const group = index === null ? undefined : design.groups[index];
+  const show = group !== undefined && gesture.type === 'idle';
+  groupToolbar.hidden = !show;
+  if (!show) {
+    placeGroupWheel(null, { x: 0, y: 0 }, null);
+    return;
+  }
+  // Over the name, which sits at the left of the title strip.
+  const name = { x: group.x + Math.min(100, group.width / 2), y: group.y - 6 };
+  const target = worldToScreen(scene.camera, name);
+  const { x, y } = placeGroupWheel(String(index), target, pressOnScreen());
+  groupToolbar.style.left = `${x}px`;
+  groupToolbar.style.top = `${y}px`;
+  resizeButton.ariaPressed = String(scene.resizingGroup === index);
+}
+
 /** Fans the component's options out above it while it sits still. */
 function syncNodeToolbar(): void {
   const selection = scene.selection;
@@ -477,6 +607,23 @@ canvas.addEventListener('pointerdown', (event) => {
   canvas.setPointerCapture(event.pointerId);
   pointer = toWorld(event);
 
+  if (groupMode) {
+    scene.selection = null;
+    gesture = { type: 'drawing-group', start: pointer };
+    return;
+  }
+
+  // Corner handles sit on top of everything while a group is resized.
+  if (scene.resizingGroup !== null) {
+    const reach = (GROUP_CORNER_RADIUS * 2) / scene.camera.scale;
+    const index = scene.resizingGroup;
+    const fixedCorner = design.groupCornerAt(index, pointer, reach);
+    if (fixedCorner) {
+      gesture = { type: 'resizing-group', index, fixedCorner, moved: false };
+      return;
+    }
+  }
+
   const port = portAt(design.nodes, pointer);
   // Shift-dragging a port picks up its newest cable instead of a new one.
   const newestCable = port && design.cablesAtPort(port).at(-1);
@@ -518,7 +665,7 @@ canvas.addEventListener('pointerdown', (event) => {
       };
     }
     longPress = {
-      timer: window.setTimeout(() => labelEditor.open(cable.id), LONG_PRESS_MS),
+      timer: window.setTimeout(() => editCableLabel(cable.id), LONG_PRESS_MS),
       start: { x: event.clientX, y: event.clientY },
     };
     return;
@@ -526,12 +673,18 @@ canvas.addEventListener('pointerdown', (event) => {
 
   const groupIndex = design.groupHandleAt(pointer);
   if (groupIndex >= 0) {
+    scene.selection = { type: 'group', id: String(groupIndex) };
     gesture = {
       type: 'moving-group',
       index: groupIndex,
       nodeIds: design.nodesTouching(groupIndex).map((node) => node.id),
       last: pointer,
       moved: false,
+    };
+    // Touch screens have no double-click: holding the name renames it.
+    longPress = {
+      timer: window.setTimeout(() => editGroupName(groupIndex), LONG_PRESS_MS),
+      start: { x: event.clientX, y: event.clientY },
     };
     return;
   }
@@ -549,7 +702,9 @@ canvas.addEventListener('dblclick', (event) => {
   const node = design.nodeAt(point);
   if (node) return setInfoOpen(node.id);
   const cable = design.cableAt(point);
-  if (cable) labelEditor.open(cable.id);
+  if (cable) return editCableLabel(cable.id);
+  const groupIndex = design.groupHandleAt(point);
+  if (groupIndex >= 0) editGroupName(groupIndex);
 });
 
 canvas.addEventListener('pointermove', (event) => {
@@ -578,6 +733,16 @@ canvas.addEventListener('pointermove', (event) => {
         y: pointer.y - gesture.grabOffset.y,
       });
       break;
+    case 'resizing-group':
+      if (!gesture.moved) undoHistory.record(design);
+      gesture.moved = true;
+      design.resizeGroup(gesture.index, gesture.fixedCorner, pointer);
+      break;
+    case 'drawing-group': {
+      const area = rectBetween(gesture.start, pointer);
+      scene.groupDraft = { label: '', ...area };
+      break;
+    }
     case 'moving-group': {
       if (!gesture.moved) undoHistory.record(design);
       gesture.moved = true;
@@ -608,6 +773,7 @@ canvas.addEventListener('pointermove', (event) => {
 
 canvas.addEventListener('pointerup', () => {
   cancelLongPress();
+  if (gesture.type === 'drawing-group') finishGroup(gesture.start, pointer);
   const draft = scene.draft;
   if (
     gesture.type === 'drawing-cable' &&
@@ -716,6 +882,7 @@ window.addEventListener('keydown', (event) => {
     pasteComponent();
   } else if (key === 'escape') {
     setMenuOpen(false);
+    setGroupMode(false);
     scene.draft = null;
     scene.selection = null;
     gesture = { type: 'idle' };
@@ -729,7 +896,8 @@ function deleteSelection(): void {
   if (!selection) return;
   undoHistory.record(design);
   if (selection.type === 'node') design.removeNode(selection.id);
-  else design.removeCable(selection.id);
+  else if (selection.type === 'cable') design.removeCable(selection.id);
+  else design.removeGroup(Number(selection.id));
   scene.selection = null;
 }
 
@@ -760,7 +928,9 @@ function undo(): void {
   const stillThere =
     selection?.type === 'node'
       ? design.nodes.some((node) => node.id === selection.id)
-      : design.cables.some((cable) => cable.id === selection?.id);
+      : selection?.type === 'group'
+        ? Number(selection.id) < design.groups.length
+        : design.cables.some((cable) => cable.id === selection?.id);
   if (!stillThere) scene.selection = null;
 }
 
@@ -779,11 +949,20 @@ function updateHover(): void {
   scene.hoveredGroup = groupIndex >= 0 ? groupIndex : null;
   const grabbable =
     scene.hoveredNodeId !== null || overCableEnd || groupIndex >= 0;
-  canvas.style.cursor = cursorFor(port !== null, grabbable);
+  const reach = (GROUP_CORNER_RADIUS * 2) / scene.camera.scale;
+  const overCorner =
+    gesture.type === 'resizing-group' ||
+    (scene.resizingGroup !== null &&
+      design.groupCornerAt(scene.resizingGroup, pointer, reach) !== null);
+  canvas.style.cursor = overCorner
+    ? 'nwse-resize'
+    : cursorFor(port !== null, grabbable);
 }
 
 function cursorFor(overPort: boolean, grabbable: boolean): string {
-  if (gesture.type === 'drawing-cable' || overPort) return 'crosshair';
+  if (groupMode || gesture.type === 'drawing-cable' || overPort) {
+    return 'crosshair';
+  }
   if (gesture.type !== 'idle') return 'grabbing';
   return grabbable ? 'grab' : 'default';
 }
@@ -814,6 +993,8 @@ function frame(now: number): void {
   labelEditor.follow();
   syncCableToolbar();
   syncNodeToolbar();
+  forgetResizeOnceDeselected();
+  syncGroupToolbar();
   // Nothing to clear on a blank board that is already showing.
   blankBoardButton.hidden = !currentTemplate && design.nodes.length === 0;
   backToNutshellButton.hidden = !nutshellReturnRow;

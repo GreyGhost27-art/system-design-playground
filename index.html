@@ -50,12 +50,7 @@
         ☰
       </button>
       <div class="board-actions">
-        <button
-          id="back-to-nutshell"
-          class="back-to-nutshell"
-          type="button"
-          hidden
-        >
+        <button id="back-to-nutshell" class="board-button" type="button" hidden>
           ← <span class="wide-only">Back to </span>Nutshell
         </button>
         <button
@@ -65,6 +60,38 @@
           title="Clear the board and build your own design"
         >
           ＋ Blank board
+        </button>
+        <button
+          id="add-group"
+          class="board-button"
+          type="button"
+          aria-pressed="false"
+          title="Draw a named area, like a region: drag on the board, or tap to place one"
+        >
+          ▭ Group
+        </button>
+      </div>
+      <div
+        id="group-toolbar"
+        class="radial-menu"
+        role="toolbar"
+        aria-label="Group"
+        hidden
+      >
+        <button type="button" data-action="rename">
+          <span class="radial-content"
+            ><span class="radial-icon">✎</span>Rename</span
+          >
+        </button>
+        <button type="button" data-action="resize" aria-pressed="false">
+          <span class="radial-content"
+            ><span class="radial-icon">⤡</span>Resize</span
+          >
+        </button>
+        <button type="button" data-action="delete">
+          <span class="radial-content"
+            ><span class="radial-icon">✕</span>Delete</span
+          >
         </button>
       </div>
       <div
@@ -107,7 +134,8 @@
           </li>
           <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the last change</li>
           <li>
-            <kbd>Drag</kbd> a group by its name to move it with everything in it
+            <kbd>Drag</kbd> a group by its name to move it with everything in
+            it; click the name for Rename, Resize and Delete
           </li>
           <li><kbd>Scroll</kbd> zooms · drag the board to pan</li>
         </ul>

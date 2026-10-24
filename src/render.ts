@@ -34,11 +34,15 @@ const FONT_MONO = rootStyle.getPropertyValue('--font-mono');
 const BACKGROUND = rootStyle.getPropertyValue('--bg').trim();
 const TEXT = rootStyle.getPropertyValue('--text').trim();
 const MUTED = rootStyle.getPropertyValue('--muted').trim();
+const ACCENT = rootStyle.getPropertyValue('--accent').trim();
+/** Size of a group's resize handles, in screen pixels. */
+export const GROUP_CORNER_RADIUS = 9;
 const NODE_FILL = rootStyle.getPropertyValue('--surface-node').trim();
 // Group outlines and label pills: quiet lines on the board.
 const SUBTLE_LINE = '#3a3a3a';
 
-export type Selection = { type: 'node' | 'cable'; id: string };
+/** Groups have no ids, so a selected group's `id` is its index. */
+export type Selection = { type: 'node' | 'cable' | 'group'; id: string };
 
 export interface CableDraft {
   /** The end that stays plugged in while the other one is dragged. */
@@ -58,6 +62,10 @@ export interface Scene {
   hoveredGroup: number | null;
   hoveredPort: PortRef | null;
   draft: CableDraft | null;
+  /** The area being dragged out for a new group. */
+  groupDraft: Group | null;
+  /** The group showing corner handles for resizing, as an index. */
+  resizingGroup: number | null;
   flow: FlowSettings;
   /** Seconds since the page loaded; drives the flow animation. */
   time: number;
@@ -84,9 +92,15 @@ export function render(
     ratio * camera.y,
   );
   drawGrid(ctx, camera, size);
-  scene.design.groups.forEach((group, index) =>
-    drawGroup(ctx, group, scene.hoveredGroup === index),
-  );
+  scene.design.groups.forEach((group, index) => {
+    const lit =
+      scene.hoveredGroup === index || isSelected(scene, 'group', String(index));
+    drawGroup(ctx, group, lit);
+    if (scene.resizingGroup === index) {
+      drawCornerHandles(ctx, group, camera.scale);
+    }
+  });
+  if (scene.groupDraft) drawGroup(ctx, scene.groupDraft, true);
   for (const cable of scene.design.cables) {
     const selected = isSelected(scene, 'cable', cable.id);
     const curve = cableCurve(cable, scene.flow, scene.time);
@@ -267,6 +281,29 @@ function drawGroup(
   ctx.fillStyle = hovered ? TEXT : MUTED;
   ctx.font = `600 13px ${FONT_UI}`;
   ctx.fillText(group.label.toUpperCase(), group.x + 14, group.y + 12);
+}
+
+/** Round handles on a group's corners, the same size at any zoom. */
+function drawCornerHandles(
+  ctx: CanvasRenderingContext2D,
+  { x, y, width, height }: Group,
+  scale: number,
+): void {
+  const radius = GROUP_CORNER_RADIUS / scale;
+  for (const corner of [
+    { x, y },
+    { x: x + width, y },
+    { x, y: y + height },
+    { x: x + width, y: y + height },
+  ]) {
+    ctx.beginPath();
+    ctx.arc(corner.x, corner.y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = ACCENT;
+    ctx.fill();
+    ctx.lineWidth = 3 / scale;
+    ctx.strokeStyle = BACKGROUND;
+    ctx.stroke();
+  }
 }
 
 /** A chevron showing which way a one-way cable sends its traffic. */

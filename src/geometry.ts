@@ -24,3 +24,16 @@ export function distanceToSegment(point: Point, a: Point, b: Point): number {
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
+
+/** The rectangle with corners `a` and `b`, whichever way it was dragged. */
+export function rectBetween(
+  a: Point,
+  b: Point,
+): { x: number; y: number; width: number; height: number } {
+  return {
+    x: Math.min(a.x, b.x),
+    y: Math.min(a.y, b.y),
+    width: Math.abs(a.x - b.x),
+    height: Math.abs(a.y - b.y),
+  };
+}

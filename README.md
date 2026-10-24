@@ -40,6 +40,11 @@ npm run dev
 - **Select / delete:** click a component or cable, then press `Delete` or
   use the wheel of options that fans out above it (components can also be
   duplicated there).
+- **Add a group:** press _▭ Group_ at the top of the board, then drag an area
+  (or tap to place one) and type its name. Tap a group's name to open its
+  wheel: _Rename_, _Resize_ (drag any corner handle) or _Delete_ (its
+  components stay on the board). Double-clicking the name, or holding it on
+  touch screens, renames it directly.
 - **Move a group:** drag a dashed area such as _EU region_ by its name. Every
   component inside it, or overlapping its edge, moves along; dragging its
   empty middle still pans the board.
@@ -182,7 +187,7 @@ be unique across templates and foundations (a test checks).
 | `src/main.ts`            | Wires input, the template picker and the lesson     |
 | `src/design.ts`          | The design model: components, ports, cables, groups |
 | `src/history.ts`         | Undo steps                                          |
-| `src/labelEditor.ts`     | The text field for naming a cable                   |
+| `src/labelEditor.ts`     | The text field for naming cables and groups         |
 | `src/cableToolbar.ts`    | The options wheel over a selected cable             |
 | `src/radialMenu.ts`      | Cuts a menu's buttons into slices of a wheel        |
 | `src/templates.ts`       | Validating, loading and exporting templates         |

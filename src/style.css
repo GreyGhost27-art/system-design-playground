@@ -1,10 +1,18 @@
 :root {
+  /*
+   * Contrast, measured against --bg (WCAG ratios): text 13.7 : 1, softer
+   * than near-white so letters don't glow on dark backgrounds, still AAA;
+   * muted 7.6 : 1, so secondary reading text stays comfortable; control
+   * borders 3.3 : 1 (WCAG 1.4.11); plain dividers stay subtle on purpose.
+   */
   --bg: #0d1016;
   --panel: #12161e;
   --panel-raised: #181d27;
   --border: #232a36;
-  --text: #e6e9ef;
-  --muted: #7d8596;
+  --border-control: #5c677a;
+  --text: #d6dbe3;
+  --muted: #9ca4b2;
+  --accent: #8fe3ff;
   --font-ui: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
   --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
   /*
@@ -18,11 +26,28 @@
   --text-ui: 16px;
   --text-read: 19px;
   --text-lede: 21px;
+  /*
+   * Spacing for reading text (WCAG 1.4.8, 1.4.12 and the proximity rule):
+   * lines 1.6 apart (at least 1.5); paragraphs and list items a further
+   * 0.8em apart, so they sit 1.5 times the line spacing apart; headings
+   * three times closer to the text they introduce than to the text above.
+   */
+  --leading: 1.6;
+  --space-paragraph: 0.8em;
+  --space-before-heading: 2.25rem;
+  --space-after-heading: 0.75rem;
+  /* Lines of reading text stay well under 80 characters. */
+  --measure: 66ch;
   color-scheme: dark;
 }
 
 * {
   box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 html,
@@ -75,7 +100,7 @@ body {
   border: 1px solid #2d6a80;
   border-radius: 10px;
   background: #10303c;
-  color: #8fe3ff;
+  color: var(--accent);
   font: inherit;
   font-size: var(--text-ui);
   text-align: left;
@@ -106,7 +131,7 @@ body {
 select {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-control);
   border-radius: 8px;
   background: var(--panel-raised);
   color: var(--text);
@@ -120,7 +145,7 @@ select {
 .secondary-button,
 .lesson-open {
   padding: 7px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-control);
   border-radius: 8px;
   background: var(--panel-raised);
   color: var(--text);
@@ -145,7 +170,7 @@ select {
 
 .toggle input {
   margin: 0;
-  accent-color: #8fe3ff;
+  accent-color: var(--accent);
 }
 
 .secondary-button:hover,
@@ -188,7 +213,7 @@ select {
 
 .palette-item:hover {
   background: var(--panel-raised);
-  border-color: var(--border);
+  border-color: var(--border-control);
 }
 
 .palette-item:active {
@@ -222,7 +247,7 @@ select {
   left: 16px;
   bottom: 16px;
   max-width: 360px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-control);
   border-radius: 10px;
   background: rgba(18, 22, 30, 0.94);
   color: var(--muted);
@@ -291,7 +316,7 @@ kbd {
   backdrop-filter: blur(8px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
   font-size: var(--text-read);
-  line-height: 1.55;
+  line-height: var(--leading);
 }
 
 .drawer[hidden],
@@ -335,12 +360,12 @@ kbd {
 }
 
 .drawer-subtitle {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: var(--muted);
 }
 
 .drawer-section h3 {
-  margin: 22px 0 6px;
+  margin: var(--space-before-heading) 0 var(--space-after-heading);
   font-size: var(--text-small);
   font-weight: 650;
   color: #b48cff;
@@ -348,17 +373,14 @@ kbd {
   letter-spacing: 0.06em;
 }
 
-.drawer-section p {
-  margin: 0 0 10px;
+.drawer-section p,
+.drawer-section li {
+  margin: 0 0 var(--space-paragraph);
 }
 
 .drawer-section ul {
   margin: 0;
-  padding-left: 18px;
-}
-
-.drawer-section li {
-  margin-bottom: 6px;
+  padding-left: 1.5em;
 }
 
 .lesson-open {
@@ -413,7 +435,7 @@ kbd {
   position: absolute;
   width: 200px;
   padding: 4px 12px;
-  border: 1px solid #8fe3ff;
+  border: 1px solid var(--accent);
   border-radius: 999px;
   background: var(--bg);
   color: var(--text);
@@ -469,12 +491,22 @@ kbd {
 .radial-menu button:focus-visible {
   background: #232a36;
   color: var(--text);
+}
+
+/* A slice is clipped, so its ring is drawn around the label instead. */
+.radial-menu button:focus-visible {
   outline: none;
+}
+
+.radial-menu button:focus-visible .radial-content {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 
 .radial-menu button[aria-pressed='true'] {
   background: #10303c;
-  color: #8fe3ff;
+  color: var(--accent);
 }
 
 .radial-menu button[data-action='delete']:hover,
@@ -574,7 +606,7 @@ kbd {
 .back-to-nutshell {
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-control);
   border-radius: 10px;
   background: var(--panel);
   color: var(--text);
@@ -594,7 +626,7 @@ kbd {
   border: 1px solid #2d6a80;
   border-radius: 10px;
   background: #10303c;
-  color: #8fe3ff;
+  color: var(--accent);
   font: inherit;
   font-size: var(--text-ui);
   font-weight: 600;
@@ -628,7 +660,7 @@ kbd {
   border: 0;
   border-radius: 8px;
   background: #10303c;
-  color: #8fe3ff;
+  color: var(--accent);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -664,27 +696,29 @@ kbd {
 }
 
 .nutshell-content {
-  max-width: 680px;
+  max-width: calc(var(--measure) + 48px);
   margin: 0 auto;
-  padding: 48px 24px 64px;
+  padding: 56px 24px 96px;
   font-size: var(--text-read);
-  line-height: 1.6;
+  line-height: var(--leading);
 }
 
 .nutshell-title {
   margin: 0;
   font-size: 32px;
   font-weight: 650;
+  line-height: 1.25;
 }
 
 .nutshell-lede {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
+  line-height: 1.5;
   color: var(--muted);
   font-size: var(--text-lede);
 }
 
 .nutshell-section h3 {
-  margin: 36px 0 10px;
+  margin: var(--space-before-heading) 0 var(--space-after-heading);
   font-size: var(--text-small);
   font-weight: 650;
   color: #b48cff;
@@ -695,26 +729,30 @@ kbd {
 .nutshell-section ul,
 .nutshell-section ol {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 1.5em;
 }
 
 .nutshell-section li {
-  margin-bottom: 8px;
+  margin: 0 0 var(--space-paragraph);
+}
+
+.nutshell-section li::marker {
+  color: var(--muted);
 }
 
 .nutshell-section ol li::marker {
-  color: #8fe3ff;
+  color: var(--accent);
   font-weight: 650;
 }
 
 .nutshell-section ul.nutshell-map {
   display: grid;
-  gap: 6px;
+  gap: 10px;
   padding: 0;
   list-style: none;
 }
 
-.nutshell-map li {
+.nutshell-section .nutshell-map li {
   margin: 0;
 }
 
@@ -723,8 +761,9 @@ kbd {
   grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
   gap: 16px;
   width: 100%;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
+  padding: 12px 16px;
+  line-height: 1.5;
+  border: 1px solid var(--border-control);
   border-radius: 10px;
   background: var(--panel);
   color: var(--text);
@@ -781,7 +820,7 @@ kbd {
     left: 12px;
     width: 40px;
     height: 40px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-control);
     border-radius: 10px;
     background: var(--panel);
     color: var(--text);
@@ -823,7 +862,7 @@ kbd {
     transition: top 0.2s ease;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-control);
     border-radius: 12px;
     background: var(--panel);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
@@ -856,5 +895,15 @@ kbd {
   .nutshell-signal {
     grid-template-columns: 1fr;
     gap: 2px;
+  }
+}
+
+/* People who ask their system for more contrast get it. */
+@media (prefers-contrast: more) {
+  :root {
+    --border: #3a4352;
+    --border-control: #7a869b;
+    --text: #f0f2f6;
+    --muted: #bcc3cf;
   }
 }

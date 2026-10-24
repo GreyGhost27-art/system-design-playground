@@ -24,17 +24,17 @@ import type { Point } from './geometry.ts';
 import type { Rope } from './rope.ts';
 import { PORT_RADIUS } from './snap.ts';
 
-const BACKGROUND = '#0d1016';
 const GRID_DOT = '#1f2531';
 const GRID_SPACING = 24;
 const NODE_FILL = '#161b24';
-const TEXT = '#e6e9ef';
-const MUTED = '#7d8596';
 const CABLE_SHADOW = 'rgba(0, 0, 0, 0.55)';
-// The canvas uses the same fonts as the page, defined once in style.css.
+// The canvas uses the page's fonts and colours, defined once in style.css.
 const rootStyle = getComputedStyle(document.documentElement);
 const FONT_UI = rootStyle.getPropertyValue('--font-ui');
 const FONT_MONO = rootStyle.getPropertyValue('--font-mono');
+const BACKGROUND = rootStyle.getPropertyValue('--bg').trim();
+const TEXT = rootStyle.getPropertyValue('--text').trim();
+const MUTED = rootStyle.getPropertyValue('--muted').trim();
 
 export type Selection = { type: 'node' | 'cable'; id: string };
 
@@ -277,7 +277,7 @@ function drawDirectionArrow(
   ctx.strokeStyle = BACKGROUND;
   ctx.stroke();
   ctx.lineWidth = 2;
-  ctx.strokeStyle = '#e6e9ef';
+  ctx.strokeStyle = TEXT;
   ctx.stroke();
   ctx.restore();
 }
@@ -330,7 +330,8 @@ function drawNode(
   ctx.lineWidth = state.selected ? 2 : 1;
   ctx.strokeStyle = state.selected
     ? color
-    : withAlpha(color, state.hovered ? 0.6 : 0.28);
+    : // Strong enough to see each component's edge (3 : 1 or more).
+      withAlpha(color, state.hovered ? 0.85 : 0.6);
   ctx.stroke();
 
   const badgeSize = 32;

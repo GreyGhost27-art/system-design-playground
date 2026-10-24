@@ -21,7 +21,7 @@
   --accent-fill: #10303c;
   --accent-fill-hover: #154050;
   --accent-border: #2d6a80;
-  --heading: #b48cff;
+  --heading: #fff98c;
   --font-ui: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
   --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
   /*
@@ -743,6 +743,53 @@ kbd {
 .toast-error button {
   background: #3a1a20;
   color: #ff8a95;
+}
+
+/* Export and import share one slim, outlined control. */
+.file-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 12px;
+  border: 1px solid var(--border-control);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.file-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-small);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+
+.file-actions button + button {
+  border-left: 1px solid var(--border-control);
+}
+
+.file-actions button:hover {
+  background: var(--panel-raised);
+  color: var(--text);
+}
+
+.file-actions svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .file-hint {

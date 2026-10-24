@@ -7,9 +7,13 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <aside class="sidebar">
+    <aside id="sidebar" class="sidebar">
       <header class="sidebar-header">
         <h1>System Design</h1>
+        <button id="nutshell-open" class="nutshell-open" type="button">
+          <strong>In a nutshell</strong>
+          <span>The questions to ask before you build</span>
+        </button>
         <label class="field">
           <span>Start from</span>
           <select id="template-select"></select>
@@ -37,8 +41,31 @@
         </button>
       </footer>
     </aside>
+    <div id="menu-backdrop" class="menu-backdrop"></div>
     <main class="board">
       <canvas id="board"></canvas>
+      <button
+        id="menu-toggle"
+        class="menu-toggle"
+        type="button"
+        aria-label="Menu"
+        aria-controls="sidebar"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+      <button
+        id="blank-board"
+        class="blank-board"
+        type="button"
+        title="Clear the board and build your own design"
+      >
+        ＋ Blank board
+      </button>
+      <div id="toast" class="toast" role="status" hidden>
+        Board cleared
+        <button id="toast-undo" type="button">Undo</button>
+      </div>
       <input
         id="label-editor"
         class="label-editor"
@@ -71,6 +98,17 @@
         <button type="button" data-action="label">Label</button>
         <button type="button" data-action="delete">Delete</button>
       </div>
+      <article id="nutshell" class="nutshell" hidden>
+        <button
+          id="nutshell-close"
+          class="icon-button"
+          type="button"
+          aria-label="Back to the board"
+        >
+          ×
+        </button>
+        <div id="nutshell-content" class="nutshell-content"></div>
+      </article>
       <aside id="drawer" class="drawer" hidden>
         <button
           id="drawer-close"

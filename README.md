@@ -13,9 +13,15 @@ npm run dev
 
 ## Using the board
 
-- **Start from:** pick _Empty board (free mode)_ or one of the templates. A
-  template loads an example design with a _Learn why_ panel explaining the
-  problem it solves. Templates are only starting points; edit them freely.
+- **Start from:** pick _Blank board_ or one of the templates. A template
+  loads an example design with a _Learn why_ panel explaining the problem it
+  solves. Templates are only starting points; edit them freely.
+- **＋ Blank board** (top left of the board) clears it in one click; the
+  _Undo_ message that follows brings everything back.
+- **In a nutshell** (top of the sidebar) is a one-page summary: why and when
+  to think about system design, the constraints to list first, and the
+  questions to ask before adding a component. Its content is in
+  `src/nutshell.json`; each common signal links to its Foundation board.
   The URL remembers the template (`#chat-app`), so it can be shared.
 - **Add a component:** drag it from the sidebar onto the board, or click it.
 - **Connect:** hover a component to reveal its ports, then drag from a port.
@@ -175,6 +181,7 @@ be unique across templates and foundations (a test checks).
 | `src/templates.ts`       | Validating, loading and exporting templates         |
 | `src/templateLibrary.ts` | Collects the Foundations and Templates sections     |
 | `src/lesson.ts`          | The template lesson shown in the drawer             |
+| `src/nutshell.ts`        | The _In a nutshell_ page, from `nutshell.json`      |
 | `src/componentInfo.ts`   | The component explanation shown in the drawer       |
 | `src/dom.ts`             | Tiny helpers for building drawer content            |
 | `src/rope.ts`            | Verlet rope physics for cables                      |
@@ -204,6 +211,7 @@ node --test tests/rope.test.ts    # one file
 | `src/history.ts`                                                                                                                                                               | `tests/history.test.ts`                                    |
 | `src/snap.ts`                                                                                                                                                                  | `tests/snap.test.ts`                                       |
 | `src/camera.ts`                                                                                                                                                                | `tests/camera.test.ts`                                     |
+| `src/nutshell.ts`, `src/nutshell.json`                                                                                                                                         | `tests/nutshell.test.ts`                                   |
 | `src/templates.ts`, `src/templates/**/*.json`                                                                                                                                  | `tests/templates.test.ts`                                  |
 | `src/components.ts`, `src/components/**`                                                                                                                                       | `tests/components.test.ts`, `tests/templates.test.ts`      |
 | `src/geometry.ts`                                                                                                                                                              | covered by `tests/rope.test.ts` and `tests/design.test.ts` |

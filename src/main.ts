@@ -7,6 +7,7 @@ import { UndoHistory } from './history.ts';
 import { createCableToolbar } from './cableToolbar.ts';
 import { createCableLabelEditor } from './labelEditor.ts';
 import { renderLesson } from './lesson.ts';
+import { renderNutshell } from './nutshell.ts';
 import { DRAG_FORMAT, renderPalette } from './palette.ts';
 import { render, type CableDraft, type Scene } from './render.ts';
 import { createRope, reverseRope, stepRope } from './rope.ts';
@@ -39,15 +40,29 @@ const lessonOpenButton = document.querySelector<HTMLElement>('#lesson-open')!;
 const copyJsonButton = document.querySelector<HTMLElement>('#copy-json')!;
 const flowToggle = document.querySelector<HTMLInputElement>('#flow-toggle')!;
 const labelInput = document.querySelector<HTMLInputElement>('#label-editor')!;
+const menuToggle = document.querySelector<HTMLElement>('#menu-toggle')!;
+const menuBackdrop = document.querySelector<HTMLElement>('#menu-backdrop')!;
+const blankBoardButton = document.querySelector<HTMLElement>('#blank-board')!;
+const toast = document.querySelector<HTMLElement>('#toast')!;
+const nutshell = document.querySelector<HTMLElement>('#nutshell')!;
+const nutshellOpenButton =
+  document.querySelector<HTMLElement>('#nutshell-open')!;
+const nutshellCloseButton =
+  document.querySelector<HTMLElement>('#nutshell-close')!;
+const toastUndoButton = document.querySelector<HTMLElement>('#toast-undo')!;
 const cableToolbarElement =
   document.querySelector<HTMLElement>('#cable-toolbar')!;
 
 // Space the drawer covers on the right of the board when open.
 const DRAWER_SPACE = 372;
+// Gap between the drawer and the bottom of the board on phones.
+const DRAWER_GAP = 8;
 // Physics steps run before showing a template, so cables appear settled.
 const SETTLE_STEPS = 90;
 // Each paste lands this far down and right of the last copy.
 const PASTE_OFFSET = 40;
+// How long the "Board cleared" message offers its Undo button.
+const TOAST_MS = 6000;
 // Holding still on a cable this long (touch screens) opens its label field.
 const LONG_PRESS_MS = 500;
 // Pointer travel (screen pixels) that turns a press into a drag.
@@ -75,6 +90,7 @@ let drawerShowing = '';
 let copied: { kind: string; label?: string; x: number; y: number } | null =
   null;
 let longPress: { timer: number; start: Point } | null = null;
+let toastTimer = 0;
 
 const labelEditor = createCableLabelEditor({
   input: labelInput,
@@ -107,11 +123,18 @@ const cableToolbar = createCableToolbar({
   },
 });
 
-renderPalette(palette, (kindId) => addAtViewCenter(kindId));
+renderPalette(palette, (kindId) => {
+  setNutshellOpen(false);
+  addAtViewCenter(kindId);
+});
 fillTemplateSelect();
+renderNutshell(document.querySelector('#nutshell-content')!, (id) => {
+  setNutshellOpen(false);
+  openTemplate(id);
+});
 
 function fillTemplateSelect(): void {
-  templateSelect.append(new Option('Empty board (free mode)', ''));
+  templateSelect.append(new Option('Blank board', ''));
   for (const { name, templates } of SECTIONS) {
     const group = document.createElement('optgroup');
     group.label = name;
@@ -122,6 +145,11 @@ function fillTemplateSelect(): void {
   }
 }
 
+/**
+ * Opens a template, or a blank board when `id` matches none. Only
+ * clearing can be undone: undoing into an old board under a new template's
+ * lesson would be confusing.
+ */
 function openTemplate(id: string): void {
   currentSection =
     SECTIONS.find(({ templates }) =>
@@ -131,9 +159,16 @@ function openTemplate(id: string): void {
     currentSection?.templates.find((template) => template.id === id) ?? null;
   templateSelect.value = currentTemplate?.id ?? '';
   scene.selection = null;
-  undoHistory.clear();
-  if (currentTemplate) loadTemplate(design, currentTemplate);
-  else design.clear();
+  if (currentTemplate) {
+    undoHistory.clear();
+    loadTemplate(design, currentTemplate);
+  } else {
+    if (design.nodes.length > 0) {
+      undoHistory.record(design);
+      showToast();
+    }
+    design.clear();
+  }
   for (let i = 0; i < SETTLE_STEPS; i++) design.step();
   syncDrawer();
   history.replaceState(null, '', currentTemplate ? `#${id}` : '#');
@@ -174,14 +209,58 @@ function fitToDesign(): void {
     scene.camera = { x: 0, y: 0, scale: 1 };
     return;
   }
-  const { width, height } = boardSize();
-  const covered = drawer.hidden ? 0 : DRAWER_SPACE;
-  scene.camera = fitCamera(bounds, { width: width - covered, height }, 48);
+  scene.camera = fitCamera(bounds, visibleBoardSize(), 48);
 }
 
 templateSelect.addEventListener('change', () => {
+  setNutshellOpen(false);
   openTemplate(templateSelect.value);
   templateSelect.blur();
+});
+
+/** On phones the sidebar slides in over the board. */
+function setMenuOpen(open: boolean): void {
+  document.body.classList.toggle('menu-open', open);
+  menuToggle.ariaExpanded = String(open);
+}
+menuToggle.addEventListener('click', () =>
+  setMenuOpen(!document.body.classList.contains('menu-open')),
+);
+menuBackdrop.addEventListener('click', () => setMenuOpen(false));
+
+/** The Nutshell page covers the board; its address is #nutshell. */
+function setNutshellOpen(open: boolean): void {
+  nutshell.hidden = !open;
+  nutshellOpenButton.ariaPressed = String(open);
+  setMenuOpen(false);
+  const boardHash = currentTemplate ? `#${currentTemplate.id}` : '#';
+  history.replaceState(null, '', open ? '#nutshell' : boardHash);
+  if (open) nutshell.scrollTop = 0;
+}
+nutshellOpenButton.addEventListener('click', () =>
+  setNutshellOpen(nutshell.hidden),
+);
+nutshellCloseButton.addEventListener('click', () => setNutshellOpen(false));
+
+blankBoardButton.addEventListener('click', () => {
+  setNutshellOpen(false);
+  openTemplate('');
+});
+
+/** "Board cleared", with a way back instead of an "Are you sure?". */
+function showToast(): void {
+  toast.hidden = false;
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(hideToast, TOAST_MS);
+}
+
+function hideToast(): void {
+  toast.hidden = true;
+}
+
+toastUndoButton.addEventListener('click', () => {
+  undo();
+  fitToDesign();
 });
 
 drawerCloseButton.addEventListener('click', () => {
@@ -204,6 +283,19 @@ copyJsonButton.addEventListener('click', async () => {
   copyJsonButton.textContent = 'Copied!';
   setTimeout(() => (copyJsonButton.textContent = 'Copy board as JSON'), 1500);
 });
+
+/**
+ * The part of the board the drawer leaves uncovered: it sits on the right,
+ * or along the bottom on phones (where the menu button shows).
+ */
+function visibleBoardSize(): { width: number; height: number } {
+  const { width, height } = boardSize();
+  if (drawer.hidden) return { width, height };
+  const phoneLayout = menuToggle.offsetParent !== null;
+  return phoneLayout
+    ? { width, height: height - drawer.offsetHeight - DRAWER_GAP }
+    : { width: width - DRAWER_SPACE, height };
+}
 
 function boardSize() {
   return {
@@ -230,7 +322,7 @@ function toWorld(event: MouseEvent): Point {
 }
 
 function addAtViewCenter(kindId: string): void {
-  const { width, height } = boardSize();
+  const { width, height } = visibleBoardSize();
   const center = screenToWorld(scene.camera, { x: width / 2, y: height / 2 });
   // Nudge each click-added component so they don't stack exactly.
   const jitter = () => (Math.random() - 0.5) * 80;
@@ -443,6 +535,11 @@ canvas.addEventListener('drop', (event) => {
 window.addEventListener('keydown', (event) => {
   if (event.target instanceof HTMLSelectElement) return;
   const key = event.key.toLowerCase();
+  // The board is hidden behind the Nutshell page, so leave it alone.
+  if (!nutshell.hidden) {
+    if (key === 'escape') setNutshellOpen(false);
+    return;
+  }
   // Ctrl on Windows and Linux, Cmd on macOS.
   const shortcut = event.ctrlKey || event.metaKey;
 
@@ -458,6 +555,7 @@ window.addEventListener('keydown', (event) => {
     event.preventDefault();
     pasteComponent();
   } else if (key === 'escape') {
+    setMenuOpen(false);
     scene.draft = null;
     scene.selection = null;
     gesture = { type: 'idle' };
@@ -495,6 +593,7 @@ function pasteComponent(): void {
 
 function undo(): void {
   if (!undoHistory.undo(design)) return;
+  hideToast();
   scene.draft = null;
   gesture = { type: 'idle' };
   const selection = scene.selection;
@@ -544,10 +643,14 @@ function frame(now: number): void {
   syncDrawer();
   labelEditor.follow();
   syncCableToolbar();
+  // Nothing to clear on a blank board that is already showing.
+  blankBoardButton.hidden = !currentTemplate && design.nodes.length === 0;
   render(ctx, scene, boardSize());
   requestAnimationFrame(frame);
 }
 
 resize();
-openTemplate(decodeURIComponent(location.hash.slice(1)));
+const startHash = decodeURIComponent(location.hash.slice(1));
+openTemplate(startHash);
+if (startHash === 'nutshell') setNutshellOpen(true);
 requestAnimationFrame(frame);

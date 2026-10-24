@@ -56,6 +56,31 @@ body {
   letter-spacing: 0.01em;
 }
 
+.nutshell-open {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid #2d6a80;
+  border-radius: 10px;
+  background: #10303c;
+  color: #8fe3ff;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nutshell-open span {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.nutshell-open:hover,
+.nutshell-open[aria-pressed='true'] {
+  background: #154050;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -455,4 +480,232 @@ kbd {
   font-size: 11.5px;
   line-height: 1.55;
   color: #d6dae3;
+}
+
+.blank-board {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #2d6a80;
+  border-radius: 10px;
+  background: #10303c;
+  color: #8fe3ff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.blank-board:hover {
+  background: #154050;
+}
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-raised);
+  font-size: 13px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  transform: translateX(-50%);
+}
+
+.toast button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #10303c;
+  color: #8fe3ff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.blank-board[hidden],
+.toast[hidden],
+.menu-toggle,
+.menu-backdrop {
+  display: none;
+}
+
+/* A reading page over the board: one calm column of text. */
+.nutshell {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+.nutshell[hidden] {
+  display: none;
+}
+
+.nutshell .icon-button {
+  position: sticky;
+  float: right;
+  top: 12px;
+  margin-right: 12px;
+}
+
+.nutshell-content {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.nutshell-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 650;
+}
+
+.nutshell-lede {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.nutshell-section h3 {
+  margin: 36px 0 10px;
+  font-size: 12px;
+  font-weight: 650;
+  color: #b48cff;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.nutshell-section ul,
+.nutshell-section ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.nutshell-section li {
+  margin-bottom: 8px;
+}
+
+.nutshell-section ol li::marker {
+  color: #8fe3ff;
+  font-weight: 650;
+}
+
+.nutshell-section ul.nutshell-map {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.nutshell-map li {
+  margin: 0;
+}
+
+.nutshell-signal {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 16px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nutshell-signal:hover {
+  border-color: #2d6a80;
+}
+
+.nutshell-signal-name {
+  color: var(--muted);
+}
+
+/* Phones: the sidebar becomes a menu and the drawer a bottom sheet. */
+@media (max-width: 720px) {
+  body {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 20;
+    width: min(300px, 85vw);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.2s ease,
+      visibility 0s 0.2s;
+  }
+
+  .menu-open .sidebar {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.2s ease;
+  }
+
+  .menu-open .menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 19;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .menu-toggle {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--text);
+    font-size: 18px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+  }
+
+  .drawer {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: auto;
+    max-height: 50%;
+  }
+
+  .lesson-open {
+    top: 12px;
+    right: 12px;
+  }
+
+  .blank-board {
+    top: 14px;
+    left: 62px;
+  }
+
+  .nutshell-signal {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
 }

@@ -1,0 +1,178 @@
+{
+  "title": "System design in a nutshell",
+  "lede": "Every component solves one problem and brings new ones: cost, complexity and new ways to fail. Designing a system means choosing which problems are worth having, and when.",
+  "sections": [
+    {
+      "heading": "Why think about it at all",
+      "items": [
+        {
+          "text": "A system is the set of parts that serve your users. Its design decides where work happens, where data lives, and what happens when something breaks."
+        },
+        {
+          "text": "A few decisions are expensive to change later: how data is modelled, who owns it, how it is secured. Those deserve thought early."
+        },
+        {
+          "text": "Most decisions can wait. Building for problems you don't have costs the time you need to find users."
+        }
+      ]
+    },
+    {
+      "heading": "When to think about it",
+      "items": [
+        {
+          "title": "Before building:",
+          "text": "just enough to choose a simple start and avoid the decisions that are hard to undo."
+        },
+        {
+          "title": "When a signal appears:",
+          "text": "pages slow down, outages hurt, the bill grows, or teams block each other."
+        },
+        {
+          "title": "Before a known event:",
+          "text": "a launch, a campaign, a large customer."
+        },
+        {
+          "title": "Not because a big company does it.",
+          "text": "Their problems come from a scale you may never reach."
+        }
+      ]
+    },
+    {
+      "heading": "Put the constraints on the table",
+      "items": [
+        {
+          "title": "Users:",
+          "text": "how many, where, and at what times? Design for the peak, not the average."
+        },
+        {
+          "title": "Workload:",
+          "text": "mostly reads or writes? How much data, and how fast does it grow?"
+        },
+        {
+          "title": "Speed:",
+          "text": "what must answer instantly, and what can happen later?"
+        },
+        {
+          "title": "Correctness:",
+          "text": "which data must never be wrong or lost (money), and which can be a little stale (a feed)?"
+        },
+        {
+          "title": "Availability:",
+          "text": "what does an hour of downtime cost?"
+        },
+        {
+          "title": "Budget and team:",
+          "text": "money, people, skills and time to deliver."
+        },
+        {
+          "title": "Rules:",
+          "text": "privacy, regulation, where data may be stored."
+        }
+      ]
+    },
+    {
+      "heading": "Before adding a component, ask in order",
+      "ordered": true,
+      "items": [
+        {
+          "title": "What is the problem, exactly?",
+          "text": "Name the symptom and measure it. No number, no problem."
+        },
+        {
+          "title": "Can what we have solve it?",
+          "text": "An index, a better query, a bigger machine, a setting."
+        },
+        {
+          "title": "What is the simplest thing that would?",
+          "text": "Prefer managed services and well-known tools."
+        },
+        {
+          "title": "What does it cost?",
+          "text": "Money, running it, learning it, and new ways to fail."
+        },
+        {
+          "title": "What happens when it fails?",
+          "text": "If everything stops, it is a new single point of failure."
+        },
+        {
+          "title": "What does it do to the data?",
+          "text": "Copies can be out of date. Which one is the source of truth?"
+        },
+        {
+          "title": "Can we undo it?",
+          "text": "Move fast on reversible choices; slow down on one-way doors."
+        },
+        {
+          "title": "How will we know it worked?",
+          "text": "Compare the number from step 1, before and after."
+        }
+      ]
+    },
+    {
+      "heading": "Common signals and the usual first answer",
+      "map": [
+        {
+          "signal": "Not much traffic yet",
+          "answer": "One server and one database",
+          "foundation": "start-simple"
+        },
+        {
+          "signal": "One server can't keep up",
+          "answer": "A bigger machine, then copies behind a load balancer",
+          "foundation": "more-users"
+        },
+        {
+          "signal": "One failure takes everything down",
+          "answer": "Spares in another zone, automatic failover",
+          "foundation": "stay-up"
+        },
+        {
+          "signal": "The database is the slow part",
+          "answer": "Indexes, then a cache, then read replicas",
+          "foundation": "database-bottleneck"
+        },
+        {
+          "signal": "Users wait for slow work",
+          "answer": "A queue and background workers",
+          "foundation": "slow-work"
+        },
+        {
+          "signal": "Teams block each other",
+          "answer": "Clear modules, then a few services",
+          "foundation": "easy-to-change"
+        },
+        {
+          "signal": "The bill keeps growing",
+          "answer": "Autoscaling, a CDN, object storage",
+          "foundation": "costs"
+        },
+        {
+          "signal": "Users find problems first",
+          "answer": "Metrics, logs and alerts",
+          "foundation": "know-its-working"
+        }
+      ]
+    },
+    {
+      "heading": "Trade-offs that never go away",
+      "items": [
+        {
+          "title": "Speed or freshness:",
+          "text": "copies such as caches and replicas are fast but can be out of date."
+        },
+        {
+          "title": "Simple or scalable:",
+          "text": "every new part is one more thing to run, watch and fix."
+        },
+        {
+          "title": "Cost or uptime:",
+          "text": "redundancy roughly doubles the cost of what it protects."
+        },
+        {
+          "title": "Now or later:",
+          "text": "plan for ten times today's load, not a thousand."
+        }
+      ]
+    }
+  ]
+}

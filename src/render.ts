@@ -434,7 +434,7 @@ function drawEmptyState(
   ctx.fillStyle = MUTED;
   ctx.font = `500 14px ${FONT_UI}`;
   ctx.fillText(
-    'Drag components here to start building',
+    'Click or drag a component to start building',
     size.width / 2,
     size.height / 2,
   );

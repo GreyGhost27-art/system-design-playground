@@ -6,12 +6,12 @@
     "problem": "Signing up sends a welcome email. The email provider takes two seconds to respond, so every sign-up takes two seconds, and fails if the provider is down.",
     "why": [
       "The user does not need to wait for the email. The app server saves the user, puts a \"send welcome email\" job on a queue, and responds right away.",
-      "Workers take jobs from the queue at their own pace and call the email provider. If the provider is slow or down, jobs wait in the queue and are retried instead of failing the sign-up.",
+      "Workers take jobs from the queue at their own pace and call the email provider. Once it confirms, the worker marks the email as sent in the database, and the provider delivers it to the user. If the provider is slow or down, jobs wait in the queue and are retried instead of failing the sign-up.",
       "Producers and consumers now scale separately: add workers when the queue grows."
     ],
     "takeaways": [
       "Queues turn slow, unreliable work into fast, reliable requests.",
-      "Jobs can run more than once after a retry, so make them idempotent.",
+      "Jobs can run more than once after a retry, so make them idempotent: check whether the email was already sent.",
       "Send jobs that keep failing to a dead-letter queue instead of retrying forever."
     ]
   },
@@ -21,49 +21,42 @@
       "kind": "client",
       "label": "Users",
       "x": 0,
-      "y": 120
+      "y": 140
     },
     {
       "id": "app",
       "kind": "app-server",
       "label": "App Server",
       "x": 250,
-      "y": 120
+      "y": 0
     },
     {
       "id": "db",
       "kind": "sql-database",
       "label": "Users DB",
-      "x": 250,
-      "y": 300
+      "x": 500,
+      "y": 0
     },
     {
       "id": "queue",
       "kind": "queue",
       "label": "Email Queue",
+      "x": 250,
+      "y": 140
+    },
+    {
+      "id": "worker",
+      "kind": "worker",
+      "label": "Email Workers",
       "x": 500,
-      "y": 120
-    },
-    {
-      "id": "worker1",
-      "kind": "worker",
-      "label": "Email Worker 1",
-      "x": 750,
-      "y": 40
-    },
-    {
-      "id": "worker2",
-      "kind": "worker",
-      "label": "Email Worker 2",
-      "x": 750,
-      "y": 200
+      "y": 140
     },
     {
       "id": "email",
       "kind": "external-service",
       "label": "Email Provider",
-      "x": 1000,
-      "y": 120
+      "x": 500,
+      "y": 280
     }
   ],
   "cables": [
@@ -73,34 +66,36 @@
       "label": "sign up"
     },
     {
-      "from": "app.bottom",
-      "to": "db.top",
+      "from": "app.right",
+      "to": "db.left",
       "label": "save user"
     },
     {
-      "from": "app.right",
-      "to": "queue.left",
+      "from": "app.bottom",
+      "to": "queue.top",
       "label": "enqueue job",
       "oneWay": true
     },
     {
       "from": "queue.right",
-      "to": "worker1.left",
+      "to": "worker.left",
       "oneWay": true
     },
     {
-      "from": "queue.right",
-      "to": "worker2.left",
-      "oneWay": true
+      "from": "worker.top",
+      "to": "db.bottom",
+      "label": "mark sent"
     },
     {
-      "from": "worker1.right",
-      "to": "email.left",
+      "from": "worker.bottom",
+      "to": "email.top",
       "label": "send"
     },
     {
-      "from": "worker2.right",
-      "to": "email.left"
+      "from": "email.left",
+      "to": "client.bottom",
+      "label": "welcome email",
+      "oneWay": true
     }
   ]
 }

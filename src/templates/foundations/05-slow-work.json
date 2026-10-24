@@ -7,12 +7,13 @@
     "why": [
       "The customer only needs one thing to happen before seeing \"Order placed\": the order saved in the database. Everything else can happen a few seconds later.",
       "So the app saves the order, drops a small task for each follow-up into a queue, and replies at once. Checkout is back under half a second.",
-      "Workers take tasks from the queue and do them in the background. If the email provider is down, the task simply waits and is retried later instead of breaking checkout. At lunchtime, when tasks pile up, they add more workers."
+      "Workers take tasks from the queue and do them in the background. A worker reads the order from the database, asks the email provider to send the receipt and, once the provider confirms, marks the receipt as sent on the order. The provider then delivers it straight to the customer; nothing travels back through the app.",
+      "If the email provider is down, the task simply waits and is retried later instead of breaking checkout. At lunchtime, when tasks pile up, they add more workers."
     ],
     "takeaways": [
       "Make users wait only for what they need to see.",
       "A queue absorbs bursts and outages of the services behind it.",
-      "Tasks can run twice after a retry, so make them safe to repeat (don't send two receipts)."
+      "Tasks can run twice after a retry, so make them safe to repeat: record what's done, and check it first (no second receipt)."
     ]
   },
   "nodes": [
@@ -21,7 +22,7 @@
       "kind": "client",
       "label": "Users",
       "x": 0,
-      "y": 0
+      "y": 140
     },
     {
       "id": "app",
@@ -55,8 +56,8 @@
       "id": "email",
       "kind": "external-service",
       "label": "Email Provider",
-      "x": 750,
-      "y": 140
+      "x": 500,
+      "y": 280
     }
   ],
   "cables": [
@@ -82,8 +83,20 @@
       "oneWay": true
     },
     {
-      "from": "worker.right",
-      "to": "email.left"
+      "from": "worker.top",
+      "to": "db.bottom",
+      "label": "read order, mark sent"
+    },
+    {
+      "from": "worker.bottom",
+      "to": "email.top",
+      "label": "send"
+    },
+    {
+      "from": "email.left",
+      "to": "client.bottom",
+      "label": "receipt",
+      "oneWay": true
     }
   ]
 }

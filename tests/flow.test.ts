@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import {
   displaceCurve,
   displacementAt,
+  pointAlong,
   polylineLength,
   smoothCurve,
   waveAt,
@@ -107,4 +108,20 @@ test('the default flow settings are sensible', () => {
   assert.ok(flow.speed > 0 && flow.wavelength > 0 && flow.ripples > 0);
   assert.ok(flow.amplitude > 0 && flow.amplitude < flow.wavelength / 4);
   assert.ok(flow.pause >= 0 && flow.rest >= 0);
+});
+
+test('a point part of the way along a curve comes with its heading', () => {
+  const curve = [
+    { x: 0, y: 0 },
+    { x: 100, y: 0 },
+    { x: 100, y: 100 },
+  ];
+  assert.deepEqual(pointAlong(curve, 0.25), {
+    point: { x: 50, y: 0 },
+    angle: 0,
+  });
+  assert.deepEqual(pointAlong(curve, 0.75), {
+    point: { x: 100, y: 50 },
+    angle: Math.PI / 2,
+  });
 });

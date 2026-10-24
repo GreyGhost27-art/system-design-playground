@@ -100,7 +100,8 @@
     {
       "from": "primary.bottom",
       "to": "standby.top",
-      "label": "copies every change"
+      "label": "copies every change",
+      "oneWay": true
     }
   ]
 }

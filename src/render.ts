@@ -14,6 +14,7 @@ import {
 import {
   displaceCurve,
   displacementAt,
+  pointAlong,
   polylineLength,
   smoothCurve,
   waveAt,
@@ -41,7 +42,7 @@ export interface CableDraft {
   rope: Rope;
   snap: PortRef | null;
   /** Set when an existing cable was pulled out and is being re-plugged. */
-  unplugged?: { label?: string; reversed: boolean };
+  unplugged?: { label?: string; oneWay?: boolean; reversed: boolean };
 }
 
 export interface Scene {
@@ -82,6 +83,7 @@ export function render(
     const selected = isSelected(scene, 'cable', cable.id);
     const curve = cableCurve(cable, scene.flow, scene.time);
     drawCable(ctx, scene.design, cable, curve, selected);
+    if (cable.oneWay) drawDirectionArrow(ctx, curve, cable.label);
   }
   for (const cable of scene.design.cables) drawCableLabel(ctx, cable);
   for (const node of scene.design.nodes) {
@@ -135,6 +137,7 @@ function nodeColor(node: DesignNode): string {
 function cableCurve(cable: Cable, flow: FlowSettings, seconds: number) {
   const curve = smoothCurve(cable.rope.points);
   const length = polylineLength(curve);
+  if (cable.oneWay) flow = { ...flow, showResponses: false };
   const wave = waveAt(length, seconds, flow, phaseOf(cable.id));
   if (!wave) return curve;
   return displaceCurve(curve, (position) =>
@@ -249,6 +252,32 @@ function drawGroup(ctx: CanvasRenderingContext2D, group: Group): void {
   ctx.fillStyle = MUTED;
   ctx.font = `600 11px ${FONT_UI}`;
   ctx.fillText(group.label.toUpperCase(), group.x + 14, group.y + 12);
+}
+
+/** A chevron showing which way a one-way cable sends its traffic. */
+function drawDirectionArrow(
+  ctx: CanvasRenderingContext2D,
+  curve: Point[],
+  label?: string,
+): void {
+  // The middle belongs to the label, so the arrow steps aside for it.
+  const { point, angle } = pointAlong(curve, label ? 0.3 : 0.5);
+  ctx.save();
+  ctx.translate(point.x, point.y);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.moveTo(-4, -6);
+  ctx.lineTo(4, 0);
+  ctx.lineTo(-4, 6);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = BACKGROUND;
+  ctx.stroke();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#e6e9ef';
+  ctx.stroke();
+  ctx.restore();
 }
 
 /** A small pill at the middle of the rope, so it moves with the cable. */

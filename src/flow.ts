@@ -116,6 +116,25 @@ export function displaceCurve(
   });
 }
 
+/** The point at `fraction` of the way along a curve, and its heading. */
+export function pointAlong(
+  curve: Point[],
+  fraction: number,
+): { point: Point; angle: number } {
+  let remaining = polylineLength(curve) * fraction;
+  for (let i = 1; i < curve.length; i++) {
+    const [start, end] = [curve[i - 1], curve[i]];
+    const step = distance(start, end);
+    const angle = Math.atan2(end.y - start.y, end.x - start.x);
+    if (remaining <= step || i === curve.length - 1) {
+      const t = step === 0 ? 0 : Math.min(1, remaining / step);
+      return { point: lerp(start, end, t), angle };
+    }
+    remaining -= step;
+  }
+  return { point: curve[0], angle: 0 };
+}
+
 export function polylineLength(points: Point[]): number {
   let length = 0;
   for (let i = 1; i < points.length; i++) {

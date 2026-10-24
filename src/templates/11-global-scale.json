@@ -157,7 +157,8 @@
     {
       "from": "usDb.right",
       "to": "euDb.left",
-      "label": "async replication (lag)"
+      "label": "async replication (lag)",
+      "oneWay": true
     },
     {
       "from": "euApp.left",

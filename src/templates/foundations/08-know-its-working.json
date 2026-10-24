@@ -85,21 +85,25 @@
     {
       "from": "app.bottom",
       "to": "metrics.top",
-      "label": "orders, errors"
+      "label": "orders, errors",
+      "oneWay": true
     },
     {
       "from": "app.right",
-      "to": "logs.top"
+      "to": "logs.top",
+      "oneWay": true
     },
     {
       "from": "metrics.bottom",
       "to": "alerting.top",
-      "label": "orders dropped?"
+      "label": "orders dropped?",
+      "oneWay": true
     },
     {
       "from": "alerting.right",
       "to": "dev.left",
-      "label": "page"
+      "label": "page",
+      "oneWay": true
     }
   ]
 }

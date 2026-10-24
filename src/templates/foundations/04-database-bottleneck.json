@@ -87,7 +87,8 @@
     {
       "from": "primary.bottom",
       "to": "replica.top",
-      "label": "copies changes"
+      "label": "copies changes",
+      "oneWay": true
     }
   ]
 }

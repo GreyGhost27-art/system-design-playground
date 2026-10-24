@@ -80,15 +80,18 @@
     {
       "from": "app.right",
       "to": "queue.left",
-      "label": "enqueue job"
+      "label": "enqueue job",
+      "oneWay": true
     },
     {
       "from": "queue.right",
-      "to": "worker1.left"
+      "to": "worker1.left",
+      "oneWay": true
     },
     {
       "from": "queue.right",
-      "to": "worker2.left"
+      "to": "worker2.left",
+      "oneWay": true
     },
     {
       "from": "worker1.right",

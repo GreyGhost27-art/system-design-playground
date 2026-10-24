@@ -97,11 +97,13 @@
     {
       "from": "raw.bottom",
       "to": "queue.top",
-      "label": "upload done"
+      "label": "upload done",
+      "oneWay": true
     },
     {
       "from": "queue.right",
-      "to": "transcoders.left"
+      "to": "transcoders.left",
+      "oneWay": true
     },
     {
       "from": "transcoders.left",

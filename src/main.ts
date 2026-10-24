@@ -4,11 +4,12 @@ import { findKind } from './components.ts';
 import { Design, type PortRef } from './design.ts';
 import type { Point } from './geometry.ts';
 import { UndoHistory } from './history.ts';
+import { createCableToolbar } from './cableToolbar.ts';
 import { createCableLabelEditor } from './labelEditor.ts';
 import { renderLesson } from './lesson.ts';
 import { DRAG_FORMAT, renderPalette } from './palette.ts';
 import { render, type CableDraft, type Scene } from './render.ts';
-import { createRope, stepRope } from './rope.ts';
+import { createRope, reverseRope, stepRope } from './rope.ts';
 import settings from './settings.json' with { type: 'json' };
 import { findSnapTarget, portAt } from './snap.ts';
 import { SECTIONS, type TemplateSection } from './templateLibrary.ts';
@@ -38,6 +39,8 @@ const lessonOpenButton = document.querySelector<HTMLElement>('#lesson-open')!;
 const copyJsonButton = document.querySelector<HTMLElement>('#copy-json')!;
 const flowToggle = document.querySelector<HTMLInputElement>('#flow-toggle')!;
 const labelInput = document.querySelector<HTMLInputElement>('#label-editor')!;
+const cableToolbarElement =
+  document.querySelector<HTMLElement>('#cable-toolbar')!;
 
 // Space the drawer covers on the right of the board when open.
 const DRAWER_SPACE = 372;
@@ -82,6 +85,25 @@ const labelEditor = createCableLabelEditor({
     if (!cable || (cable.label ?? '') === label.trim()) return;
     undoHistory.record(design);
     design.setCableLabel(cableId, label);
+  },
+});
+
+const cableToolbar = createCableToolbar({
+  element: cableToolbarElement,
+  design,
+  toScreen: (world) => worldToScreen(scene.camera, world),
+  actions: {
+    setOneWay: (cableId, oneWay) => {
+      if (Boolean(design.getCable(cableId).oneWay) === oneWay) return;
+      undoHistory.record(design);
+      design.setCableOneWay(cableId, oneWay);
+    },
+    flip: (cableId) => {
+      undoHistory.record(design);
+      design.flipCable(cableId);
+    },
+    label: (cableId) => labelEditor.open(cableId),
+    remove: () => deleteSelection(),
   },
 });
 
@@ -357,12 +379,12 @@ function unplug(cableId: string, end: 'from' | 'to'): void {
   design.removeCable(cableId);
   // The draft always grows from the end that stays plugged in.
   const reversed = end === 'from';
-  if (reversed) reverseRope(cable);
+  if (reversed) reverseRope(cable.rope);
   scene.draft = {
     from: reversed ? cable.to : cable.from,
     rope: cable.rope,
     snap: null,
-    unplugged: { label: cable.label, reversed },
+    unplugged: { label: cable.label, oneWay: cable.oneWay, reversed },
   };
   scene.selection = null;
   gesture = { type: 'drawing-cable' };
@@ -376,16 +398,12 @@ function plugIn(draft: CableDraft, target: PortRef) {
   }
   // A re-plugged cable keeps the way round it was drawn, so its traffic
   // still flows the same direction. Unplugging already recorded an undo step.
-  if (unplugged.reversed) reverseRope({ rope });
+  if (unplugged.reversed) reverseRope(rope);
   const [from, to] = unplugged.reversed
     ? [target, draft.from]
     : [draft.from, target];
-  return design.connect(from, to, { rope, label: unplugged.label });
-}
-
-function reverseRope({ rope }: { rope: CableDraft['rope'] }): void {
-  rope.points.reverse();
-  rope.previous.reverse();
+  const { label, oneWay } = unplugged;
+  return design.connect(from, to, { rope, label, oneWay });
 }
 
 canvas.addEventListener('pointerleave', () => {
@@ -507,6 +525,14 @@ flowToggle.addEventListener('change', () => {
   scene.flow.enabled = flowToggle.checked;
 });
 
+/** Shown for a selected cable, unless it is being dragged or labelled. */
+function syncCableToolbar(): void {
+  const selection = scene.selection;
+  const busy = gesture.type !== 'idle' || !labelInput.hidden;
+  const cableId = selection?.type === 'cable' && !busy ? selection.id : null;
+  cableToolbar.show(cableId);
+}
+
 function frame(now: number): void {
   scene.time = now / 1000;
   design.step();
@@ -517,6 +543,7 @@ function frame(now: number): void {
   }
   syncDrawer();
   labelEditor.follow();
+  syncCableToolbar();
   render(ctx, scene, boardSize());
   requestAnimationFrame(frame);
 }

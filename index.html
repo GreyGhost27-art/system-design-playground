@@ -23,7 +23,7 @@
           <kbd>Drag</kbd> a cable near its end (or <kbd>Shift</kbd>+drag a port)
           to unplug it
         </p>
-        <p><kbd>Double-click</kbd> a cable to label it</p>
+        <p><kbd>Click</kbd> a cable to set its traffic or label it</p>
         <p><kbd>Del</kbd> removes the selection</p>
         <p><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copies a component</p>
         <p><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the last change</p>
@@ -48,6 +48,29 @@
         aria-label="Cable label"
         hidden
       />
+      <div
+        id="cable-toolbar"
+        class="cable-toolbar"
+        role="toolbar"
+        aria-label="Cable"
+        hidden
+      >
+        <button
+          type="button"
+          data-action="two-way"
+          title="Request and response"
+        >
+          ⇄ Two-way
+        </button>
+        <button type="button" data-action="one-way" title="No response back">
+          → One-way
+        </button>
+        <button type="button" data-action="flip" title="Reverse the direction">
+          Flip
+        </button>
+        <button type="button" data-action="label">Label</button>
+        <button type="button" data-action="delete">Delete</button>
+      </div>
       <aside id="drawer" class="drawer" hidden>
         <button
           id="drawer-close"

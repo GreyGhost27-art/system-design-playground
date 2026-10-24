@@ -111,44 +111,53 @@
     {
       "from": "client.bottom",
       "to": "errors.top",
-      "label": "crash reports"
+      "label": "crash reports",
+      "oneWay": true
     },
     {
       "from": "gateway.bottom",
       "to": "logs.top",
-      "label": "access logs"
+      "label": "access logs",
+      "oneWay": true
     },
     {
       "from": "orders.bottom",
-      "to": "logs.top"
+      "to": "logs.top",
+      "oneWay": true
     },
     {
       "from": "orders.bottom",
       "to": "tracing.top",
-      "label": "spans"
+      "label": "spans",
+      "oneWay": true
     },
     {
       "from": "payments.bottom",
-      "to": "tracing.top"
+      "to": "tracing.top",
+      "oneWay": true
     },
     {
       "from": "orders.bottom",
-      "to": "metrics.top"
+      "to": "metrics.top",
+      "oneWay": true
     },
     {
       "from": "payments.bottom",
       "to": "metrics.top",
-      "label": "latency, errors"
+      "label": "latency, errors",
+      "oneWay": true
     },
     {
       "from": "metrics.right",
       "to": "alerting.left",
-      "label": "errors > 2%"
+      "label": "errors > 2%",
+      "oneWay": true
     },
     {
       "from": "alerting.top",
       "to": "oncall.bottom",
-      "label": "page"
+      "label": "page",
+      "oneWay": true
     }
   ]
 }

@@ -1,5 +1,11 @@
 import { distance, type Point } from './geometry.ts';
-import { createRope, distanceToRope, stepRope, type Rope } from './rope.ts';
+import {
+  createRope,
+  distanceToRope,
+  reverseRope,
+  stepRope,
+  type Rope,
+} from './rope.ts';
 
 export const NODE_WIDTH = 176;
 export const NODE_HEIGHT = 52;
@@ -26,6 +32,8 @@ export interface Cable {
   from: PortRef;
   to: PortRef;
   label?: string;
+  /** Traffic only goes from → to, with no response coming back. */
+  oneWay?: boolean;
   rope: Rope;
 }
 
@@ -142,7 +150,7 @@ export class Design {
   connect(
     from: PortRef,
     to: PortRef,
-    details: { label?: string; rope?: Rope } = {},
+    details: { label?: string; oneWay?: boolean; rope?: Rope } = {},
   ): Cable | null {
     if (!this.canConnect(from, to)) return null;
     const cable: Cable = {
@@ -153,17 +161,36 @@ export class Design {
         details.rope ?? createRope(this.portPoint(from), this.portPoint(to)),
     };
     if (details.label) cable.label = details.label;
+    if (details.oneWay) cable.oneWay = true;
     this.cables.push(cable);
+    return cable;
+  }
+
+  getCable(id: string): Cable {
+    const cable = this.cables.find((candidate) => candidate.id === id);
+    if (!cable) throw new Error(`Unknown cable: ${id}`);
     return cable;
   }
 
   /** Names a cable; an empty or blank label removes it. */
   setCableLabel(id: string, label: string): void {
-    const cable = this.cables.find((candidate) => candidate.id === id);
-    if (!cable) throw new Error(`Unknown cable: ${id}`);
+    const cable = this.getCable(id);
     const trimmed = label.trim();
     if (trimmed) cable.label = trimmed;
     else delete cable.label;
+  }
+
+  setCableOneWay(id: string, oneWay: boolean): void {
+    const cable = this.getCable(id);
+    if (oneWay) cable.oneWay = true;
+    else delete cable.oneWay;
+  }
+
+  /** Swaps a cable's ends, so its traffic runs the other way. */
+  flipCable(id: string): void {
+    const cable = this.getCable(id);
+    [cable.from, cable.to] = [cable.to, cable.from];
+    reverseRope(cable.rope);
   }
 
   removeCable(id: string): void {

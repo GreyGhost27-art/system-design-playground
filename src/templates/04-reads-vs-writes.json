@@ -100,11 +100,13 @@
     {
       "from": "primary.right",
       "to": "replica1.left",
-      "label": "replication"
+      "label": "replication",
+      "oneWay": true
     },
     {
       "from": "primary.right",
-      "to": "replica2.left"
+      "to": "replica2.left",
+      "oneWay": true
     }
   ]
 }

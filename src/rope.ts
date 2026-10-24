@@ -85,3 +85,9 @@ function keepApart(
   b.x -= dx * bShare;
   b.y -= dy * bShare;
 }
+
+/** Reverses a rope in place, so its first point becomes its last. */
+export function reverseRope(rope: Rope): void {
+  rope.points.reverse();
+  rope.previous.reverse();
+}

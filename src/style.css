@@ -354,6 +354,46 @@ kbd {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
+.cable-toolbar {
+  position: absolute;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  /* Sits above the cable's middle, clear of its label. */
+  transform: translate(-50%, calc(-100% - 18px));
+}
+
+.cable-toolbar[hidden] {
+  display: none;
+}
+
+.cable-toolbar button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cable-toolbar button:hover {
+  background: var(--panel-raised);
+  color: var(--text);
+}
+
+.cable-toolbar button[aria-pressed='true'] {
+  background: var(--panel-raised);
+  color: #8fe3ff;
+}
+
 .sample {
   margin: 0 0 14px;
 }

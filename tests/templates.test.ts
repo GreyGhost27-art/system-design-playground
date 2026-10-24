@@ -118,6 +118,14 @@ test('validation reports unknown kinds, bad ends and duplicate cables', () => {
   ]);
 });
 
+test('one-way cables stay one-way when loaded and exported', () => {
+  const design = new Design();
+  const cables = [{ from: 'client.right', to: 'server.left', oneWay: true }];
+  loadTemplate(design, tinyTemplate({ cables }));
+  assert.equal(design.cables[0].oneWay, true);
+  assert.equal(toTemplate(design).cables[0].oneWay, true);
+});
+
 test('the board exported as JSON loads back into the same design', () => {
   const original = new Design();
   loadTemplate(original, tinyTemplate());

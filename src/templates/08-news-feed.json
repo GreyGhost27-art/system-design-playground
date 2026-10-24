@@ -101,11 +101,13 @@
     },
     {
       "from": "post.right",
-      "to": "queue.left"
+      "to": "queue.left",
+      "oneWay": true
     },
     {
       "from": "queue.right",
-      "to": "fanout.left"
+      "to": "fanout.left",
+      "oneWay": true
     },
     {
       "from": "fanout.top",

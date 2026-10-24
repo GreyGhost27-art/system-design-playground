@@ -148,6 +148,9 @@ place in the list (`01-hello-world.json`, `02-…`).
   apart keep cables and labels readable.
 - Cable ends are `nodeId.side`, where side is `top`, `right`, `bottom` or
   `left`. Cable `label`s and `groups` are optional.
+- `"oneWay": true` marks a cable whose traffic gets no response, such as a
+  task put on a queue or database replication. It shows a single wave and an
+  arrow. On the board, click a cable to switch it, flip it or label it.
 - `npm test` checks every template: unknown kinds, missing nodes, bad sides
   and duplicate cables are reported by name.
 
@@ -168,6 +171,7 @@ be unique across templates and foundations (a test checks).
 | `src/design.ts`          | The design model: components, ports, cables, groups |
 | `src/history.ts`         | Undo steps                                          |
 | `src/labelEditor.ts`     | The text field for naming a cable                   |
+| `src/cableToolbar.ts`    | The buttons over a selected cable                   |
 | `src/templates.ts`       | Validating, loading and exporting templates         |
 | `src/templateLibrary.ts` | Collects the Foundations and Templates sections     |
 | `src/lesson.ts`          | The template lesson shown in the drawer             |
@@ -192,15 +196,15 @@ npm test                          # everything
 node --test tests/rope.test.ts    # one file
 ```
 
-| Source file                                                                                                                                             | Test file                                                  |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `src/rope.ts`                                                                                                                                           | `tests/rope.test.ts`                                       |
-| `src/flow.ts`, `src/settings.json`                                                                                                                      | `tests/flow.test.ts`                                       |
-| `src/design.ts`                                                                                                                                         | `tests/design.test.ts`                                     |
-| `src/history.ts`                                                                                                                                        | `tests/history.test.ts`                                    |
-| `src/snap.ts`                                                                                                                                           | `tests/snap.test.ts`                                       |
-| `src/camera.ts`                                                                                                                                         | `tests/camera.test.ts`                                     |
-| `src/templates.ts`, `src/templates/**/*.json`                                                                                                           | `tests/templates.test.ts`                                  |
-| `src/components.ts`, `src/components/**`                                                                                                                | `tests/components.test.ts`, `tests/templates.test.ts`      |
-| `src/geometry.ts`                                                                                                                                       | covered by `tests/rope.test.ts` and `tests/design.test.ts` |
-| `src/render.ts`, `src/main.ts`, `src/palette.ts`, `src/lesson.ts`, `src/componentInfo.ts`, `src/dom.ts`, `src/labelEditor.ts`, `src/templateLibrary.ts` | no unit tests; check in the browser                        |
+| Source file                                                                                                                                                                    | Test file                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| `src/rope.ts`                                                                                                                                                                  | `tests/rope.test.ts`                                       |
+| `src/flow.ts`, `src/settings.json`                                                                                                                                             | `tests/flow.test.ts`                                       |
+| `src/design.ts`                                                                                                                                                                | `tests/design.test.ts`                                     |
+| `src/history.ts`                                                                                                                                                               | `tests/history.test.ts`                                    |
+| `src/snap.ts`                                                                                                                                                                  | `tests/snap.test.ts`                                       |
+| `src/camera.ts`                                                                                                                                                                | `tests/camera.test.ts`                                     |
+| `src/templates.ts`, `src/templates/**/*.json`                                                                                                                                  | `tests/templates.test.ts`                                  |
+| `src/components.ts`, `src/components/**`                                                                                                                                       | `tests/components.test.ts`, `tests/templates.test.ts`      |
+| `src/geometry.ts`                                                                                                                                                              | covered by `tests/rope.test.ts` and `tests/design.test.ts` |
+| `src/render.ts`, `src/main.ts`, `src/palette.ts`, `src/lesson.ts`, `src/componentInfo.ts`, `src/dom.ts`, `src/labelEditor.ts`, `src/cableToolbar.ts`, `src/templateLibrary.ts` | no unit tests; check in the browser                        |

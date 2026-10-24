@@ -73,11 +73,13 @@
     {
       "from": "app.bottom",
       "to": "queue.top",
-      "label": "receipt, invoice"
+      "label": "receipt, invoice",
+      "oneWay": true
     },
     {
       "from": "queue.right",
-      "to": "worker.left"
+      "to": "worker.left",
+      "oneWay": true
     },
     {
       "from": "worker.right",

@@ -109,6 +109,25 @@ test('a cable can carry a label', () => {
   assert.equal(cable?.label, 'HTTP');
 });
 
+test('a cable can be made one-way and back to two-way', () => {
+  const { design, client, server } = twoComponents();
+  const cable = design.connect(port(client.id), port(server.id))!;
+  design.setCableOneWay(cable.id, true);
+  assert.equal(cable.oneWay, true);
+  design.setCableOneWay(cable.id, false);
+  assert.equal('oneWay' in cable, false);
+});
+
+test('flipping a cable swaps its ends and reverses its rope', () => {
+  const { design, client, server } = twoComponents();
+  const cable = design.connect(port(client.id), port(server.id, 'left'))!;
+  const firstPoint = cable.rope.points[0];
+  design.flipCable(cable.id);
+  assert.deepEqual(cable.from, port(server.id, 'left'));
+  assert.deepEqual(cable.to, port(client.id));
+  assert.equal(cable.rope.points.at(-1), firstPoint);
+});
+
 test('the bounds cover every component and group', () => {
   const { design } = twoComponents();
   design.groups.push({ label: 'EU', x: -200, y: 0, width: 50, height: 400 });

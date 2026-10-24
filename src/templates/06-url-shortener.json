@@ -125,11 +125,13 @@
     {
       "from": "app2.right",
       "to": "queue.left",
-      "label": "click"
+      "label": "click",
+      "oneWay": true
     },
     {
       "from": "queue.right",
-      "to": "analytics.left"
+      "to": "analytics.left",
+      "oneWay": true
     },
     {
       "from": "analytics.top",

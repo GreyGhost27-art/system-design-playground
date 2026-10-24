@@ -107,12 +107,14 @@
     {
       "from": "relay.top",
       "to": "events.bottom",
-      "label": "publish"
+      "label": "publish",
+      "oneWay": true
     },
     {
       "from": "events.left",
       "to": "orders.right",
-      "label": "at-least-once"
+      "label": "at-least-once",
+      "oneWay": true
     },
     {
       "from": "recon.left",

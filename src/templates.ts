@@ -26,6 +26,7 @@ export interface TemplateCable {
   from: string;
   to: string;
   label?: string;
+  oneWay?: boolean;
 }
 
 export interface Template {
@@ -95,6 +96,7 @@ export function loadTemplate(design: Design, template: Template): void {
   for (const cable of template.cables) {
     design.connect(toPort(cable.from), toPort(cable.to), {
       label: cable.label,
+      oneWay: cable.oneWay,
     });
   }
 }
@@ -123,6 +125,7 @@ export function toTemplate(design: Design): Template {
       to: toEnd(cable.to),
     };
     if (cable.label) templateCable.label = cable.label;
+    if (cable.oneWay) templateCable.oneWay = true;
     return templateCable;
   });
 

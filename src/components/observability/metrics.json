@@ -7,6 +7,24 @@
     "what": "Records numbers over time, like requests per second, error rate and response time.",
     "why": "Shows at a glance whether the system is healthy, and reveals trends, like slowly growing response times, before users complain.",
     "analogy": "The gauges on a car's dashboard.",
-    "examples": ["Prometheus", "Datadog", "Amazon CloudWatch"]
+    "examples": ["Prometheus", "Datadog", "Amazon CloudWatch"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "Numbers sampled over time; the lunch rush shows up at once",
+        "columns": ["time", "requests/s", "errors", "slowest 5%"],
+        "rows": [
+          ["12:00", "120", "0.2%", "180 ms"],
+          ["12:30", "950", "0.3%", "210 ms"],
+          ["13:00", "1,400", "4.1%", "900 ms"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "Error rate over the last 5 minutes",
+        "language": "promql",
+        "code": "sum(rate(http_errors_total[5m]))\n/ sum(rate(http_requests_total[5m]))"
+      }
+    ]
   }
 }

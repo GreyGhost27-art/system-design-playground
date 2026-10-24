@@ -85,7 +85,7 @@ jargon-free. `npm test` checks that every file is listed, sits in the folder
 of its category and is named after its `id`, and that every component has all
 four parts of `info` and exactly three examples.
 
-`info.samples` (optional) shows what a component looks like in practice,
+`info.samples` shows what a component looks like in practice,
 under _What it looks like_ in the drawer. Each sample is a small table or a
 code snippet:
 
@@ -95,8 +95,7 @@ code snippet:
 ```
 
 Code lines must be 40 characters or fewer so they fit the drawer (a test
-checks). External, Edge, Routing, Compute, Data and Async components have
-samples; other categories can add them the same way.
+checks). Every component has at least one sample (a test checks).
 
 ### Traffic flow — `src/settings.json`
 

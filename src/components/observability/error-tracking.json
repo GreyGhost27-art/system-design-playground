@@ -7,6 +7,24 @@
     "what": "Catches crashes and exceptions, groups identical ones and shows the code that failed.",
     "why": "Turns thousands of scattered error messages into a short list of bugs, ranked by how many users they affect.",
     "analogy": "A mechanic's fault report listing each problem and how often it happens.",
-    "examples": ["Sentry", "Rollbar", "Bugsnag"]
+    "examples": ["Sentry", "Rollbar", "Bugsnag"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "Identical errors grouped into issues, worst first",
+        "columns": ["issue", "times", "users"],
+        "rows": [
+          ["TypeError: cart is undefined", "1,240", "312"],
+          ["PaymentTimeout", "85", "80"],
+          ["ImageNotFound", "40", "2"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "One issue, with the line of code that failed",
+        "language": "text",
+        "code": "TypeError: cart is undefined\n  at checkout.js:42\n    total = cart.items.length\n  at onClick (button.js:8)\nSafari 18 · release 2.4.1"
+      }
+    ]
   }
 }

@@ -3,9 +3,6 @@ import { readdirSync } from 'node:fs';
 import { test } from 'node:test';
 import { CATEGORIES, COMPONENT_KINDS, findKind } from '../src/components.ts';
 
-const kindsIn = (category: string) =>
-  COMPONENT_KINDS.filter((kind) => kind.category === category);
-
 test('every component has a unique id and a known category', () => {
   const ids = COMPONENT_KINDS.map((kind) => kind.id);
   assert.equal(new Set(ids).size, ids.length);
@@ -37,16 +34,8 @@ test('an unknown component kind is reported by name', () => {
   );
 });
 
-test('external, edge, routing, compute, data and async components show an example', () => {
-  const kinds = [
-    'external',
-    'edge',
-    'routing',
-    'compute',
-    'data',
-    'async',
-  ].flatMap(kindsIn);
-  for (const { id, info } of kinds) {
+test('every component shows an example', () => {
+  for (const { id, info } of COMPONENT_KINDS) {
     assert.ok((info.samples ?? []).length > 0, `${id} has no samples`);
   }
 });

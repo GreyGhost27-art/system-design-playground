@@ -7,6 +7,26 @@
     "what": "Watches the metrics and notifies a person when something crosses a limit.",
     "why": "Problems are noticed and fixed quickly, at any hour, instead of being discovered by customers.",
     "analogy": "A smoke alarm.",
-    "examples": ["PagerDuty", "Opsgenie", "Prometheus Alertmanager"]
+    "examples": ["PagerDuty", "Opsgenie", "Prometheus Alertmanager"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "A rule: page someone if errors stay high for 5 minutes",
+        "language": "yaml",
+        "code": "alert: HighErrorRate\nexpr: error_rate > 0.05\nfor: 5m\nlabels:\n  severity: page\nannotations:\n  summary: Over 5% of requests fail"
+      },
+      {
+        "type": "table",
+        "caption": "What happens when it fires",
+        "columns": ["time", "event"],
+        "rows": [
+          ["13:00", "error rate reaches 6%"],
+          ["13:05", "still high: alert fires"],
+          ["13:05", "on-call developer is paged"],
+          ["13:12", "acknowledged"],
+          ["13:30", "fixed; alert resolves"]
+        ]
+      }
+    ]
   }
 }

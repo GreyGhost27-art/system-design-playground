@@ -7,6 +7,20 @@
     "what": "Follows a single request as it travels through every service, timing each step.",
     "why": "With many services involved, it shows exactly where a slow or failed request got stuck.",
     "analogy": "A parcel-tracking page showing every stop along the way.",
-    "examples": ["Jaeger", "Grafana Tempo", "Honeycomb"]
+    "examples": ["Jaeger", "Grafana Tempo", "Honeycomb"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "One request, step by step: payments is where the time goes",
+        "language": "text",
+        "code": "GET /checkout            480 ms\n├ api-gateway              5 ms\n├ orders                  60 ms\n│ └ SELECT orders         40 ms\n├ payments               390 ms ←\n│ └ POST bank API        370 ms\n└ queue email              2 ms"
+      },
+      {
+        "type": "code",
+        "caption": "Every call passes on the trace id, so the steps can be joined up",
+        "language": "http",
+        "code": "POST /payments\ntraceparent: 00-4bf92f35…-00f067aa…-01"
+      }
+    ]
   }
 }

@@ -7,6 +7,20 @@
     "what": "Collects what every service writes down and makes it searchable in one place.",
     "why": "When something goes wrong you can read exactly what happened, across all servers, instead of logging into each machine one by one.",
     "analogy": "A ship's logbook, kept for the whole fleet.",
-    "examples": ["Elasticsearch (ELK)", "Grafana Loki", "Splunk"]
+    "examples": ["Elasticsearch (ELK)", "Grafana Loki", "Splunk"],
+    "samples": [
+      {
+        "type": "code",
+        "caption": "Each line is structured, so it can be searched by field",
+        "language": "json",
+        "code": "{\n  \"time\": \"12:03:41\",\n  \"level\": \"error\",\n  \"service\": \"orders\",\n  \"message\": \"payment declined\",\n  \"orderId\": 101\n}"
+      },
+      {
+        "type": "code",
+        "caption": "One search across every server: errors from orders that mention declined",
+        "language": "logql",
+        "code": "{service=\"orders\", level=\"error\"}\n  |= \"declined\""
+      }
+    ]
   }
 }

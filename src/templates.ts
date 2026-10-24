@@ -140,6 +140,98 @@ export function toTemplate(design: Design): Template {
   };
 }
 
+/**
+ * Reads a board saved as JSON (as exported, or any template), or explains
+ * in plain words why it can't, so a bad file never touches the board.
+ */
+export function parseBoard(
+  text: string,
+  title: string,
+): { board: Template } | { error: string } {
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return { error: "It isn't valid JSON, so it can't be read." };
+  }
+  if (!isRecord(data) || !Array.isArray(data.nodes)) {
+    return { error: 'It isn\'t a board: a board file has a "nodes" list.' };
+  }
+  const { nodes, cables = [], groups = [] } = data;
+  if (!Array.isArray(cables) || !Array.isArray(groups)) {
+    return { error: 'Its "cables" and "groups" must be lists.' };
+  }
+
+  const badNode = nodes.findIndex(
+    (node) =>
+      !isRecord(node) ||
+      typeof node.id !== 'string' ||
+      typeof node.kind !== 'string' ||
+      !isNumber(node.x) ||
+      !isNumber(node.y) ||
+      !isOptional(node.label, 'string'),
+  );
+  if (badNode >= 0) {
+    return {
+      error: `Component ${badNode + 1} needs an "id", a "kind" and "x" and "y" numbers.`,
+    };
+  }
+  const badCable = cables.findIndex(
+    (cable) =>
+      !isRecord(cable) ||
+      typeof cable.from !== 'string' ||
+      typeof cable.to !== 'string' ||
+      !isOptional(cable.label, 'string') ||
+      !isOptional(cable.oneWay, 'boolean'),
+  );
+  if (badCable >= 0) {
+    return {
+      error: `Cable ${badCable + 1} needs a "from" and a "to", like "client.right".`,
+    };
+  }
+  const badGroup = groups.findIndex(
+    (group) =>
+      !isRecord(group) ||
+      typeof group.label !== 'string' ||
+      ![group.x, group.y, group.width, group.height].every(isNumber),
+  );
+  if (badGroup >= 0) {
+    return {
+      error: `Group ${badGroup + 1} needs a "label" and "x", "y", "width" and "height" numbers.`,
+    };
+  }
+
+  const board: Template = {
+    id: 'imported',
+    title,
+    summary: '',
+    lesson: { problem: '', why: [], takeaways: [] },
+    groups: groups as Group[],
+    nodes: nodes as TemplateNode[],
+    cables: cables as TemplateCable[],
+  };
+  const [first, ...more] = validateTemplate(board);
+  if (first) {
+    const problems = more.length === 1 ? 'problem' : 'problems';
+    const others =
+      more.length > 0 ? ` (and ${more.length} more ${problems})` : '';
+    return { error: `${first}${others}.` };
+  }
+  return { board };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isNumber(value: unknown): boolean {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function isOptional(value: unknown, type: 'string' | 'boolean'): boolean {
+  return value === undefined || typeof value === type;
+}
+
 function parseEnd(end: string): { nodeId: string; side: Side } | null {
   const separator = end.lastIndexOf('.');
   const nodeId = end.slice(0, separator);

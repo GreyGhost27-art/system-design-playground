@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { Design } from '../src/design.ts';
 import {
   loadTemplate,
+  parseBoard,
   toTemplate,
   validateTemplate,
   type Template,
@@ -145,4 +146,55 @@ test('the board exported as JSON loads back into the same design', () => {
     ]),
   });
   assert.deepEqual(shape(copy), shape(original));
+});
+
+function importError(text: string): string {
+  const result = parseBoard(text, 'board.json');
+  assert.ok('error' in result, 'expected the file to be rejected');
+  return result.error;
+}
+
+test('an exported board imports back unchanged', () => {
+  const original = new Design();
+  loadTemplate(original, tinyTemplate({ groups: [] }));
+  const exported = JSON.stringify(toTemplate(original));
+  const result = parseBoard(exported, 'board.json');
+  assert.ok('board' in result);
+  assert.deepEqual(result.board.nodes, toTemplate(original).nodes);
+  assert.equal(result.board.title, 'board.json');
+});
+
+test('a file that is not JSON is rejected in plain words', () => {
+  assert.match(importError('{ nodes: oops'), /isn't valid JSON/);
+});
+
+test('JSON that is not a board is rejected', () => {
+  assert.match(importError('[1, 2, 3]'), /"nodes" list/);
+  assert.match(importError('{"name": "hello"}'), /"nodes" list/);
+});
+
+test('a component without a position is rejected by number', () => {
+  const text = JSON.stringify({
+    nodes: [
+      { id: 'a', kind: 'client', x: 0, y: 0 },
+      { id: 'b', kind: 'cache', x: 'left', y: 0 },
+    ],
+  });
+  assert.match(importError(text), /^Component 2 needs/);
+});
+
+test('unknown components and broken cables are reported by name', () => {
+  const text = JSON.stringify({
+    nodes: [{ id: 'a', kind: 'mainframe', x: 0, y: 0 }],
+    cables: [{ from: 'a.right', to: 'ghost.left' }],
+  });
+  assert.equal(
+    importError(text),
+    'Node "a" has unknown kind "mainframe" (and 1 more problem).',
+  );
+});
+
+test('groups without a size are rejected', () => {
+  const text = JSON.stringify({ nodes: [], groups: [{ label: 'EU' }] });
+  assert.match(importError(text), /^Group 1 needs/);
 });

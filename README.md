@@ -56,6 +56,11 @@ npm run dev
 - **Navigate:** scroll to zoom, drag empty space to pan.
 - **Show traffic:** a gentle ripple runs along each cable from caller to
   callee, and another ripple comes back as the response.
+- **Export / import:** _Export board_ downloads the board as a `.json` file
+  (the template format). To bring one back, drop the file onto the board (it
+  lights up when it's ready to receive it) or use _Import board…_. Files are
+  checked first: a bad one is rejected with the reason and the board stays as
+  it was. An import replaces the board and can be undone.
 - **Copy board as JSON:** copies the board in template format, the easiest
   way to start a new template.
 

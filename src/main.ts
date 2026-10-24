@@ -25,7 +25,12 @@ import { createRope, reverseRope, stepRope } from './rope.ts';
 import settings from './settings.json' with { type: 'json' };
 import { findSnapTarget, portAt } from './snap.ts';
 import { SECTIONS, type TemplateSection } from './templateLibrary.ts';
-import { loadTemplate, toTemplate, type Template } from './templates.ts';
+import {
+  loadTemplate,
+  parseBoard,
+  toTemplate,
+  type Template,
+} from './templates.ts';
 
 type Gesture =
   | { type: 'idle' }
@@ -92,7 +97,13 @@ const nutshellOpenButton =
   document.querySelector<HTMLElement>('#nutshell-open')!;
 const nutshellCloseButton =
   document.querySelector<HTMLElement>('#nutshell-close')!;
-const toastUndoButton = document.querySelector<HTMLElement>('#toast-undo')!;
+const toastMessage = document.querySelector<HTMLElement>('#toast-message')!;
+const toastAction = document.querySelector<HTMLElement>('#toast-action')!;
+const boardElement = document.querySelector<HTMLElement>('.board')!;
+const dropZone = document.querySelector<HTMLElement>('#drop-zone')!;
+const exportButton = document.querySelector<HTMLElement>('#export-board')!;
+const importButton = document.querySelector<HTMLElement>('#import-board')!;
+const importInput = document.querySelector<HTMLInputElement>('#import-file')!;
 const cableToolbarElement =
   document.querySelector<HTMLElement>('#cable-toolbar')!;
 
@@ -110,8 +121,9 @@ const DEFAULT_GROUP_SIZE = { width: 420, height: 280 };
 const MIN_GROUP_SIZE = 60;
 // Each tap on a zoom button zooms this much.
 const ZOOM_STEP = 1.25;
-// How long the "Board cleared" message offers its Undo button.
+// How long a message stays; errors stay longer, so they can be read.
 const TOAST_MS = 6000;
+const ERROR_TOAST_MS = 10000;
 // Holding still on a cable this long (touch screens) opens its label field.
 const LONG_PRESS_MS = 500;
 // Pointer travel (screen pixels) that turns a press into a drag.
@@ -144,6 +156,8 @@ let copied: { kind: string; label?: string; x: number; y: number } | null =
   null;
 let longPress: { timer: number; start: Point } | null = null;
 let toastTimer = 0;
+// Whether the message's button undoes (or just dismisses the message).
+let toastUndoes = false;
 // While on, pressing the board draws a new group instead.
 let groupMode = false;
 // Where the pointer last pressed on the board (world units), so a wheel
@@ -317,15 +331,131 @@ function openTemplate(id: string): void {
   } else {
     if (design.nodes.length > 0) {
       undoHistory.record(design);
-      showToast();
+      showToast('Board cleared', { undo: true });
     }
     design.clear();
   }
+  presentBoard(currentTemplate ? `#${id}` : '#');
+}
+
+/** Lets the cables settle, then shows the board's lesson and fits it in view. */
+function presentBoard(hash: string): void {
   for (let i = 0; i < SETTLE_STEPS; i++) design.step();
   syncDrawer();
-  history.replaceState(null, '', currentTemplate ? `#${id}` : '#');
+  history.replaceState(null, '', hash);
   fitToDesign();
 }
+
+/** An imported board replaces the current one, as one undoable step. */
+function showImportedBoard(board: Template): void {
+  setNutshellOpen(false);
+  setGroupMode(false);
+  undoHistory.record(design);
+  currentTemplate = null;
+  currentSection = null;
+  templateSelect.value = '';
+  scene.selection = null;
+  loadTemplate(design, board);
+  presentBoard('#');
+}
+
+exportButton.addEventListener('click', () => {
+  if (design.nodes.length === 0 && design.groups.length === 0) {
+    showToast('The board is empty, so there is nothing to export yet.');
+    return;
+  }
+  const json = JSON.stringify(toTemplate(design), null, 2);
+  const fileName = `${currentTemplate?.id ?? 'my-board'}.json`;
+  const url = URL.createObjectURL(
+    new Blob([json], { type: 'application/json' }),
+  );
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast(`Exported “${fileName}”`);
+});
+
+importButton.addEventListener('click', () => importInput.click());
+importInput.addEventListener('change', () => {
+  const file = importInput.files?.[0];
+  // Cleared, so choosing the same file again still counts as a change.
+  importInput.value = '';
+  if (file) importFile(file);
+});
+
+/** Checks a file before anything changes; a bad file never touches the board. */
+async function importFile(file: File): Promise<void> {
+  setMenuOpen(false);
+  const looksLikeJson =
+    /\.json$/i.test(file.name) || file.type === 'application/json';
+  if (!looksLikeJson) {
+    showToast(`“${file.name}” isn't a .json file, so it can't be imported.`, {
+      error: true,
+    });
+    return;
+  }
+  const result = parseBoard(await file.text(), file.name);
+  if ('error' in result) {
+    showToast(`Couldn't import “${file.name}”: ${result.error}`, {
+      error: true,
+    });
+    return;
+  }
+  showImportedBoard(result.board);
+  showToast(`Imported “${file.name}”`, { undo: true });
+}
+
+// Files dragged over the board light up a drop target, so dropping feels
+// safe. Counting enters and leaves keeps it lit across the board's parts.
+let fileDragDepth = 0;
+const carriesFiles = (event: DragEvent) =>
+  event.dataTransfer?.types.includes('Files') ?? false;
+
+function setDropZoneShown(shown: boolean): void {
+  if (!shown) fileDragDepth = 0;
+  dropZone.hidden = !shown;
+}
+
+boardElement.addEventListener('dragenter', (event) => {
+  if (!carriesFiles(event)) return;
+  fileDragDepth += 1;
+  setDropZoneShown(true);
+});
+boardElement.addEventListener('dragleave', (event) => {
+  if (!carriesFiles(event)) return;
+  fileDragDepth -= 1;
+  if (fileDragDepth <= 0) setDropZoneShown(false);
+});
+boardElement.addEventListener('dragover', (event) => {
+  if (!carriesFiles(event)) return;
+  event.preventDefault();
+  event.dataTransfer!.dropEffect = 'copy';
+});
+boardElement.addEventListener('drop', (event) => {
+  if (!carriesFiles(event)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  setDropZoneShown(false);
+  const files = [...event.dataTransfer!.files];
+  if (files.length !== 1) {
+    showToast('Drop one .json board file at a time.', { error: true });
+    return;
+  }
+  importFile(files[0]);
+});
+
+// Dropped anywhere else, the browser would open the file and leave the app.
+window.addEventListener('dragover', (event) => {
+  if (carriesFiles(event)) event.preventDefault();
+});
+window.addEventListener('drop', (event) => {
+  if (!carriesFiles(event)) return;
+  event.preventDefault();
+  setDropZoneShown(false);
+  showToast('Drop the file onto the board to import it.');
+});
 
 /**
  * The drawer explains the selected component; with nothing selected it
@@ -399,20 +529,32 @@ blankBoardButton.addEventListener('click', () => {
   openTemplate('');
 });
 
-/** "Board cleared", with a way back instead of an "Are you sure?". */
-function showToast(): void {
+/**
+ * A short message at the bottom of the board. Changes offer Undo instead of
+ * an "Are you sure?"; errors are red and stay longer, with a Dismiss button.
+ */
+function showToast(message: string, { undo = false, error = false } = {}) {
+  toastMessage.textContent = message;
+  toast.classList.toggle('toast-error', error);
+  toast.role = error ? 'alert' : 'status';
+  toastUndoes = undo;
+  toastAction.hidden = !undo && !error;
+  toastAction.textContent = undo ? 'Undo' : 'Dismiss';
   toast.hidden = false;
   window.clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(hideToast, TOAST_MS);
+  toastTimer = window.setTimeout(hideToast, error ? ERROR_TOAST_MS : TOAST_MS);
 }
 
 function hideToast(): void {
   toast.hidden = true;
 }
 
-toastUndoButton.addEventListener('click', () => {
-  undo();
-  fitToDesign();
+toastAction.addEventListener('click', () => {
+  if (toastUndoes) {
+    undo();
+    fitToDesign();
+  }
+  hideToast();
 });
 
 /**

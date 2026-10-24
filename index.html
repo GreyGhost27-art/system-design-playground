@@ -31,6 +31,21 @@
           <input id="flow-toggle" type="checkbox" />
           Show traffic
         </label>
+        <button id="export-board" class="secondary-button" type="button">
+          ⬇ Export board (.json)
+        </button>
+        <button id="import-board" class="secondary-button" type="button">
+          ⬆ Import board…
+        </button>
+        <p class="file-hint wide-only">
+          Or drop a .json board file onto the board.
+        </p>
+        <input
+          id="import-file"
+          type="file"
+          accept=".json,application/json"
+          hidden
+        />
         <button id="copy-json" class="secondary-button" type="button">
           Copy board as JSON
         </button>
@@ -145,6 +160,9 @@
               <li>
                 <kbd>Drag</kbd> from a port to another component to connect
               </li>
+              <li>
+                <kbd>Drop</kbd> a .json board file on the board to import it
+              </li>
             </ul>
           </section>
           <section>
@@ -207,8 +225,15 @@
         </button>
       </div>
       <div id="toast" class="toast" role="status" hidden>
-        Board cleared
-        <button id="toast-undo" type="button">Undo</button>
+        <span id="toast-message"></span>
+        <button id="toast-action" type="button">Undo</button>
+      </div>
+      <div id="drop-zone" class="drop-zone" hidden>
+        <div class="drop-zone-message">
+          <span class="drop-zone-icon" aria-hidden="true">⬇</span>
+          <strong>Drop to import this board</strong>
+          <span>It replaces the current board. You can undo it.</span>
+        </div>
       </div>
       <input
         id="label-editor"

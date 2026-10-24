@@ -29,7 +29,7 @@ export const NUTSHELL: {
 /** The whole framework as one page; signals link to their Foundation. */
 export function renderNutshell(
   container: HTMLElement,
-  openFoundation: (id: string) => void,
+  openFoundation: (id: string, from: HTMLElement) => void,
 ): void {
   container.replaceChildren(
     element('h2', 'nutshell-title', NUTSHELL.title),
@@ -58,7 +58,7 @@ export function renderNutshell(
         element('span', '', answer),
       );
       link.title = 'Open this Foundation board';
-      link.addEventListener('click', () => openFoundation(foundation));
+      link.addEventListener('click', () => openFoundation(foundation, link));
       const row = element('li');
       row.append(link);
       list.append(row);

@@ -54,14 +54,24 @@
       >
         ☰
       </button>
-      <button
-        id="blank-board"
-        class="blank-board"
-        type="button"
-        title="Clear the board and build your own design"
-      >
-        ＋ Blank board
-      </button>
+      <div class="board-actions">
+        <button
+          id="back-to-nutshell"
+          class="back-to-nutshell"
+          type="button"
+          hidden
+        >
+          ← <span class="wide-only">Back to </span>Nutshell
+        </button>
+        <button
+          id="blank-board"
+          class="blank-board"
+          type="button"
+          title="Clear the board and build your own design"
+        >
+          ＋ Blank board
+        </button>
+      </div>
       <div id="toast" class="toast" role="status" hidden>
         Board cleared
         <button id="toast-undo" type="button">Undo</button>

@@ -43,6 +43,8 @@ const labelInput = document.querySelector<HTMLInputElement>('#label-editor')!;
 const menuToggle = document.querySelector<HTMLElement>('#menu-toggle')!;
 const menuBackdrop = document.querySelector<HTMLElement>('#menu-backdrop')!;
 const blankBoardButton = document.querySelector<HTMLElement>('#blank-board')!;
+const backToNutshellButton =
+  document.querySelector<HTMLElement>('#back-to-nutshell')!;
 const toast = document.querySelector<HTMLElement>('#toast')!;
 const nutshell = document.querySelector<HTMLElement>('#nutshell')!;
 const nutshellOpenButton =
@@ -91,6 +93,8 @@ let copied: { kind: string; label?: string; x: number; y: number } | null =
   null;
 let longPress: { timer: number; start: Point } | null = null;
 let toastTimer = 0;
+// The Nutshell row a board was opened from, to land back on it.
+let nutshellReturnRow: HTMLElement | null = null;
 
 const labelEditor = createCableLabelEditor({
   input: labelInput,
@@ -128,9 +132,27 @@ renderPalette(palette, (kindId) => {
   addAtViewCenter(kindId);
 });
 fillTemplateSelect();
-renderNutshell(document.querySelector('#nutshell-content')!, (id) => {
+renderNutshell(document.querySelector('#nutshell-content')!, (id, row) => {
+  nutshellReturnRow = row;
+  // A real history step, so the browser's Back button returns here too.
+  history.pushState(null, '', `#${id}`);
   setNutshellOpen(false);
   openTemplate(id);
+});
+
+backToNutshellButton.addEventListener('click', () => history.back());
+
+window.addEventListener('popstate', () => {
+  const hash = decodeURIComponent(location.hash.slice(1));
+  if (hash === 'nutshell') {
+    setNutshellOpen(true);
+    nutshellReturnRow?.scrollIntoView({ block: 'center' });
+    nutshellReturnRow?.focus({ preventScroll: true });
+    nutshellReturnRow = null;
+    return;
+  }
+  setNutshellOpen(false);
+  if (hash !== (currentTemplate?.id ?? '')) openTemplate(hash);
 });
 
 function fillTemplateSelect(): void {
@@ -645,6 +667,7 @@ function frame(now: number): void {
   syncCableToolbar();
   // Nothing to clear on a blank board that is already showing.
   blankBoardButton.hidden = !currentTemplate && design.nodes.length === 0;
+  backToNutshellButton.hidden = !nutshellReturnRow;
   render(ctx, scene, boardSize());
   requestAnimationFrame(frame);
 }

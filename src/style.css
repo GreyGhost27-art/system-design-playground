@@ -482,10 +482,32 @@ kbd {
   color: #d6dae3;
 }
 
-.blank-board {
+.board-actions {
   position: absolute;
   top: 16px;
   left: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.back-to-nutshell {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.back-to-nutshell:hover {
+  background: var(--panel-raised);
+}
+
+.blank-board {
   min-height: 36px;
   padding: 0 14px;
   border: 1px solid #2d6a80;
@@ -532,6 +554,7 @@ kbd {
 }
 
 .blank-board[hidden],
+.back-to-nutshell[hidden],
 .toast[hidden],
 .menu-toggle,
 .menu-backdrop {
@@ -699,9 +722,13 @@ kbd {
     right: 12px;
   }
 
-  .blank-board {
+  .board-actions {
     top: 14px;
     left: 62px;
+  }
+
+  .wide-only {
+    display: none;
   }
 
   .nutshell-signal {

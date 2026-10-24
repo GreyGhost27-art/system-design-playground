@@ -40,7 +40,7 @@ npm run dev
 - **Select / delete:** click a component or cable, then press `Delete` or
   use the wheel of options that fans out above it (components can also be
   duplicated there).
-- **Add a group:** press _▭ Group_ at the top of the board, then drag an area
+- **Add a group:** press _Draw a group_ at the top of the board, then drag an area
   (or tap to place one) and type its name. Tap a group's name to open its
   wheel: _Rename_, _Resize_ (drag any corner handle) or _Delete_ (its
   components stay on the board). Double-clicking the name, or holding it on

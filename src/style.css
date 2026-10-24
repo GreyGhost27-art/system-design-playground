@@ -255,7 +255,7 @@ select {
   position: absolute;
   left: 16px;
   bottom: 16px;
-  max-width: 360px;
+  max-width: 400px;
   border: 1px solid var(--border-control);
   border-radius: 10px;
   background: rgba(39, 39, 39, 0.96);
@@ -264,14 +264,40 @@ select {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
+/* The header: a fixed-height row, title on the left, close on the right. */
 .shortcuts summary {
-  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
   list-style: none;
   cursor: pointer;
 }
 
+.shortcuts[open] summary {
+  padding-right: 48px;
+  border-bottom: 1px solid var(--border);
+}
+
 .shortcuts summary::-webkit-details-marker {
   display: none;
+}
+
+/* Centred on the header row: (40 - 32) / 2 from the top. */
+.shortcuts .icon-button {
+  top: 4px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+/* Only the list scrolls on short screens, so the header stays put. */
+.shortcuts-body {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
 }
 
 .shortcuts summary:hover,
@@ -279,9 +305,22 @@ select {
   color: var(--text);
 }
 
+.shortcuts section {
+  padding: 0 14px 10px;
+}
+
+.shortcuts h3 {
+  margin: 10px 0 4px;
+  color: var(--heading);
+  font-size: var(--text-small);
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .shortcuts ul {
   margin: 0;
-  padding: 2px 14px 12px;
+  padding: 0;
   list-style: none;
 }
 
@@ -613,6 +652,9 @@ kbd {
 }
 
 .board-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-height: 36px;
   padding: 0 14px;
   border: 1px solid var(--border-control);
@@ -623,6 +665,16 @@ kbd {
   font-size: var(--text-ui);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
   cursor: pointer;
+}
+
+/* The same dashed outline groups have on the board. */
+.dashed-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-dasharray: 2.5 2;
 }
 
 .board-button[aria-pressed='true'] {
@@ -858,9 +910,12 @@ kbd {
     right: 12px;
   }
 
+  /* Stacked, so the buttons never run into "Learn why" on the right. */
   .board-actions {
     top: 14px;
     left: 62px;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .wide-only,

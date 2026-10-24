@@ -66,9 +66,12 @@
           class="board-button"
           type="button"
           aria-pressed="false"
-          title="Draw a named area, like a region: drag on the board, or tap to place one"
+          title="Draw a named area, like a region: drag on the board, or tap to place one. Esc cancels."
         >
-          ▭ Group
+          <svg class="dashed-icon" viewBox="0 0 16 16" aria-hidden="true">
+            <rect x="1.5" y="2.5" width="13" height="11" rx="2.5" />
+          </svg>
+          <span id="add-group-label">Draw a group</span>
         </button>
       </div>
       <div
@@ -117,28 +120,84 @@
           >
         </button>
       </div>
-      <details class="shortcuts">
+      <details id="shortcuts" class="shortcuts">
         <summary>⌨ Shortcuts</summary>
-        <ul>
-          <li><kbd>Drag</kbd> a component onto the board</li>
-          <li><kbd>Drag</kbd> from a port to run a cable</li>
-          <li>
-            <kbd>Drag</kbd> a cable near its end (or <kbd>Shift</kbd>+drag a
-            port) to unplug it
-          </li>
-          <li><kbd>Click</kbd> a cable to set its traffic or label it</li>
-          <li><kbd>Double-click</kbd> a component to read about it</li>
-          <li><kbd>Del</kbd> removes the selection</li>
-          <li>
-            <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copies a component
-          </li>
-          <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the last change</li>
-          <li>
-            <kbd>Drag</kbd> a group by its name to move it with everything in
-            it; click the name for Rename, Resize and Delete
-          </li>
-          <li><kbd>Scroll</kbd> zooms · drag the board to pan</li>
-        </ul>
+        <button
+          id="shortcuts-close"
+          class="icon-button"
+          type="button"
+          aria-label="Close shortcuts"
+          title="Close"
+        >
+          ×
+        </button>
+        <div class="shortcuts-body">
+          <section>
+            <h3>Add</h3>
+            <ul>
+              <li>
+                <kbd>Click</kbd> or <kbd>drag</kbd> a component from the sidebar
+              </li>
+              <li>
+                <strong>Draw a group</strong>, then <kbd>drag</kbd> an area (or
+                <kbd>click</kbd> to place one)
+              </li>
+              <li>
+                <kbd>Drag</kbd> from a port to another component to connect
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h3>Select and edit</h3>
+            <ul>
+              <li>
+                <kbd>Click</kbd> a component, cable or group name to open its
+                menu; dragging moves it without opening the menu
+              </li>
+              <li><kbd>Double-click</kbd> a component to read about it</li>
+              <li>
+                <kbd>Double-click</kbd> a cable or group name to rename it
+              </li>
+              <li><kbd>Enter</kbd> saves a name · <kbd>Esc</kbd> cancels it</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Move</h3>
+            <ul>
+              <li><kbd>Drag</kbd> a component to move it</li>
+              <li>
+                <kbd>Drag</kbd> a group by its name: everything in it comes
+                along
+              </li>
+              <li>
+                <kbd>Drag</kbd> a cable near its end, or <kbd>Shift</kbd>+drag a
+                port, to unplug it and plug it elsewhere
+              </li>
+              <li>
+                <kbd>Drag</kbd> the empty board to pan · <kbd>Scroll</kbd> to
+                zoom
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h3>Keys</h3>
+            <ul>
+              <li>
+                <kbd>Del</kbd> or <kbd>Backspace</kbd> removes the selection
+              </li>
+              <li>
+                <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>C</kbd>, <kbd>V</kbd> copies
+                and pastes a component
+              </li>
+              <li>
+                <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> undoes the last change
+              </li>
+              <li>
+                <kbd>Esc</kbd> deselects, cancels drawing and closes menus
+              </li>
+            </ul>
+          </section>
+        </div>
       </details>
       <div class="zoom-controls" role="toolbar" aria-label="Zoom">
         <button type="button" data-zoom="in" aria-label="Zoom in">＋</button>

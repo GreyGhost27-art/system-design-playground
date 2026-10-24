@@ -35,6 +35,10 @@ const BACKGROUND = rootStyle.getPropertyValue('--bg').trim();
 const TEXT = rootStyle.getPropertyValue('--text').trim();
 const MUTED = rootStyle.getPropertyValue('--muted').trim();
 const ACCENT = rootStyle.getPropertyValue('--accent').trim();
+// How fast a selected group's dashes travel round it, in board units a second.
+const MARCHING_SPEED = 16;
+// Moving borders are skipped for people who ask for less motion.
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 /** Size of a group's resize handles, in screen pixels. */
 export const GROUP_CORNER_RADIUS = 9;
 const NODE_FILL = rootStyle.getPropertyValue('--surface-node').trim();
@@ -64,6 +68,11 @@ export interface Scene {
   draft: CableDraft | null;
   /** The area being dragged out for a new group. */
   groupDraft: Group | null;
+  /**
+   * Whose wheel is open, as "type:id". Wheels open on a click, not on
+   * every selection, so dragging something doesn't pop one up.
+   */
+  openWheel: string | null;
   /** The group showing corner handles for resizing, as an index. */
   resizingGroup: number | null;
   flow: FlowSettings;
@@ -93,9 +102,13 @@ export function render(
   );
   drawGrid(ctx, camera, size);
   scene.design.groups.forEach((group, index) => {
-    const lit =
-      scene.hoveredGroup === index || isSelected(scene, 'group', String(index));
-    drawGroup(ctx, group, lit);
+    const selected = isSelected(scene, 'group', String(index));
+    const lit = selected || scene.hoveredGroup === index;
+    // While its wheel is open, a group's dashes march around it.
+    const marching = selected && scene.openWheel === `group:${index}`;
+    const dashOffset =
+      marching && !reducedMotion.matches ? -scene.time * MARCHING_SPEED : 0;
+    drawGroup(ctx, group, lit, dashOffset);
     if (scene.resizingGroup === index) {
       drawCornerHandles(ctx, group, camera.scale);
     }
@@ -263,6 +276,7 @@ function drawGroup(
   ctx: CanvasRenderingContext2D,
   group: Group,
   hovered: boolean,
+  dashOffset = 0,
 ): void {
   ctx.beginPath();
   ctx.roundRect(group.x, group.y, group.width, group.height, 16);
@@ -271,10 +285,12 @@ function drawGroup(
     : 'rgba(255, 255, 255, 0.02)';
   ctx.fill();
   ctx.setLineDash([6, 6]);
+  ctx.lineDashOffset = dashOffset;
   ctx.lineWidth = hovered ? 2 : 1.5;
   ctx.strokeStyle = hovered ? MUTED : SUBTLE_LINE;
   ctx.stroke();
   ctx.setLineDash([]);
+  ctx.lineDashOffset = 0;
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';

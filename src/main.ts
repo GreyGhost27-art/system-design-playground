@@ -70,9 +70,11 @@ const menuToggle = document.querySelector<HTMLElement>('#menu-toggle')!;
 const menuBackdrop = document.querySelector<HTMLElement>('#menu-backdrop')!;
 const blankBoardButton = document.querySelector<HTMLElement>('#blank-board')!;
 const addGroupButton = document.querySelector<HTMLElement>('#add-group')!;
+const addGroupLabel = document.querySelector<HTMLElement>('#add-group-label')!;
 const backToNutshellButton =
   document.querySelector<HTMLElement>('#back-to-nutshell')!;
 const toast = document.querySelector<HTMLElement>('#toast')!;
+const shortcuts = document.querySelector<HTMLDetailsElement>('#shortcuts')!;
 const nodeToolbar = document.querySelector<HTMLElement>('#node-toolbar')!;
 const groupToolbar = document.querySelector<HTMLElement>('#group-toolbar')!;
 layoutRadialMenu(nodeToolbar);
@@ -124,6 +126,7 @@ const scene: Scene = {
   hoveredNodeId: null,
   hoveredGroup: null,
   groupDraft: null,
+  openWheel: null,
   resizingGroup: null,
   hoveredPort: null,
   draft: null,
@@ -201,7 +204,7 @@ function editGroupName(groupIndex: number): void {
 function setGroupMode(on: boolean): void {
   groupMode = on;
   addGroupButton.ariaPressed = String(on);
-  addGroupButton.textContent = on ? 'Drag an area…' : '▭ Group';
+  addGroupLabel.textContent = on ? 'Drag or tap on the board' : 'Draw a group';
   if (!on) scene.groupDraft = null;
 }
 addGroupButton.addEventListener('click', () => setGroupMode(!groupMode));
@@ -251,6 +254,10 @@ renderNutshell(document.querySelector('#nutshell-content')!, (id, row) => {
 });
 
 backToNutshellButton.addEventListener('click', () => history.back());
+
+document
+  .querySelector('#shortcuts-close')!
+  .addEventListener('click', () => (shortcuts.open = false));
 
 // Phones have no scroll wheel, so zooming gets buttons there.
 document.querySelector('.zoom-controls')!.addEventListener('click', (event) => {
@@ -496,7 +503,7 @@ function forgetResizeOnceDeselected(): void {
 function syncGroupToolbar(): void {
   const index = selectedGroup();
   const group = index === null ? undefined : design.groups[index];
-  const show = group !== undefined && gesture.type === 'idle';
+  const show = group !== undefined && gesture.type === 'idle' && isWheelOpen();
   groupToolbar.hidden = !show;
   if (!show) {
     placeGroupWheel(null, { x: 0, y: 0 }, null);
@@ -514,7 +521,8 @@ function syncGroupToolbar(): void {
 /** Fans the component's options out above it while it sits still. */
 function syncNodeToolbar(): void {
   const selection = scene.selection;
-  const show = selection?.type === 'node' && gesture.type === 'idle';
+  const show =
+    selection?.type === 'node' && gesture.type === 'idle' && isWheelOpen();
   nodeToolbar.hidden = !show;
   if (!show) {
     placeNodeWheel(null, { x: 0, y: 0 }, null);
@@ -724,8 +732,9 @@ canvas.addEventListener('pointermove', (event) => {
 
   switch (gesture.type) {
     case 'moving-node':
-      // Record once per drag, and only if it really moves, so a plain
-      // click doesn't leave an empty undo step behind.
+      // Only a real drag moves it: a click, even a shaky tap, leaves it
+      // in place and leaves no empty undo step behind.
+      if (!gesture.moved && !draggedPastSlop(event)) break;
       if (!gesture.moved) undoHistory.record(design);
       gesture.moved = true;
       design.moveNode(gesture.nodeId, {
@@ -744,6 +753,7 @@ canvas.addEventListener('pointermove', (event) => {
       break;
     }
     case 'moving-group': {
+      if (!gesture.moved && !draggedPastSlop(event)) break;
       if (!gesture.moved) undoHistory.record(design);
       gesture.moved = true;
       const delta = {
@@ -824,6 +834,48 @@ function plugIn(draft: CableDraft, target: PortRef) {
   return design.connect(from, to, { rope, label, oneWay });
 }
 
+/*
+ * Wheels open on a click, never after a drag. These listeners run after
+ * the board's own, so they see what the press ended up selecting.
+ */
+let pressStart: Point | null = null;
+let pressedItem: string | null = null;
+
+canvas.addEventListener('pointerdown', (event) => {
+  pressStart = { x: event.clientX, y: event.clientY };
+  // Ports, corners and drawing select nothing to open a wheel for.
+  pressedItem =
+    gesture.type.startsWith('drawing') || gesture.type === 'resizing-group'
+      ? null
+      : selectionKey();
+});
+
+canvas.addEventListener('pointerup', (event) => {
+  const clicked = pressStart !== null && !draggedPastSlop(event);
+  scene.openWheel =
+    clicked && pressedItem === selectionKey() ? pressedItem : null;
+  pressStart = null;
+});
+
+function draggedPastSlop(event: PointerEvent): boolean {
+  if (!pressStart) return false;
+  const moved = Math.hypot(
+    event.clientX - pressStart.x,
+    event.clientY - pressStart.y,
+  );
+  return moved > DRAG_SLOP;
+}
+
+function selectionKey(): string | null {
+  const selection = scene.selection;
+  return selection ? `${selection.type}:${selection.id}` : null;
+}
+
+/** A wheel shows only while what it was opened for is still selected. */
+function isWheelOpen(): boolean {
+  return scene.openWheel !== null && scene.openWheel === selectionKey();
+}
+
 canvas.addEventListener('pointerleave', () => {
   if (gesture.type !== 'idle') return;
   scene.hoveredNodeId = null;
@@ -882,6 +934,7 @@ window.addEventListener('keydown', (event) => {
     pasteComponent();
   } else if (key === 'escape') {
     setMenuOpen(false);
+    shortcuts.open = false;
     setGroupMode(false);
     scene.draft = null;
     scene.selection = null;
@@ -976,7 +1029,8 @@ flowToggle.addEventListener('change', () => {
 function syncCableToolbar(): void {
   const selection = scene.selection;
   const busy = gesture.type !== 'idle' || !labelInput.hidden;
-  const cableId = selection?.type === 'cable' && !busy ? selection.id : null;
+  const cableId =
+    selection?.type === 'cable' && !busy && isWheelOpen() ? selection.id : null;
   cableToolbar.show(cableId, pressOnScreen());
 }
 

@@ -40,6 +40,9 @@ npm run dev
 - **Select / delete:** click a component or cable, then press `Delete` or
   use the wheel of options that fans out above it (components can also be
   duplicated there).
+- **Move a group:** drag a dashed area such as _EU region_ by its name. Every
+  component inside it, or overlapping its edge, moves along; dragging its
+  empty middle still pans the board.
 - **Copy & paste:** select a component and press `Ctrl+C`, then `Ctrl+V`
   for each copy (`Cmd` on macOS). Copies keep the name and land diagonally
   below the original.

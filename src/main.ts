@@ -27,6 +27,14 @@ type Gesture =
       end: 'from' | 'to';
       start: Point;
     }
+  | {
+      type: 'moving-group';
+      index: number;
+      // Captured when grabbed, so components it passes over stay behind.
+      nodeIds: string[];
+      last: Point;
+      moved: boolean;
+    }
   | { type: 'panning'; last: Point };
 
 const canvas = document.querySelector<HTMLCanvasElement>('#board')!;
@@ -86,6 +94,7 @@ const scene: Scene = {
   camera: { x: 0, y: 0, scale: 1 },
   selection: null,
   hoveredNodeId: null,
+  hoveredGroup: null,
   hoveredPort: null,
   draft: null,
   flow: { ...settings.flow },
@@ -512,9 +521,21 @@ canvas.addEventListener('pointerdown', (event) => {
       timer: window.setTimeout(() => labelEditor.open(cable.id), LONG_PRESS_MS),
       start: { x: event.clientX, y: event.clientY },
     };
-  } else {
-    gesture = { type: 'panning', last: { x: event.clientX, y: event.clientY } };
+    return;
   }
+
+  const groupIndex = design.groupHandleAt(pointer);
+  if (groupIndex >= 0) {
+    gesture = {
+      type: 'moving-group',
+      index: groupIndex,
+      nodeIds: design.nodesTouching(groupIndex).map((node) => node.id),
+      last: pointer,
+      moved: false,
+    };
+    return;
+  }
+  gesture = { type: 'panning', last: { x: event.clientX, y: event.clientY } };
 });
 
 function cancelLongPress(): void {
@@ -557,6 +578,17 @@ canvas.addEventListener('pointermove', (event) => {
         y: pointer.y - gesture.grabOffset.y,
       });
       break;
+    case 'moving-group': {
+      if (!gesture.moved) undoHistory.record(design);
+      gesture.moved = true;
+      const delta = {
+        x: pointer.x - gesture.last.x,
+        y: pointer.y - gesture.last.y,
+      };
+      design.moveGroup(gesture.index, delta, gesture.nodeIds);
+      gesture.last = pointer;
+      break;
+    }
     case 'drawing-cable':
       scene.draft!.snap = findSnapTarget(
         design.nodes,
@@ -738,13 +770,22 @@ function updateHover(): void {
   scene.hoveredNodeId = port?.nodeId ?? design.nodeAt(pointer)?.id ?? null;
   const overCableEnd =
     !scene.hoveredNodeId && design.cableEndAt(pointer) !== null;
-  canvas.style.cursor = cursorFor(port !== null, overCableEnd);
+  const groupIndex =
+    gesture.type === 'moving-group'
+      ? gesture.index
+      : !scene.hoveredNodeId && !overCableEnd
+        ? design.groupHandleAt(pointer)
+        : -1;
+  scene.hoveredGroup = groupIndex >= 0 ? groupIndex : null;
+  const grabbable =
+    scene.hoveredNodeId !== null || overCableEnd || groupIndex >= 0;
+  canvas.style.cursor = cursorFor(port !== null, grabbable);
 }
 
-function cursorFor(overPort: boolean, overCableEnd: boolean): string {
+function cursorFor(overPort: boolean, grabbable: boolean): string {
   if (gesture.type === 'drawing-cable' || overPort) return 'crosshair';
   if (gesture.type !== 'idle') return 'grabbing';
-  return scene.hoveredNodeId || overCableEnd ? 'grab' : 'default';
+  return grabbable ? 'grab' : 'default';
 }
 
 flowToggle.checked = scene.flow.enabled;

@@ -9,6 +9,8 @@ import {
 
 export const NODE_WIDTH = 176;
 export const NODE_HEIGHT = 52;
+/** A group is grabbed by its title strip, so dragging inside it still pans. */
+export const GROUP_HANDLE_HEIGHT = 40;
 
 export const SIDES = ['top', 'right', 'bottom', 'left'] as const;
 export type Side = (typeof SIDES)[number];
@@ -234,6 +236,40 @@ export class Design {
       right: Math.max(...boxes.map((box) => box.right)),
       bottom: Math.max(...boxes.map((box) => box.bottom)),
     };
+  }
+
+  /** The group whose title strip is under `point`, as an index, or -1. */
+  groupHandleAt(point: Point): number {
+    return this.groups.findLastIndex(
+      (group) =>
+        point.x >= group.x &&
+        point.x <= group.x + group.width &&
+        point.y >= group.y &&
+        point.y <= group.y + GROUP_HANDLE_HEIGHT,
+    );
+  }
+
+  /** Components that overlap a group, even partly: they travel with it. */
+  nodesTouching(groupIndex: number): DesignNode[] {
+    const group = this.groups[groupIndex];
+    return this.nodes.filter(
+      (node) =>
+        node.x + NODE_WIDTH / 2 >= group.x &&
+        node.x - NODE_WIDTH / 2 <= group.x + group.width &&
+        node.y + NODE_HEIGHT / 2 >= group.y &&
+        node.y - NODE_HEIGHT / 2 <= group.y + group.height,
+    );
+  }
+
+  /** Moves a group by `delta`, carrying the given components along. */
+  moveGroup(groupIndex: number, delta: Point, nodeIds: string[]): void {
+    const group = this.groups[groupIndex];
+    group.x += delta.x;
+    group.y += delta.y;
+    for (const id of nodeIds) {
+      const node = this.getNode(id);
+      this.moveNode(id, { x: node.x + delta.x, y: node.y + delta.y });
+    }
   }
 
   /** Cables plugged into a port, oldest first. */

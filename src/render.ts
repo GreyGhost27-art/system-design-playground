@@ -54,6 +54,8 @@ export interface Scene {
   camera: Camera;
   selection: Selection | null;
   hoveredNodeId: string | null;
+  /** The group whose title strip is hovered or held, as an index. */
+  hoveredGroup: number | null;
   hoveredPort: PortRef | null;
   draft: CableDraft | null;
   flow: FlowSettings;
@@ -82,7 +84,9 @@ export function render(
     ratio * camera.y,
   );
   drawGrid(ctx, camera, size);
-  for (const group of scene.design.groups) drawGroup(ctx, group);
+  scene.design.groups.forEach((group, index) =>
+    drawGroup(ctx, group, scene.hoveredGroup === index),
+  );
   for (const cable of scene.design.cables) {
     const selected = isSelected(scene, 'cable', cable.id);
     const curve = cableCurve(cable, scene.flow, scene.time);
@@ -240,20 +244,27 @@ function drawPlug(
   ctx.stroke();
 }
 
-function drawGroup(ctx: CanvasRenderingContext2D, group: Group): void {
+/** A dashed area; when grabbable (hovered), it brightens to say so. */
+function drawGroup(
+  ctx: CanvasRenderingContext2D,
+  group: Group,
+  hovered: boolean,
+): void {
   ctx.beginPath();
   ctx.roundRect(group.x, group.y, group.width, group.height, 16);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+  ctx.fillStyle = hovered
+    ? 'rgba(255, 255, 255, 0.04)'
+    : 'rgba(255, 255, 255, 0.02)';
   ctx.fill();
   ctx.setLineDash([6, 6]);
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = SUBTLE_LINE;
+  ctx.lineWidth = hovered ? 2 : 1.5;
+  ctx.strokeStyle = hovered ? MUTED : SUBTLE_LINE;
   ctx.stroke();
   ctx.setLineDash([]);
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-  ctx.fillStyle = MUTED;
+  ctx.fillStyle = hovered ? TEXT : MUTED;
   ctx.font = `600 13px ${FONT_UI}`;
   ctx.fillText(group.label.toUpperCase(), group.x + 14, group.y + 12);
 }

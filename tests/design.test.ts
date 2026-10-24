@@ -206,3 +206,39 @@ test('the cables plugged into a port are listed oldest first', () => {
   assert.deepEqual(design.cablesAtPort(port(app2.id, 'left')), [second]);
   assert.deepEqual(design.cablesAtPort(port(lb.id, 'top')), []);
 });
+
+function designWithRegion() {
+  const design = new Design();
+  design.groups = [{ label: 'EU', x: 0, y: 0, width: 400, height: 300 }];
+  const inside = design.addNode('app-server', { x: 200, y: 150 });
+  const onEdge = design.addNode('cache', { x: 420, y: 150 });
+  const outside = design.addNode('client', { x: 800, y: 150 });
+  return { design, inside, onEdge, outside };
+}
+
+test('a group is grabbed by its title strip, not by its middle', () => {
+  const { design } = designWithRegion();
+  assert.equal(design.groupHandleAt({ x: 100, y: 20 }), 0);
+  assert.equal(design.groupHandleAt({ x: 100, y: 150 }), -1);
+  assert.equal(design.groupHandleAt({ x: 500, y: 20 }), -1);
+});
+
+test('components inside a group or overlapping its edge belong to it', () => {
+  const { design, inside, onEdge } = designWithRegion();
+  const ids = design.nodesTouching(0).map((node) => node.id);
+  assert.deepEqual(ids, [inside.id, onEdge.id]);
+});
+
+test('moving a group carries its components and leaves others behind', () => {
+  const { design, inside, outside } = designWithRegion();
+  design.moveGroup(0, { x: 50, y: -20 }, [inside.id]);
+  assert.deepEqual(design.groups[0], {
+    label: 'EU',
+    x: 50,
+    y: -20,
+    width: 400,
+    height: 300,
+  });
+  assert.deepEqual([inside.x, inside.y], [250, 130]);
+  assert.deepEqual([outside.x, outside.y], [800, 150]);
+});

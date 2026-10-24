@@ -7,6 +7,24 @@
     "what": "Delivers each message to everyone who subscribed to a topic.",
     "why": "Senders don't need to know who is listening, and new listeners can join without changing the sender.",
     "analogy": "A radio station: everyone tuned in hears the broadcast.",
-    "examples": ["Google Cloud Pub/Sub", "Amazon SNS", "Redis Pub/Sub"]
+    "examples": ["Google Cloud Pub/Sub", "Amazon SNS", "Redis Pub/Sub"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "One message to the orders topic, a copy for every subscriber",
+        "columns": ["subscriber", "does with it"],
+        "rows": [
+          ["email service", "sends a receipt"],
+          ["inventory", "holds the stock"],
+          ["analytics", "counts the sale"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "The sender only names a topic; listeners sign up on their own",
+        "language": "javascript",
+        "code": "pubsub.publish(\"orders\", order);\n\npubsub.subscribe(\"orders\", sendReceipt);\npubsub.subscribe(\"orders\", holdStock);\n// both get every new order"
+      }
+    ]
   }
 }

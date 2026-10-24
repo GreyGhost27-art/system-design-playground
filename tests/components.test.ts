@@ -37,10 +37,15 @@ test('an unknown component kind is reported by name', () => {
   );
 });
 
-test('external, edge, routing, compute and data components show an example', () => {
-  const kinds = ['external', 'edge', 'routing', 'compute', 'data'].flatMap(
-    kindsIn,
-  );
+test('external, edge, routing, compute, data and async components show an example', () => {
+  const kinds = [
+    'external',
+    'edge',
+    'routing',
+    'compute',
+    'data',
+    'async',
+  ].flatMap(kindsIn);
   for (const { id, info } of kinds) {
     assert.ok((info.samples ?? []).length > 0, `${id} has no samples`);
   }

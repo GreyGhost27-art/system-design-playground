@@ -7,6 +7,24 @@
     "what": "Holds tasks in line until a worker is ready to take them.",
     "why": "The app can hand off work and reply right away. If workers are slow or down, tasks wait safely instead of being lost.",
     "analogy": "Take-a-number tickets at a deli counter.",
-    "examples": ["RabbitMQ", "Amazon SQS", "Apache ActiveMQ"]
+    "examples": ["RabbitMQ", "Amazon SQS", "Apache ActiveMQ"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "Tasks wait in line; each one goes to a single worker",
+        "columns": ["#", "task", "state"],
+        "rows": [
+          ["1", "resize-photo", "taken by worker A"],
+          ["2", "send-email", "waiting"],
+          ["3", "send-invoice", "waiting"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "The app hands off a task; a worker picks it up later",
+        "language": "javascript",
+        "code": "// the app adds a task and replies\nawait queue.send(\"emails\", \"welcome\");\n\n// a worker takes one task at a time\nconst task = await queue.receive();\nawait sendEmail(task.body);\nawait queue.ack(task); // remove it\n// no ack? it goes back in line"
+      }
+    ]
   }
 }

@@ -7,6 +7,35 @@
     "what": "An ordered, durable log of events that many readers can process, and replay, at their own pace.",
     "why": "Suits high volumes of events (clicks, payments, sensor readings) that several systems need to handle, now or later.",
     "analogy": "A recorded TV channel you can rewind.",
-    "examples": ["Apache Kafka", "Amazon Kinesis", "Redpanda"]
+    "examples": ["Apache Kafka", "Amazon Kinesis", "Redpanda"],
+    "samples": [
+      {
+        "type": "table",
+        "caption": "An append-only log: events keep their order and are never removed on read",
+        "columns": ["offset", "event"],
+        "rows": [
+          ["0", "click /home"],
+          ["1", "click /pricing"],
+          ["2", "payment 39.90"],
+          ["3", "click /docs"]
+        ]
+      },
+      {
+        "type": "table",
+        "caption": "Each reader keeps its own place in the log",
+        "columns": ["reader", "next offset", "state"],
+        "rows": [
+          ["billing", "4", "up to date"],
+          ["analytics", "2", "catching up"],
+          ["fraud check", "0", "replaying from the start"]
+        ]
+      },
+      {
+        "type": "code",
+        "caption": "A reader picks up where it left off and saves its place",
+        "language": "javascript",
+        "code": "for await (const event of stream) {\n  await handle(event);\n  await stream.commit(event.offset);\n}\n// replay: start again from offset 0"
+      }
+    ]
   }
 }

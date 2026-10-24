@@ -95,8 +95,8 @@ code snippet:
 ```
 
 Code lines must be 40 characters or fewer so they fit the drawer (a test
-checks). External, Edge, Routing, Compute and Data components have samples;
-other categories can add them the same way.
+checks). External, Edge, Routing, Compute, Data and Async components have
+samples; other categories can add them the same way.
 
 ### Traffic flow — `src/settings.json`
 

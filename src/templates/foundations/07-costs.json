@@ -1,0 +1,109 @@
+{
+  "id": "costs",
+  "title": "How do we keep costs under control?",
+  "summary": "Find out where the money goes, then pay for capacity only when you use it and let cheaper parts carry the heavy lifting.",
+  "lesson": {
+    "problem": "The cloud bill reaches €18,000 a month and investors ask why. The team opens the bill for the first time in a year.",
+    "why": [
+      "Three items make up most of it. The app servers are sized for the lunch rush but run at that size all night. Food photos are served by the app servers, using bandwidth and processor time. And forgotten test machines are still running.",
+      "With autoscaling, the number of app servers follows demand: two at 3 a.m., ten at 13:00. Photos move to object storage behind a CDN, which serves them from places close to users at a fraction of the price. The test machines are switched off.",
+      "They also notice what they don't pay: no engineer has to babysit databases or servers at night, because those are managed services. Engineers' time is the biggest cost of all."
+    ],
+    "takeaways": [
+      "Look at the bill: a few items are usually most of it.",
+      "Pay for peak capacity only during the peak.",
+      "Serve images and files from object storage and a CDN, not app servers.",
+      "Count people's time too; managed services are often cheaper overall."
+    ]
+  },
+  "groups": [
+    {
+      "label": "Autoscaling: 2 to 10 servers",
+      "x": 370,
+      "y": 40,
+      "width": 260,
+      "height": 280
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "cdn",
+      "kind": "cdn",
+      "x": 250,
+      "y": -140
+    },
+    {
+      "id": "storage",
+      "kind": "object-storage",
+      "label": "Food Photos",
+      "x": 500,
+      "y": -140
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "x": 250,
+      "y": 120
+    },
+    {
+      "id": "app1",
+      "kind": "app-server",
+      "label": "App Server",
+      "x": 500,
+      "y": 120
+    },
+    {
+      "id": "app2",
+      "kind": "app-server",
+      "label": "App Server",
+      "x": 500,
+      "y": 240
+    },
+    {
+      "id": "db",
+      "kind": "sql-database",
+      "label": "Database",
+      "x": 750,
+      "y": 180
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.top",
+      "to": "cdn.left",
+      "label": "photos"
+    },
+    {
+      "from": "cdn.right",
+      "to": "storage.left",
+      "label": "on a miss"
+    },
+    {
+      "from": "client.right",
+      "to": "lb.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app1.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app2.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "db.left"
+    },
+    {
+      "from": "app2.right",
+      "to": "db.left"
+    }
+  ]
+}

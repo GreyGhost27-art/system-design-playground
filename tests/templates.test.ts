@@ -9,13 +9,17 @@ import {
   type Template,
 } from '../src/templates.ts';
 
-const templatesFolder = new URL('../src/templates/', import.meta.url);
-const templateFiles = readdirSync(templatesFolder).filter((file) =>
-  file.endsWith('.json'),
-);
+// Foundations live in their own folder but share ids with the templates.
+const templateFolders = ['../src/templates/', '../src/templates/foundations/'];
+const templateFiles = templateFolders.flatMap((folder) => {
+  const url = new URL(folder, import.meta.url);
+  return readdirSync(url)
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => new URL(file, url));
+});
 
-function readTemplate(file: string): Template {
-  return JSON.parse(readFileSync(new URL(file, templatesFolder), 'utf8'));
+function readTemplate(file: URL): Template {
+  return JSON.parse(readFileSync(file, 'utf8'));
 }
 
 function tinyTemplate(overrides: Partial<Template> = {}): Template {
@@ -33,14 +37,14 @@ function tinyTemplate(overrides: Partial<Template> = {}): Template {
   };
 }
 
-test('every template file is valid', () => {
-  assert.ok(templateFiles.length >= 13);
+test('every template and foundation file is valid', () => {
+  assert.ok(templateFiles.length >= 21);
   for (const file of templateFiles) {
-    assert.deepEqual(validateTemplate(readTemplate(file)), [], file);
+    assert.deepEqual(validateTemplate(readTemplate(file)), [], file.pathname);
   }
 });
 
-test('every template has a unique id and a complete lesson', () => {
+test('templates and foundations all have unique ids and complete lessons', () => {
   const templates = templateFiles.map(readTemplate);
   const ids = new Set(templates.map((template) => template.id));
   assert.equal(ids.size, templates.length);

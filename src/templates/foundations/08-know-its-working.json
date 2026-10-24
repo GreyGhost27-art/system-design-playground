@@ -1,0 +1,105 @@
+{
+  "id": "know-its-working",
+  "title": "How do we know it's working?",
+  "summary": "Measure what users experience, collect logs in one place, and get alerted before customers have to tell you.",
+  "lesson": {
+    "problem": "After an update, card payments from one bank fail for six hours. Nothing crashes and every server looks healthy. The team finds out from angry restaurant owners on the phone.",
+    "why": [
+      "They start recording metrics: numbers measured over time, like orders per minute, errors per minute and how long requests take. On a graph, the failed payments would have shown as a clear dip.",
+      "Every server now sends its logs to one place, where they can be searched. A metric tells you that something is wrong; the logs tell you why.",
+      "Finally, alerts. If orders per minute drop well below what is normal for that time of day, or errors jump, the developer on call gets a message within minutes. They keep it to a few alerts that always matter, so nobody learns to ignore them."
+    ],
+    "takeaways": [
+      "Alert on what users feel (errors, slowness, fewer orders), not on every busy processor.",
+      "Metrics show that something is wrong; logs show why.",
+      "Add monitoring before you need it, not after the first outage."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "x": 250,
+      "y": 0
+    },
+    {
+      "id": "app",
+      "kind": "app-server",
+      "label": "App Servers",
+      "x": 500,
+      "y": 0
+    },
+    {
+      "id": "db",
+      "kind": "sql-database",
+      "label": "Database",
+      "x": 750,
+      "y": 0
+    },
+    {
+      "id": "metrics",
+      "kind": "metrics",
+      "x": 500,
+      "y": 140
+    },
+    {
+      "id": "logs",
+      "kind": "logs",
+      "x": 750,
+      "y": 140
+    },
+    {
+      "id": "alerting",
+      "kind": "alerting",
+      "x": 500,
+      "y": 280
+    },
+    {
+      "id": "dev",
+      "kind": "client",
+      "label": "On-call Developer",
+      "x": 750,
+      "y": 280
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "lb.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app.left"
+    },
+    {
+      "from": "app.right",
+      "to": "db.left"
+    },
+    {
+      "from": "app.bottom",
+      "to": "metrics.top",
+      "label": "orders, errors"
+    },
+    {
+      "from": "app.right",
+      "to": "logs.top"
+    },
+    {
+      "from": "metrics.bottom",
+      "to": "alerting.top",
+      "label": "orders dropped?"
+    },
+    {
+      "from": "alerting.right",
+      "to": "dev.left",
+      "label": "page"
+    }
+  ]
+}

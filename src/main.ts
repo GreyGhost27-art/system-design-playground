@@ -11,7 +11,7 @@ import { render, type CableDraft, type Scene } from './render.ts';
 import { createRope, stepRope } from './rope.ts';
 import settings from './settings.json' with { type: 'json' };
 import { findSnapTarget, portAt } from './snap.ts';
-import { TEMPLATES } from './templateLibrary.ts';
+import { SECTIONS, type TemplateSection } from './templateLibrary.ts';
 import { loadTemplate, toTemplate, type Template } from './templates.ts';
 
 type Gesture =
@@ -65,6 +65,7 @@ const scene: Scene = {
 let gesture: Gesture = { type: 'idle' };
 let pointer: Point = { x: 0, y: 0 };
 let currentTemplate: Template | null = null;
+let currentSection: TemplateSection | null = null;
 let lessonOpen = true;
 // What the drawer currently shows, so it is only rebuilt when that changes.
 let drawerShowing = '';
@@ -89,16 +90,23 @@ fillTemplateSelect();
 
 function fillTemplateSelect(): void {
   templateSelect.append(new Option('Empty board (free mode)', ''));
-  const group = document.createElement('optgroup');
-  group.label = 'Templates';
-  TEMPLATES.forEach((template, index) => {
-    group.append(new Option(`${index + 1}. ${template.title}`, template.id));
-  });
-  templateSelect.append(group);
+  for (const { name, templates } of SECTIONS) {
+    const group = document.createElement('optgroup');
+    group.label = name;
+    templates.forEach((template, index) => {
+      group.append(new Option(`${index + 1}. ${template.title}`, template.id));
+    });
+    templateSelect.append(group);
+  }
 }
 
 function openTemplate(id: string): void {
-  currentTemplate = TEMPLATES.find((template) => template.id === id) ?? null;
+  currentSection =
+    SECTIONS.find(({ templates }) =>
+      templates.some((candidate) => candidate.id === id),
+    ) ?? null;
+  currentTemplate =
+    currentSection?.templates.find((template) => template.id === id) ?? null;
   templateSelect.value = currentTemplate?.id ?? '';
   scene.selection = null;
   undoHistory.clear();
@@ -132,10 +140,7 @@ function syncDrawer(): void {
   if (node) {
     renderComponentInfo(drawerContent, findKind(node.kind), node.label);
   } else if (showLesson) {
-    renderLesson(drawerContent, currentTemplate!, {
-      number: TEMPLATES.indexOf(currentTemplate!) + 1,
-      total: TEMPLATES.length,
-    });
+    renderLesson(drawerContent, currentTemplate!, currentSection!);
   }
   drawerContent.scrollTop = 0;
   drawer.scrollTop = 0;

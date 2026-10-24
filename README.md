@@ -152,6 +152,15 @@ place in the list (`01-hello-world.json`, `02-…`).
 - `npm test` checks every template: unknown kinds, missing nodes, bad sides
   and duplicate cables are reported by name.
 
+### Foundations — `src/templates/foundations/*.json`
+
+Foundations use the same format as templates and appear in their own group,
+above Templates. Each one answers a foundational question as part of one
+story: Marmita, a fictional lunch-delivery startup that grows from a single
+server. `title` is the question, `summary` the short answer, `problem` the
+story so far, `why` what the team did, and `takeaways` the lessons. Ids must
+be unique across templates and foundations (a test checks).
+
 ## Structure
 
 | File                     | Responsibility                                      |
@@ -161,7 +170,7 @@ place in the list (`01-hello-world.json`, `02-…`).
 | `src/history.ts`         | Undo steps                                          |
 | `src/labelEditor.ts`     | The text field for naming a cable                   |
 | `src/templates.ts`       | Validating, loading and exporting templates         |
-| `src/templateLibrary.ts` | Collects the JSON files in `src/templates/`         |
+| `src/templateLibrary.ts` | Collects the Foundations and Templates sections     |
 | `src/lesson.ts`          | The template lesson shown in the drawer             |
 | `src/componentInfo.ts`   | The component explanation shown in the drawer       |
 | `src/dom.ts`             | Tiny helpers for building drawer content            |
@@ -192,7 +201,7 @@ node --test tests/rope.test.ts    # one file
 | `src/history.ts`                                                                                                                                        | `tests/history.test.ts`                                    |
 | `src/snap.ts`                                                                                                                                           | `tests/snap.test.ts`                                       |
 | `src/camera.ts`                                                                                                                                         | `tests/camera.test.ts`                                     |
-| `src/templates.ts`, `src/templates/*.json`                                                                                                              | `tests/templates.test.ts`                                  |
+| `src/templates.ts`, `src/templates/**/*.json`                                                                                                           | `tests/templates.test.ts`                                  |
 | `src/components.ts`, `src/components/**`                                                                                                                | `tests/components.test.ts`, `tests/templates.test.ts`      |
 | `src/geometry.ts`                                                                                                                                       | covered by `tests/rope.test.ts` and `tests/design.test.ts` |
 | `src/render.ts`, `src/main.ts`, `src/palette.ts`, `src/lesson.ts`, `src/componentInfo.ts`, `src/dom.ts`, `src/labelEditor.ts`, `src/templateLibrary.ts` | no unit tests; check in the browser                        |

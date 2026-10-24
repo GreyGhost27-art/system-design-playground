@@ -1,0 +1,106 @@
+{
+  "id": "stay-up",
+  "title": "How do we stay up when something breaks?",
+  "summary": "Remove single points of failure: keep a spare of everything that matters, in a different place, ready to take over.",
+  "lesson": {
+    "problem": "One Friday at lunchtime, the data centre hosting Marmita has a power problem. All three app servers and the database live there, so everything goes dark for two hours. Restaurants cook food nobody ordered, and customers order from a competitor.",
+    "why": [
+      "They sit down and ask one question about every box on the board: \"what happens if this dies?\" Anything whose answer is \"everything stops\" is a single point of failure.",
+      "Cloud providers split each region into separate data centres called availability zones, each with its own power and network. Marmita now runs app servers in two zones, and the load balancer's health checks stop sending traffic to any server that doesn't answer.",
+      "The database gets a standby copy in the second zone. Every change is copied to it as it happens. If the main database fails, the standby is promoted and takes over within a minute (failover). With a managed database this is a setting, not a project. They also test it on purpose one quiet afternoon, because a failover nobody has tried is only a hope."
+    ],
+    "takeaways": [
+      "Ask \"what if this dies?\" for every component.",
+      "Spread copies across availability zones, not just across machines.",
+      "Redundancy roughly doubles the cost of what it protects; match it to what downtime costs you.",
+      "Test failover before you need it."
+    ]
+  },
+  "groups": [
+    {
+      "label": "Zone A",
+      "x": 380,
+      "y": -80,
+      "width": 490,
+      "height": 160
+    },
+    {
+      "label": "Zone B",
+      "x": 380,
+      "y": 160,
+      "width": 490,
+      "height": 160
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 120
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "x": 250,
+      "y": 120
+    },
+    {
+      "id": "appA",
+      "kind": "app-server",
+      "label": "App Server A",
+      "x": 500,
+      "y": 0
+    },
+    {
+      "id": "appB",
+      "kind": "app-server",
+      "label": "App Server B",
+      "x": 500,
+      "y": 240
+    },
+    {
+      "id": "primary",
+      "kind": "sql-database",
+      "label": "Main DB",
+      "x": 750,
+      "y": 0
+    },
+    {
+      "id": "standby",
+      "kind": "sql-database",
+      "label": "Standby DB",
+      "x": 750,
+      "y": 240
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "lb.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "appA.left",
+      "label": "healthy?"
+    },
+    {
+      "from": "lb.right",
+      "to": "appB.left"
+    },
+    {
+      "from": "appA.right",
+      "to": "primary.left"
+    },
+    {
+      "from": "appB.right",
+      "to": "primary.left"
+    },
+    {
+      "from": "primary.bottom",
+      "to": "standby.top",
+      "label": "copies every change"
+    }
+  ]
+}

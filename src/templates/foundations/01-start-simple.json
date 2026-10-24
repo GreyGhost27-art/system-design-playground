@@ -1,0 +1,53 @@
+{
+  "id": "start-simple",
+  "title": "Do we need more than one server yet?",
+  "summary": "Almost never at the start. One server and one database are enough to find out if anyone wants the product.",
+  "lesson": {
+    "problem": "Ana and Rui have an idea: Marmita, an app to order lunch from the small restaurants around their office in Lisbon. They don't know yet if anyone will use it. They have savings for six months and no customers.",
+    "why": [
+      "They build it in a few weekends as one app on one server, with one database. The browser talks to the server, and the server keeps menus, users and orders in the database. It costs about €20 a month.",
+      "A friend tells them to \"build it to scale\" with load balancers, microservices and Kubernetes. They don't. That would cost weeks and hundreds of euros a month to protect against a problem they don't have: too many users. Their real risk is having none.",
+      "Three months later, 40 restaurants and 600 people use Marmita every day. One ordinary server handles that without breaking a sweat. Every hour they didn't spend on infrastructure went into talking to users and fixing what they asked for."
+    ],
+    "takeaways": [
+      "Most new products fail for lack of users, not lack of servers.",
+      "One modest server can serve thousands of users.",
+      "Spend time and money on learning what users want; add parts only when a real problem asks for them.",
+      "The one thing not to skip: automatic database backups."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Browser",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "server",
+      "kind": "app-server",
+      "label": "Marmita App",
+      "x": 250,
+      "y": 0
+    },
+    {
+      "id": "db",
+      "kind": "sql-database",
+      "label": "Database",
+      "x": 500,
+      "y": 0
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "server.left",
+      "label": "HTTP"
+    },
+    {
+      "from": "server.right",
+      "to": "db.left"
+    }
+  ]
+}

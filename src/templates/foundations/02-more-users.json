@@ -1,0 +1,92 @@
+{
+  "id": "more-users",
+  "title": "How do we handle more users?",
+  "summary": "First a bigger machine. When one machine is no longer enough, several identical servers behind a load balancer.",
+  "lesson": {
+    "problem": "A newspaper writes about Marmita. Between 12:00 and 14:00 thousands of people open the app at once. The server's processor sits at 100%, pages take ten seconds, and some orders fail. Outside the lunch rush, everything is fine.",
+    "why": [
+      "The first fix takes ten minutes: move to a machine with more processors and memory (scaling up, or vertical scaling). No code changes. It buys them a calm few months.",
+      "Then a TV spot doubles traffic again, and the biggest machine they can rent struggles. Worse, every update means restarting the only server, so the app goes down for a minute each time.",
+      "So they run three copies of the app and put a load balancer in front (scaling out, or horizontal scaling). Users see one address; the load balancer passes each request to a server that is healthy. They make the servers stateless, keeping logins in the database instead of in one server's memory, so any copy can answer any request. Now they can add a fourth server in minutes and update them one at a time without downtime."
+    ],
+    "takeaways": [
+      "Scale up first: it is the quickest and cheapest fix.",
+      "Scale out when one machine isn't enough, or when it can't be allowed to fail.",
+      "Keep app servers stateless, so copies can be added and removed freely.",
+      "The database is still a single machine; that comes later."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 120
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "x": 250,
+      "y": 120
+    },
+    {
+      "id": "app1",
+      "kind": "app-server",
+      "label": "App Server 1",
+      "x": 500,
+      "y": 0
+    },
+    {
+      "id": "app2",
+      "kind": "app-server",
+      "label": "App Server 2",
+      "x": 500,
+      "y": 120
+    },
+    {
+      "id": "app3",
+      "kind": "app-server",
+      "label": "App Server 3",
+      "x": 500,
+      "y": 240
+    },
+    {
+      "id": "db",
+      "kind": "sql-database",
+      "label": "Database",
+      "x": 750,
+      "y": 120
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "lb.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app1.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app2.left"
+    },
+    {
+      "from": "lb.right",
+      "to": "app3.left"
+    },
+    {
+      "from": "app1.right",
+      "to": "db.left"
+    },
+    {
+      "from": "app2.right",
+      "to": "db.left"
+    },
+    {
+      "from": "app3.right",
+      "to": "db.left"
+    }
+  ]
+}

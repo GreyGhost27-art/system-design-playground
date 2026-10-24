@@ -1,0 +1,87 @@
+{
+  "id": "slow-work",
+  "title": "How do we keep slow work from slowing users down?",
+  "summary": "Do only what the user must wait for, and put the rest in a queue for background workers.",
+  "lesson": {
+    "problem": "Placing an order now does a lot: save it, send the restaurant a notification, email a receipt and generate an invoice PDF. Checkout takes four seconds. When the email provider has a slow day, checkouts time out and customers are charged without seeing a confirmation.",
+    "why": [
+      "The customer only needs one thing to happen before seeing \"Order placed\": the order saved in the database. Everything else can happen a few seconds later.",
+      "So the app saves the order, drops a small task for each follow-up into a queue, and replies at once. Checkout is back under half a second.",
+      "Workers take tasks from the queue and do them in the background. If the email provider is down, the task simply waits and is retried later instead of breaking checkout. At lunchtime, when tasks pile up, they add more workers."
+    ],
+    "takeaways": [
+      "Make users wait only for what they need to see.",
+      "A queue absorbs bursts and outages of the services behind it.",
+      "Tasks can run twice after a retry, so make them safe to repeat (don't send two receipts)."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "app",
+      "kind": "app-server",
+      "label": "App Servers",
+      "x": 250,
+      "y": 0
+    },
+    {
+      "id": "db",
+      "kind": "sql-database",
+      "label": "Database",
+      "x": 500,
+      "y": 0
+    },
+    {
+      "id": "queue",
+      "kind": "queue",
+      "label": "Task Queue",
+      "x": 250,
+      "y": 140
+    },
+    {
+      "id": "worker",
+      "kind": "worker",
+      "label": "Workers",
+      "x": 500,
+      "y": 140
+    },
+    {
+      "id": "email",
+      "kind": "external-service",
+      "label": "Email Provider",
+      "x": 750,
+      "y": 140
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "app.left",
+      "label": "place order"
+    },
+    {
+      "from": "app.right",
+      "to": "db.left",
+      "label": "save order"
+    },
+    {
+      "from": "app.bottom",
+      "to": "queue.top",
+      "label": "receipt, invoice"
+    },
+    {
+      "from": "queue.right",
+      "to": "worker.left"
+    },
+    {
+      "from": "worker.right",
+      "to": "email.left"
+    }
+  ]
+}

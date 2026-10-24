@@ -1,0 +1,108 @@
+{
+  "id": "easy-to-change",
+  "title": "How do we keep it easy to change?",
+  "summary": "Start with one well-organised app (a modular monolith). Split out a separate service only when a part has a real reason to live on its own.",
+  "lesson": {
+    "problem": "Marmita has grown from 2 developers to 25. They all work in one codebase, a change to payments breaks the menu page, and releases need everyone to coordinate. Someone proposes splitting everything into twenty microservices.",
+    "why": [
+      "Each microservice is its own app, with its own deployments, monitoring and failure modes, talking to the others over the network. That cost is worth paying only where it buys something.",
+      "So first they organise the code into clear modules (orders, menus, payments, delivery), each with its own small interface and its own tables. Most of the pain goes away, and it's still one app to run.",
+      "Then they split out only two parts. Delivery tracking receives GPS updates from couriers every few seconds, a very different load from the rest, and has its own team. Payments has strict security rules and changes rarely. Each becomes a service with its own database, and an API gateway sends each request to the right place, so the apps on phones still see one address."
+    ],
+    "takeaways": [
+      "Microservices solve team and scaling problems, and add operational ones.",
+      "A modular monolith gets most of the benefit at a fraction of the cost.",
+      "Split along business boundaries, and give each service its own data."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Users",
+      "x": 0,
+      "y": 140
+    },
+    {
+      "id": "gw",
+      "kind": "api-gateway",
+      "x": 250,
+      "y": 140
+    },
+    {
+      "id": "main",
+      "kind": "app-server",
+      "label": "Main App",
+      "x": 500,
+      "y": 0
+    },
+    {
+      "id": "mainDb",
+      "kind": "sql-database",
+      "label": "Main DB",
+      "x": 750,
+      "y": 0
+    },
+    {
+      "id": "delivery",
+      "kind": "app-server",
+      "label": "Delivery Service",
+      "x": 500,
+      "y": 140
+    },
+    {
+      "id": "deliveryDb",
+      "kind": "nosql-database",
+      "label": "Courier Positions",
+      "x": 750,
+      "y": 140
+    },
+    {
+      "id": "payments",
+      "kind": "app-server",
+      "label": "Payments Service",
+      "x": 500,
+      "y": 280
+    },
+    {
+      "id": "provider",
+      "kind": "external-service",
+      "label": "Payment Provider",
+      "x": 750,
+      "y": 280
+    }
+  ],
+  "cables": [
+    {
+      "from": "client.right",
+      "to": "gw.left"
+    },
+    {
+      "from": "gw.right",
+      "to": "main.left",
+      "label": "orders, menus"
+    },
+    {
+      "from": "gw.right",
+      "to": "delivery.left",
+      "label": "/delivery"
+    },
+    {
+      "from": "gw.right",
+      "to": "payments.left",
+      "label": "/payments"
+    },
+    {
+      "from": "main.right",
+      "to": "mainDb.left"
+    },
+    {
+      "from": "delivery.right",
+      "to": "deliveryDb.left"
+    },
+    {
+      "from": "payments.right",
+      "to": "provider.left"
+    }
+  ]
+}

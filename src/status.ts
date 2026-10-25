@@ -104,7 +104,7 @@ function clientStatus(
     };
   }
   const figures =
-    `${describeUsers(usersOf(client))} sending ` +
+    `${describeUsers(usersOf(client))} a day, sending ` +
     `${formatRequests(requestsFrom(client, scenario))} requests a second.`;
   if (health === 'failing') {
     return {
@@ -113,6 +113,15 @@ function clientStatus(
       measure: 'some users get errors',
       figures,
       detail: `The ${weakestName} is too busy. Tip: open Fix.`,
+    };
+  }
+  if (health === 'delayed') {
+    return {
+      tone: 'busy',
+      label: 'Delayed',
+      measure: 'background work falls behind',
+      figures,
+      detail: `Answers are fast, but the ${weakestName} can't keep up, so results arrive late. Tip: open Fix.`,
     };
   }
   if (health === 'slow') {

@@ -63,9 +63,13 @@ export function renderClientFix(
       ? `Some of these ${users} get errors.`
       : health === 'slow'
         ? `These ${users} wait longer than they should.`
-        : `These ${users} get fast answers.`;
+        : health === 'delayed'
+          ? `These ${users} get fast answers, but what happens in the background (emails, updates) arrives late.`
+          : `These ${users} get fast answers.`;
   const children: HTMLElement[] = [
-    statusEyebrow(health === 'failing' ? 2 : health === 'slow' ? BUSY_AT : 0),
+    statusEyebrow(
+      health === 'failing' ? 2 : health && health !== 'fast' ? BUSY_AT : 0,
+    ),
     element('h2', 'drawer-title', client.label ?? 'Users'),
     element('p', 'drawer-lede', summary),
   ];

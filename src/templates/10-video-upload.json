@@ -126,18 +126,23 @@
       "label": "mark ready"
     },
     {
+      "from": "transcoders.left",
+      "to": "raw.right",
+      "label": "read original"
+    },
+    {
       "from": "transcoders.top",
       "to": "processed.bottom",
       "label": "HLS renditions"
     },
     {
-      "from": "processed.right",
-      "to": "cdn.left",
-      "label": "origin"
+      "from": "cdn.left",
+      "to": "processed.right",
+      "label": "on a miss"
     },
     {
-      "from": "cdn.bottom",
-      "to": "viewer.top",
+      "from": "viewer.top",
+      "to": "cdn.bottom",
       "label": "stream"
     }
   ]

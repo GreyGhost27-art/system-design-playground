@@ -675,7 +675,7 @@ function needsFix(nodeId: string): boolean {
   const node = design.getNode(nodeId);
   if (node.kind === 'client') {
     const health = scene.load?.health.get(nodeId);
-    return health === 'slow' || health === 'failing';
+    return health !== undefined && health !== 'fast';
   }
   return (scene.load?.nodes.get(nodeId)?.ratio ?? 0) >= BUSY_AT;
 }

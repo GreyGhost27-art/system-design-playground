@@ -15,16 +15,16 @@
         "caption": "Shard map: users split by id range",
         "columns": ["user ids", "shard"],
         "rows": [
-          ["1 – 1M", "shard-a"],
-          ["1M – 2M", "shard-b"],
-          ["2M and up", "shard-c"]
+          ["1 – 999,999", "shard-a"],
+          ["1,000,000 – 1,999,999", "shard-b"],
+          ["2,000,000 and up", "shard-c"]
         ]
       },
       {
         "type": "code",
         "caption": "Hash routing: the same key always lands on the same shard",
         "language": "javascript",
-        "code": "const shards = [\"a\", \"b\", \"c\"];\nconst i = hash(userId) % shards.length;\nreturn connect(`shard-${shards[i]}`);"
+        "code": "const shards = [\"a\", \"b\", \"c\"];\nconst i = hash(userId) % shards.length;\nreturn connect(`shard-${shards[i]}`);\n// adding a 4th shard moves most keys:\n// consistent hashing moves only ~1/4"
       }
     ]
   }

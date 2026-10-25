@@ -97,8 +97,9 @@
       "label": "send"
     },
     {
-      "from": "ws1.right",
-      "to": "chat2.left"
+      "from": "ws2.right",
+      "to": "chat2.left",
+      "label": "send"
     },
     {
       "from": "chat1.right",
@@ -130,6 +131,10 @@
       "from": "pubsub.top",
       "to": "ws1.bottom",
       "oneWay": true
+    },
+    {
+      "from": "ws1.right",
+      "to": "presence.left"
     },
     {
       "from": "ws2.right",

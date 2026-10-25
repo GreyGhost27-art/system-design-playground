@@ -206,11 +206,19 @@
             <li><span class="legend-dot legend-fine">✓</span>Fast</li>
             <li><span class="legend-dot legend-busy">!</span>Slow</li>
             <li><span class="legend-dot legend-over">✕</span>Errors</li>
+            <li>
+              <span class="legend-dot legend-busy">…</span>Delayed: background
+              work falls behind
+            </li>
           </ul>
           <p class="legend-note">
             Click a client, then <strong>Users</strong>, to change the traffic.
             Orange or red? Click it, then <strong>Fix</strong>, to see what to
             try.
+          </p>
+          <p class="legend-note">
+            Capacities are rough teaching figures, not benchmarks: real ones
+            depend on the machine and the work each request does.
           </p>
         </div>
       </details>
@@ -327,7 +335,7 @@
         hidden
       >
         <p id="users-picker-title" class="users-picker-title">
-          How many users?
+          How many users a day?
         </p>
         <div
           id="users-options"

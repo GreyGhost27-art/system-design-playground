@@ -3,7 +3,7 @@
   "title": "Global scale",
   "summary": "Two regions, geo-DNS routing and cross-region replication.",
   "lesson": {
-    "problem": "Users in Europe wait 150 ms or more for every round trip to servers in the US, and one region failing takes the whole product down.",
+    "problem": "Users in Europe wait around 100 ms for every round trip to servers in the US, and one region failing takes the whole product down.",
     "why": [
       "Run the stack in several regions. Geo-DNS (or anycast) answers each user with the address of the nearest healthy region, so most requests stay local.",
       "Data has to be in both places. Here the US holds the primary database and Europe a replica: local reads are fast, but writes still cross the ocean to the primary.",

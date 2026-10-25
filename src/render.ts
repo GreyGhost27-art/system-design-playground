@@ -62,6 +62,7 @@ const HEALTH_DOT: Record<Health, { color: string; symbol: string }> = {
   fast: { color: LOAD_FINE, symbol: '✓' },
   slow: { color: LOAD_BUSY, symbol: '!' },
   failing: { color: LOAD_OVER, symbol: '✕' },
+  delayed: { color: LOAD_BUSY, symbol: '…' },
 };
 
 /** Groups have no ids, so a selected group's `id` is its index. */
@@ -139,7 +140,8 @@ export function render(
     const selected = isSelected(scene, 'cable', cable.id);
     const curve = cableCurve(cable, scene.flow, scene.time);
     drawCable(ctx, scene.design, cable, curve, selected);
-    if (cable.oneWay) drawDirectionArrow(ctx, curve, cable.label);
+    // Two-way cables still have a caller, so they get a fainter arrow.
+    drawDirectionArrow(ctx, curve, cable.label, !cable.oneWay);
   }
   for (const cable of scene.design.cables) drawCableLabel(ctx, cable);
   for (const node of scene.design.nodes) {
@@ -349,11 +351,13 @@ function drawCornerHandles(
 function drawDirectionArrow(
   ctx: CanvasRenderingContext2D,
   curve: Point[],
-  label?: string,
+  label: string | undefined,
+  faint: boolean,
 ): void {
   // The middle belongs to the label, so the arrow steps aside for it.
   const { point, angle } = pointAlong(curve, label ? 0.3 : 0.5);
   ctx.save();
+  if (faint) ctx.globalAlpha = 0.4;
   ctx.translate(point.x, point.y);
   ctx.rotate(angle);
   ctx.beginPath();

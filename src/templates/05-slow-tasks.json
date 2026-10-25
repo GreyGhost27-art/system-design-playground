@@ -21,59 +21,69 @@
       "kind": "client",
       "label": "Users",
       "x": 0,
-      "y": 340
+      "y": 160
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "x": 250,
+      "y": 160
     },
     {
       "id": "app1",
       "kind": "app-server",
       "label": "App Server 1",
-      "x": 250,
+      "x": 500,
       "y": 60
     },
     {
       "id": "app2",
       "kind": "app-server",
       "label": "App Server 2",
-      "x": 250,
+      "x": 500,
       "y": 260
     },
     {
       "id": "db",
       "kind": "sql-database",
       "label": "Users DB",
-      "x": 750,
+      "x": 1000,
       "y": 60
     },
     {
       "id": "queue",
       "kind": "queue",
       "label": "Email Queue",
-      "x": 500,
+      "x": 750,
       "y": 260
     },
     {
       "id": "worker",
       "kind": "worker",
       "label": "Email Worker",
-      "x": 750,
+      "x": 1000,
       "y": 260
     },
     {
       "id": "email",
       "kind": "external-service",
       "label": "Email Provider",
-      "x": 750,
+      "x": 1000,
       "y": 420
     }
   ],
   "cables": [
     {
       "from": "client.right",
-      "to": "app1.left",
+      "to": "lb.left",
       "label": "sign up"
     },
     {
-      "from": "client.right",
+      "from": "lb.right",
+      "to": "app1.left"
+    },
+    {
+      "from": "lb.right",
       "to": "app2.left"
     },
     {

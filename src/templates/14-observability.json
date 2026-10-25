@@ -126,6 +126,11 @@
       "oneWay": true
     },
     {
+      "from": "payments.bottom",
+      "to": "logs.top",
+      "oneWay": true
+    },
+    {
       "from": "orders.bottom",
       "to": "tracing.top",
       "label": "spans",

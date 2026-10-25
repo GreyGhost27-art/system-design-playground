@@ -61,12 +61,19 @@ test('a component nothing reaches says so', () => {
   assert.equal(status.figures, 'Nothing sends it requests yet.');
 });
 
+test('a delayed client says its answers are fast but results are late', () => {
+  const status = describeStatus(users, undefined, 'delayed', 'Email Worker');
+  assert.equal(status.label, 'Delayed');
+  assert.equal(status.tone, 'busy');
+  assert.match(status.detail, /Email Worker can't keep up/);
+});
+
 test('a struggling client says how many users send what, and its weakest link', () => {
   const status = describeStatus(users, undefined, 'failing', 'Main DB');
   assert.equal(status.label, 'Errors');
   assert.equal(
     status.figures,
-    '100,000 users sending 1,000 requests a second.',
+    '100,000 users a day, sending 58 requests a second.',
   );
   assert.equal(status.detail, 'The Main DB is too busy. Tip: open Fix.');
 });

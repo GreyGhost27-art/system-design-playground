@@ -55,17 +55,22 @@ npm run dev
   pasting or deleting), up to 100 steps. Opening a template starts afresh.
 - **Navigate:** scroll to zoom, drag empty space to pan.
 - **How many users?** Click a client and choose _Users_: 10, 1,000, 100,000,
-  1 million or 10 million. Their traffic follows the cables and every
+  1 million or 10 million people using it each day (daily active users, the
+  number interviews start from). Each makes about 50 requests a day, so
+  1 million users send about 580 requests a second. Their traffic follows the
+  cables and every
   component shows how busy it gets with a slim bar (green, amber at 75%, red
   when over its capacity, with _Busy_ / _Too busy_ in words). A dot on the
   client shows how its users are doing: green ✓ fast, orange ! slow, red ✕
-  errors. A legend in the corner of the board explains both; it shows with
+  errors, or orange … delayed: answers are fast but something behind a queue,
+  stream or pub/sub can't keep up, so background work (emails, updates)
+  arrives late. Work behind those never fails users directly. A legend in the corner of the board explains both; it shows with
   _Show traffic_ and folds away.
 - **Worst day:** a switch under _Show traffic_. It simulates a rush: 3× the
   traffic, and 4 database queries per request (real pages make several), so
   databases take 12× their average load while app servers take 3×. Every
-  template turns red at 100,000 users; beating it takes more servers _and_ a
-  cache, replicas or sharding. The legend says when it's on.
+  template struggles at 1 million users; beating it takes more servers _and_
+  a cache, replicas or sharding. The legend says when it's on.
 - **Status at a glance:** while traffic is shown, a selected component has a
   small chip above it with three short lines: how full it is ("**Too busy** ·
   143% of what it can handle"), what's going on ("Receiving 1,000 requests a
@@ -74,7 +79,7 @@ npm run dev
   (see Fix)."). A client shows its users, the requests they send and its
   weakest link.
 - **Fix what's busy:** a busy or too-busy component, or a client whose users
-  are slow, gets a _Fix_ option in its wheel. It says why, in the board's own
+  are slow or delayed, gets a _Fix_ option in its wheel. It says why, in the board's own
   numbers ("It's receiving about 1,000 requests a second; one App Server can
   handle about 700"), and lists what to try, best first. _Add a copy_ works in
   one click: a new box appears below, numbered ("App Server 2") and wired like
@@ -203,11 +208,15 @@ place in the list (`01-hello-world.json`, `02-…`).
   apart keep cables and labels readable.
 - Cable ends are `nodeId.side`, where side is `top`, `right`, `bottom` or
   `left`. Cable `label`s and `groups` are optional.
-- A client can carry `"users": 100000` (10, 1000, 100000, 1000000 or 10000000);
-  without it, a client stands for 1,000 users.
+- A client can carry `"users": 100000` daily users (10, 1000, 100000, 1000000
+  or 10000000); without it, a client stands for 1,000.
 - `"oneWay": true` marks a cable whose traffic gets no response, such as a
-  task put on a queue or database replication. It shows a single wave and an
-  arrow. On the board, click a cable to switch it, flip it or label it.
+  task put on a queue or database replication. It shows a single wave and a
+  bright arrow; two-way cables show a faint arrow pointing from the caller.
+  On the board, click a cable to switch it, flip it or label it.
+- A cable from one database to another makes the second a replica: a server
+  wired to both sends its writes to the primary and its reads to the replica,
+  which also applies every write it is copied.
 - `npm test` checks every template: unknown kinds, missing nodes, bad sides
   and duplicate cables are reported by name.
 

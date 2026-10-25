@@ -12,6 +12,7 @@
     "takeaways": [
       "Design for the dominant path: here, fast cached reads.",
       "A simple key-value access pattern fits a NoSQL store that scales horizontally.",
+      "A plain counter makes codes guessable (aZ3, aZ4…): shuffle the numbers, or hand each server its own range, if links shouldn't be enumerable.",
       "Use 302 redirects if you need to count every click; 301s are cached by browsers."
     ]
   },
@@ -105,6 +106,10 @@
       "label": "new code"
     },
     {
+      "from": "app2.right",
+      "to": "ids.left"
+    },
+    {
       "from": "app1.right",
       "to": "cache.left",
       "label": "lookup"
@@ -121,6 +126,11 @@
       "from": "app2.right",
       "to": "store.left",
       "label": "code → URL"
+    },
+    {
+      "from": "app1.right",
+      "to": "queue.left",
+      "oneWay": true
     },
     {
       "from": "app2.right",

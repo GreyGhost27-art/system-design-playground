@@ -3,430 +3,229 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>System Design Playground</title>
+    <title>System Design Playground: see what breaks at scale</title>
+    <meta
+      name="description"
+      content="A free, hands-on board for learning system design. Wire up servers, databases and queues, set how many people use it, and see what breaks and how to fix it."
+    />
+    <meta name="theme-color" content="#121212" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="System Design Playground" />
+    <meta
+      property="og:description"
+      content="Wire up servers, databases and queues, send a million users through them, and see what breaks."
+    />
+    <meta
+      property="og:url"
+      content="https://joaogeraldes.github.io/system-design-playground/"
+    />
+    <meta
+      property="og:image"
+      content="https://joaogeraldes.github.io/system-design-playground/og-image.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&display=swap"
     />
-    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/landing/landing.css" />
   </head>
   <body>
-    <aside id="sidebar" class="sidebar">
-      <header class="sidebar-header">
-        <h1>System Design</h1>
-        <button id="nutshell-open" class="nutshell-open" type="button">
-          <strong>In a nutshell</strong>
-          <span>The questions to ask before you build</span>
-        </button>
-        <label class="field">
-          <span>Start from</span>
-          <select id="template-select"></select>
-        </label>
-      </header>
-      <nav id="palette" class="palette" aria-label="Components"></nav>
-      <footer class="sidebar-footer">
-        <label class="toggle">
-          <input id="flow-toggle" type="checkbox" />
-          Show traffic
-        </label>
-        <label class="toggle">
-          <input id="worst-toggle" type="checkbox" />
-          Worst day
-        </label>
-        <p class="toggle-hint">
-          A rush: 3× the traffic, and 4 database queries per request.
-        </p>
-        <div class="file-actions" role="group" aria-label="Board file">
-          <button
-            id="export-board"
-            type="button"
-            title="Export the board as a .json file"
-            aria-label="Export the board as a .json file"
-          >
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M8 2v8m-3.5-3.5L8 10l3.5-3.5M3 13h10" />
-            </svg>
-            Export
-          </button>
-          <button
-            id="import-board"
-            type="button"
-            title="Import a .json board file"
-            aria-label="Import a .json board file"
-          >
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M8 10V2M4.5 5.5 8 2l3.5 3.5M3 13h10" />
-            </svg>
-            Import
-          </button>
-        </div>
-        <p class="file-hint wide-only">
-          Or drop a .json board file onto the board.
-        </p>
-        <input
-          id="import-file"
-          type="file"
-          accept=".json,application/json"
-          hidden
-        />
-        <button id="copy-json" class="secondary-button" type="button">
-          Copy board as JSON
-        </button>
-      </footer>
-    </aside>
-    <div id="menu-backdrop" class="menu-backdrop"></div>
-    <main class="board">
-      <canvas id="board"></canvas>
-      <button
-        id="menu-toggle"
-        class="menu-toggle"
-        type="button"
-        aria-label="Menu"
-        aria-controls="sidebar"
-        aria-expanded="false"
+    <header class="site-header">
+      <a class="wordmark" href="./">System Design Playground</a>
+      <a href="https://github.com/JoaoGeraldes/system-design-playground"
+        >Source on GitHub</a
       >
-        ☰
-      </button>
-      <div class="board-actions">
-        <button id="back-to-nutshell" class="board-button" type="button" hidden>
-          ← <span class="wide-only">Back to </span>Nutshell
-        </button>
-        <button
-          id="blank-board"
-          class="blank-board"
-          type="button"
-          title="Clear the board and build your own design"
-        >
-          ＋ Blank board
-        </button>
-        <button
-          id="add-group"
-          class="board-button"
-          type="button"
-          aria-pressed="false"
-          title="Draw a named area, like a region: drag on the board, or tap to place one. Esc cancels."
-        >
-          <svg class="dashed-icon" viewBox="0 0 16 16" aria-hidden="true">
-            <rect x="1.5" y="2.5" width="13" height="11" rx="2.5" />
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>See what breaks when a million people use your design.</h1>
+        <p class="lede">
+          Drag servers, databases and queues onto a board, wire them up and set
+          how many people use it each day. Every part shows how busy it gets,
+          and anything that turns red comes with a fix to try.
+        </p>
+        <div class="actions">
+          <a class="button button-primary" href="app/">Open the playground</a>
+          <a class="button" href="app/#start-simple">Start with the basics</a>
+        </div>
+      </section>
+
+      <section class="before-after" aria-label="The same users, two designs">
+        <figure class="board board-before">
+          <figcaption>
+            <span class="dot dot-over" aria-hidden="true">✕</span>
+            <span
+              ><strong>One server, one database.</strong> On its busiest day, 1
+              million daily users send about 1,700 requests a second. The server
+              handles about 700, so people get errors.</span
+            >
+          </figcaption>
+          <img
+            src="/src/landing/before.webp"
+            width="769"
+            height="127"
+            alt="A board with Users connected to one App Server and one Database. Both are marked too busy and the users show errors."
+          />
+        </figure>
+
+        <div class="change">
+          <svg class="rope" viewBox="0 0 48 120" aria-hidden="true">
+            <defs>
+              <linearGradient id="rope" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" style="stop-color: var(--status-over)" />
+                <stop offset="1" style="stop-color: var(--status-fine)" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M24 4 C 24 44, 6 70, 24 116"
+              fill="none"
+              stroke="url(#rope)"
+              stroke-width="3"
+              stroke-linecap="round"
+            />
           </svg>
-          <span id="add-group-label">Draw a group</span>
-        </button>
-      </div>
-      <div
-        id="group-toolbar"
-        class="radial-menu"
-        role="toolbar"
-        aria-label="Group"
-        hidden
-      >
-        <button type="button" data-action="rename">
-          <span class="radial-content"
-            ><span class="radial-icon">✎</span>Rename</span
-          >
-        </button>
-        <button type="button" data-action="resize" aria-pressed="false">
-          <span class="radial-content"
-            ><span class="radial-icon">⤡</span>Resize</span
-          >
-        </button>
-        <button type="button" data-action="delete">
-          <span class="radial-content"
-            ><span class="radial-icon">✕</span>Delete</span
-          >
-        </button>
-      </div>
-      <div
-        id="node-toolbar"
-        class="radial-menu"
-        role="toolbar"
-        aria-label="Component"
-        hidden
-      >
-        <button type="button" data-action="users" hidden>
-          <span class="radial-content"
-            ><span class="radial-icon">👥</span>Users</span
-          >
-        </button>
-        <button type="button" data-action="fix" aria-pressed="false" hidden>
-          <span class="radial-content"
-            ><span class="radial-icon">🛠</span>Fix</span
-          >
-        </button>
-        <button type="button" data-action="info" aria-pressed="false">
-          <span class="radial-content"
-            ><span class="radial-icon">ⓘ</span>Info</span
-          >
-        </button>
-        <button type="button" data-action="duplicate">
-          <span class="radial-content"
-            ><span class="radial-icon">⧉</span>Duplicate</span
-          >
-        </button>
-        <button type="button" data-action="delete">
-          <span class="radial-content"
-            ><span class="radial-icon">✕</span>Delete</span
-          >
-        </button>
-      </div>
-      <details id="legend" class="legend" open>
-        <summary>Legend</summary>
-        <div class="legend-body">
-          <p id="legend-worst" class="legend-worst" hidden>
-            <strong>Worst day:</strong> 3× the usual traffic, and 4 database
-            queries per request.
-          </p>
-          <p class="legend-heading">Bar under a component: how busy it is</p>
-          <ul>
-            <li>
-              <span
-                class="legend-bar"
-                style="--fill: 35%; --color: var(--status-fine)"
-              ></span
-              >Fine
-            </li>
-            <li>
-              <span
-                class="legend-bar"
-                style="--fill: 85%; --color: var(--status-busy)"
-              ></span
-              >Busy: 75% full or more
-            </li>
-            <li>
-              <span
-                class="legend-bar"
-                style="--fill: 100%; --color: var(--status-over)"
-              ></span
-              >Too busy: more than it can handle
-            </li>
-          </ul>
-          <p class="legend-heading">Dot on a client: how its users are doing</p>
-          <ul>
-            <li><span class="legend-dot legend-fine">✓</span>Fast</li>
-            <li><span class="legend-dot legend-busy">!</span>Slow</li>
-            <li><span class="legend-dot legend-over">✕</span>Errors</li>
-            <li>
-              <span class="legend-dot legend-busy">…</span>Delayed: background
-              work falls behind
-            </li>
-          </ul>
-          <p class="legend-note">
-            Click a client, then <strong>Users</strong>, to change the traffic.
-            Orange or red? Click it, then <strong>Fix</strong>, to see what to
-            try.
-          </p>
-          <p class="legend-note">
-            Capacities are rough teaching figures, not benchmarks: real ones
-            depend on the machine and the work each request does.
+          <p>
+            A load balancer shares people across four servers, a cache answers
+            most reads, and a shard router splits the data over two databases.
           </p>
         </div>
-      </details>
-      <details id="shortcuts" class="shortcuts">
-        <summary>⌨ Shortcuts</summary>
-        <button
-          id="shortcuts-close"
-          class="icon-button"
-          type="button"
-          aria-label="Close shortcuts"
-          title="Close"
-        >
-          ×
-        </button>
-        <div class="shortcuts-body">
-          <section>
-            <h3>Add</h3>
-            <ul>
+
+        <figure class="board">
+          <figcaption>
+            <span class="dot dot-fine" aria-hidden="true">✓</span>
+            <span
+              ><strong>Four servers, a cache and two shards.</strong> The same
+              day and the same people. Every part stays under 75% busy, so
+              answers stay fast.</span
+            >
+          </figcaption>
+          <img
+            src="/src/landing/after.webp"
+            width="1005"
+            height="394"
+            loading="lazy"
+            alt="A board with Users, a Load Balancer, four App Servers, a Cache, a Shard Router and two database shards. Every part has room to spare and the users get fast answers."
+          />
+        </figure>
+      </section>
+
+      <section>
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li>
+            <strong>Pick a board.</strong> Start from a lesson, a classic system
+            or a blank board, and drag in what you need.
+          </li>
+          <li>
+            <strong>Set the traffic.</strong> Choose how many people use it each
+            day, from 10 to 10 million, and try the worst day: a rush with three
+            times the usual traffic.
+          </li>
+          <li>
+            <strong>Fix what turns red.</strong> Click anything busy and open
+            Fix to see what to try, with a link to the board that explains it.
+          </li>
+        </ol>
+      </section>
+
+      <section class="ways-in">
+        <h2>Two ways in</h2>
+        <div class="paths">
+          <div>
+            <h3>Foundations</h3>
+            <p>
+              Follow Marmita, a lunch-ordering app in Lisbon, from its first
+              server to millions of users. Each story answers one question.
+            </p>
+            <ol class="boards">
               <li>
-                <kbd>Click</kbd> or <kbd>drag</kbd> a component from the sidebar
+                <a href="app/#start-simple"
+                  >Do we need more than one server yet?</a
+                >
               </li>
               <li>
-                <strong>Draw a group</strong>, then <kbd>drag</kbd> an area (or
-                <kbd>click</kbd> to place one)
+                <a href="app/#more-users">How do we handle more users?</a>
               </li>
               <li>
-                <kbd>Drag</kbd> from a port to another component to connect
+                <a href="app/#stay-up"
+                  >How do we stay up when something breaks?</a
+                >
               </li>
               <li>
-                <kbd>Drop</kbd> a .json board file on the board to import it
+                <a href="app/#database-bottleneck"
+                  >How do we keep the database from becoming the bottleneck?</a
+                >
               </li>
+              <li>
+                <a href="app/#slow-work"
+                  >How do we keep slow work from slowing users down?</a
+                >
+              </li>
+              <li>
+                <a href="app/#easy-to-change"
+                  >How do we keep it easy to change?</a
+                >
+              </li>
+              <li>
+                <a href="app/#costs">How do we keep costs under control?</a>
+              </li>
+              <li>
+                <a href="app/#know-its-working">How do we know it's working?</a>
+              </li>
+            </ol>
+          </div>
+          <div>
+            <h3>Templates</h3>
+            <p>
+              Classic designs, the kind interviews ask about, each with the
+              problem, why the design works and what to remember.
+            </p>
+            <ul class="boards">
+              <li><a href="app/#hello-world">Hello World</a></li>
+              <li><a href="app/#too-many-users">Too many users</a></li>
+              <li><a href="app/#db-melting">The DB is melting</a></li>
+              <li><a href="app/#reads-vs-writes">Reads vs writes</a></li>
+              <li><a href="app/#slow-tasks">Slow tasks</a></li>
+              <li><a href="app/#url-shortener">URL shortener</a></li>
+              <li><a href="app/#api-gateway">API gateway & rate limits</a></li>
+              <li><a href="app/#news-feed">News feed</a></li>
+              <li><a href="app/#chat-app">Chat app</a></li>
+              <li><a href="app/#video-upload">Video upload</a></li>
+              <li><a href="app/#global-scale">Global scale</a></li>
+              <li><a href="app/#ride-hailing">Ride-hailing</a></li>
+              <li><a href="app/#payments">Payments</a></li>
+              <li><a href="app/#observability">Finding problems</a></li>
             </ul>
-          </section>
-          <section>
-            <h3>Select and edit</h3>
-            <ul>
-              <li>
-                <kbd>Click</kbd> a component, cable or group name to open its
-                menu; dragging moves it without opening the menu
-              </li>
-              <li><kbd>Double-click</kbd> a component to read about it</li>
-              <li>
-                <kbd>Click</kbd> a client, then <strong>Users</strong>, to set
-                how many people use it; components show how busy they get
-              </li>
-              <li>
-                <kbd>Click</kbd> anything orange or red, then
-                <strong>Fix</strong>, to see why and what to try
-              </li>
-              <li>
-                <kbd>Double-click</kbd> a cable or group name to rename it
-              </li>
-              <li><kbd>Enter</kbd> saves a name · <kbd>Esc</kbd> cancels it</li>
-            </ul>
-          </section>
-          <section>
-            <h3>Move</h3>
-            <ul>
-              <li><kbd>Drag</kbd> a component to move it</li>
-              <li>
-                <kbd>Drag</kbd> a group by its name: everything in it comes
-                along
-              </li>
-              <li>
-                <kbd>Drag</kbd> a cable near its end, or <kbd>Shift</kbd>+drag a
-                port, to unplug it and plug it elsewhere
-              </li>
-              <li>
-                <kbd>Drag</kbd> the empty board to pan · <kbd>Scroll</kbd> to
-                zoom
-              </li>
-            </ul>
-          </section>
-          <section>
-            <h3>Keys</h3>
-            <ul>
-              <li>
-                <kbd>Del</kbd> or <kbd>Backspace</kbd> removes the selection
-              </li>
-              <li>
-                <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>C</kbd>, <kbd>V</kbd> copies
-                and pastes a component
-              </li>
-              <li>
-                <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> undoes the last change
-              </li>
-              <li>
-                <kbd>Esc</kbd> deselects, cancels drawing and closes menus
-              </li>
-            </ul>
-          </section>
+          </div>
         </div>
-      </details>
-      <div class="zoom-controls" role="toolbar" aria-label="Zoom">
-        <button type="button" data-zoom="in" aria-label="Zoom in">＋</button>
-        <button type="button" data-zoom="out" aria-label="Zoom out">−</button>
-        <button type="button" data-zoom="fit" aria-label="Fit the design">
-          ⤢
-        </button>
-      </div>
-      <div id="status-chip" class="status-chip" hidden>
-        <p class="status-line">
-          <span class="status-dot" aria-hidden="true"></span
-          ><strong id="status-label"></strong><span id="status-measure"></span>
+      </section>
+
+      <section>
+        <h2>Who it's for</h2>
+        <p>
+          People learning system design, and engineers warming up before an
+          interview. It's free, needs no account and runs in your browser. The
+          numbers are rough on purpose: they show which part runs out of room
+          first, not how many servers to buy.
         </p>
-        <p id="status-figures" class="status-figures"></p>
-        <p id="status-detail" class="status-detail"></p>
-      </div>
-      <div
-        id="users-picker"
-        class="users-picker"
-        role="dialog"
-        aria-labelledby="users-picker-title"
-        hidden
-      >
-        <p id="users-picker-title" class="users-picker-title">
-          How many users a day?
+        <p class="note">
+          Best on a laptop or desktop: the board needs a mouse or trackpad.
         </p>
-        <div
-          id="users-options"
-          class="users-options"
-          role="radiogroup"
-          aria-labelledby="users-picker-title"
-        ></div>
-      </div>
-      <div id="toast" class="toast" role="status" hidden>
-        <span id="toast-message"></span>
-        <button id="toast-action" type="button">Undo</button>
-      </div>
-      <div id="drop-zone" class="drop-zone" hidden>
-        <div class="drop-zone-message">
-          <span class="drop-zone-icon" aria-hidden="true">⬇</span>
-          <strong>Drop to import this board</strong>
-          <span>It replaces the current board. You can undo it.</span>
-        </div>
-      </div>
-      <input
-        id="label-editor"
-        class="label-editor"
-        type="text"
-        maxlength="40"
-        placeholder="Label this cable"
-        aria-label="Cable label"
-        hidden
-      />
-      <div
-        id="cable-toolbar"
-        class="radial-menu"
-        role="toolbar"
-        aria-label="Cable"
-        hidden
-      >
-        <button
-          type="button"
-          data-action="two-way"
-          title="Request and response"
-        >
-          <span class="radial-content"
-            ><span class="radial-icon">⇄</span>Two-way</span
-          >
-        </button>
-        <button type="button" data-action="one-way" title="No response back">
-          <span class="radial-content"
-            ><span class="radial-icon">→</span>One-way</span
-          >
-        </button>
-        <button type="button" data-action="flip" title="Reverse the direction">
-          <span class="radial-content"
-            ><span class="radial-icon">⇆</span>Flip</span
-          >
-        </button>
-        <button type="button" data-action="label">
-          <span class="radial-content"
-            ><span class="radial-icon">✎</span>Label</span
-          >
-        </button>
-        <button type="button" data-action="delete">
-          <span class="radial-content"
-            ><span class="radial-icon">✕</span>Delete</span
-          >
-        </button>
-      </div>
-      <article id="nutshell" class="nutshell" hidden>
-        <button
-          id="nutshell-close"
-          class="icon-button"
-          type="button"
-          aria-label="Back to the board"
-        >
-          ×
-        </button>
-        <div id="nutshell-content" class="nutshell-content"></div>
-      </article>
-      <aside id="drawer" class="drawer" hidden>
-        <button
-          id="drawer-close"
-          class="icon-button"
-          type="button"
-          aria-label="Close"
-        >
-          ×
-        </button>
-        <div id="drawer-content"></div>
-      </aside>
-      <button id="lesson-open" class="lesson-open" type="button" hidden>
-        Learn why
-      </button>
+      </section>
     </main>
-    <script type="module" src="/src/main.ts"></script>
+
+    <footer class="site-footer">
+      <p>
+        Made by João Geraldes.
+        <a href="https://github.com/JoaoGeraldes/system-design-playground"
+          >Source on GitHub</a
+        >.
+      </p>
+    </footer>
   </body>
 </html>

@@ -4,12 +4,40 @@ An interactive board for building system designs: drop components (clients,
 load balancers, servers, databases, queues…) and wire them together with
 cables that hang and swing with simple rope physics.
 
+Live at <https://joaogeraldes.github.io/system-design-playground/>: a
+landing page, with the playground itself at `app/`.
+
 ## Running
+
+Needs Node 22.18 or newer (`node --version`).
 
 ```sh
 npm install
-npm run dev
+npm run dev       # landing page at http://localhost:5173/, the board at /app/
+npm run build     # the published site, in dist/
+npm run preview   # serves dist/ as GitHub Pages will
 ```
+
+## Publishing
+
+`.github/workflows/deploy.yml` publishes the site to GitHub Pages on every
+push to `main`: it installs, runs the tests (a failure stops the deploy),
+builds and uploads `dist/`. One-time setup in the repository: **Settings →
+Pages → Source: GitHub Actions**.
+
+Pages serves the site under the repository's name, so `vite.config.ts` sets
+`base` to `/system-design-playground/` for builds. With a custom domain, set
+it to `'/'` and add the domain to a `public/CNAME` file. Links inside the
+app are hashes (`app/#url-shortener`), so they work under any base.
+
+- `index.html` and `src/landing/` are the landing page: plain HTML and CSS.
+  Its two board images are screenshots of real boards on the worst day at
+  1 million users; retake them if the board's look changes. It links to
+  every board, and a test checks the list stays complete.
+- `app/index.html` is the playground.
+- `src/tokens.css` holds the colours, type and spacing both pages share.
+- `public/` is copied as is: the favicon and `og-image.png`, the preview
+  shown when the link is shared.
 
 ## Using the board
 
@@ -231,7 +259,8 @@ be unique across templates and foundations (a test checks).
 
 ## Structure
 
-`src/main.ts` wires everything together; the rest is grouped by job. Each
+`app/index.html` is the playground's page and `src/main.ts` wires it
+together; the rest is grouped by job. Each
 folder only uses the ones listed before it: content and the model are the
 base, the simulation reads them, and the board and the UI show it all.
 
@@ -242,6 +271,7 @@ base, the simulation reads them, and the board and the UI show it all.
 | `src/simulation/` | How busy things get, and what to do about it      |
 | `src/board/`      | The canvas: drawing, the camera, snapping         |
 | `src/ui/`         | Panels, menus and drawers around the board        |
+| `src/landing/`    | The landing page's styles and images              |
 
 | File                             | Responsibility                                      |
 | -------------------------------- | --------------------------------------------------- |
@@ -282,6 +312,7 @@ node --test tests/rope.test.ts    # one file
 
 | Source file                                                                                                                                                                                                                         | Test file                                                  |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `index.html` (the landing page's board links)                                                                                                                                                                                       | `tests/landing.test.ts`                                    |
 | `src/simulation/load.ts`, component `capacity`                                                                                                                                                                                      | `tests/load.test.ts`, `tests/components.test.ts`           |
 | `src/simulation/fixes.ts`, `src/content/fixes.json`                                                                                                                                                                                 | `tests/fixes.test.ts`                                      |
 | `src/simulation/status.ts`                                                                                                                                                                                                          | `tests/status.test.ts`                                     |

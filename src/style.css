@@ -1,59 +1,4 @@
-:root {
-  /*
-   * Material Design's dark theme: a neutral #121212 base (dark grey, not
-   * black, which is harsher on the eyes) and surfaces that get lighter the
-   * higher they sit (white overlays of 5 to 12%), so depth reads without
-   * relying on shadows. Text uses Material's emphasis levels, 87% and 60%
-   * white. Contrast against every surface: text 10 : 1 or more (14.2 on
-   * the base, AAA), muted 5.2 : 1 or more, control borders 3 : 1 or more
-   * (WCAG 1.4.11). Colours stay soft tints, which don't vibrate on dark.
-   */
-  --bg: #121212; /* 0dp: page and board */
-  --panel: #1e1e1e; /* 1dp: sidebar, rows */
-  --surface-node: #232323; /* 2dp: components on the board */
-  --panel-raised: #272727; /* 4dp: drawer, hovers */
-  --surface-menu: #2e2e2e; /* 8dp: wheels, toasts */
-  --border: #2e2e2e;
-  --border-control: #707070;
-  --text: #e0e0e0;
-  --muted: #a0a0a0;
-  --accent: #8fe3ff;
-  --accent-fill: #10303c;
-  --accent-fill-hover: #154050;
-  --accent-border: #2d6a80;
-  --heading: #fff98c;
-  /* Health and load: fine, busy, too busy. Shared with the board's canvas. */
-  --status-fine: #4fd1a5;
-  --status-busy: #ffb454;
-  --status-over: #ff7a90;
-  --drawer-width: 440px;
-  --font-ui: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
-  --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
-  /*
-   * Sizes chosen for readability, including for low vision: 16px is the
-   * common minimum for interface text, 19px is recommended for readers
-   * with vision problems (health.gov), and comprehension keeps improving up
-   * to about 24px (Rello et al., CHI 2016). Small is for short uppercase
-   * labels and badges only.
-   */
-  --text-small: 14px;
-  --text-ui: 16px;
-  --text-read: 19px;
-  --text-lede: 21px;
-  /*
-   * Spacing for reading text (WCAG 1.4.8, 1.4.12 and the proximity rule):
-   * lines 1.6 apart (at least 1.5); paragraphs and list items a further
-   * 0.8em apart, so they sit 1.5 times the line spacing apart; headings
-   * three times closer to the text they introduce than to the text above.
-   */
-  --leading: 1.6;
-  --space-paragraph: 0.8em;
-  --space-before-heading: 2.25rem;
-  --space-after-heading: 0.75rem;
-  /* Lines of reading text stay well under 80 characters. */
-  --measure: 66ch;
-  color-scheme: dark;
-}
+@import './tokens.css';
 
 * {
   box-sizing: border-box;
@@ -104,6 +49,15 @@ body {
   font-size: 18px;
   font-weight: 650;
   letter-spacing: 0.01em;
+}
+
+.sidebar-header h1 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sidebar-header h1 a:hover {
+  text-decoration: underline;
 }
 
 .nutshell-open {

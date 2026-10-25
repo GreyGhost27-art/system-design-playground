@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { DesignNode } from '../src/design.ts';
-import { describeStatus } from '../src/status.ts';
+import type { DesignNode } from '../src/model/design.ts';
+import { describeStatus } from '../src/simulation/status.ts';
 
 const server: DesignNode = { id: 's', kind: 'app-server', x: 0, y: 0 };
 const database: DesignNode = { id: 'd', kind: 'sql-database', x: 0, y: 0 };

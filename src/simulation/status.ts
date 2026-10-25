@@ -1,5 +1,5 @@
-import { findKind } from './components.ts';
-import type { DesignNode } from './design.ts';
+import { findKind } from '../content/components.ts';
+import type { DesignNode } from '../model/design.ts';
 import { fixesFor } from './fixes.ts';
 import {
   AVERAGE_DAY,

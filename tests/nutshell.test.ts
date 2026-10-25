@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import content from '../src/nutshell.json' with { type: 'json' };
+import content from '../src/content/nutshell.json' with { type: 'json' };
 
 const foundationsFolder = new URL(
-  '../src/templates/foundations/',
+  '../src/content/templates/foundations/',
   import.meta.url,
 );
 const foundationIds = readdirSync(foundationsFolder).map(

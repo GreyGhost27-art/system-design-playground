@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createWheelPlacement, radialSlices } from '../src/radialMenu.ts';
+import { createWheelPlacement, radialSlices } from '../src/ui/radialMenu.ts';
 
 const CENTER = 124;
 

@@ -1,14 +1,14 @@
-import { findKind } from './components.ts';
-import type { DesignNode } from './design.ts';
+import { findKind } from '../content/components.ts';
+import type { DesignNode } from '../model/design.ts';
 import { element, section } from './dom.ts';
-import { fixesFor, type Fix } from './fixes.ts';
+import { fixesFor, type Fix } from '../simulation/fixes.ts';
 import {
   BUSY_AT,
   describeUsers,
   usersOf,
   type Health,
   type NodeLoad,
-} from './load.ts';
+} from '../simulation/load.ts';
 
 export interface FixCardActions {
   addCopy(): void;

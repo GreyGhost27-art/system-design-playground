@@ -1,4 +1,4 @@
-import type { Template } from './templates.ts';
+import type { Template } from '../model/templates.ts';
 
 /** A group of templates in the picker, with its own numbering and wording. */
 export interface TemplateSection {

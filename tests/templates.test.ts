@@ -1,17 +1,20 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { Design } from '../src/design.ts';
+import { Design } from '../src/model/design.ts';
 import {
   loadTemplate,
   parseBoard,
   toTemplate,
   validateTemplate,
   type Template,
-} from '../src/templates.ts';
+} from '../src/model/templates.ts';
 
 // Foundations live in their own folder but share ids with the templates.
-const templateFolders = ['../src/templates/', '../src/templates/foundations/'];
+const templateFolders = [
+  '../src/content/templates/',
+  '../src/content/templates/foundations/',
+];
 const templateFiles = templateFolders.flatMap((folder) => {
   const url = new URL(folder, import.meta.url);
   return readdirSync(url)

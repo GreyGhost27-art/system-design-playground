@@ -21,7 +21,7 @@ npm run dev
 - **In a nutshell** (top of the sidebar) is a one-page summary: why and when
   to think about system design, the constraints to list first, and the
   questions to ask before adding a component. Its content is in
-  `src/nutshell.json`; each common signal links to its Foundation board.
+  `src/content/nutshell.json`; each common signal links to its Foundation board.
   The URL remembers the template (`#chat-app`), so it can be shared.
 - **Add a component:** drag it from the sidebar onto the board, or click it.
 - **Connect:** hover a component to reveal its ports, then drag from a port.
@@ -85,7 +85,7 @@ npm run dev
   one click: a new box appears below, numbered ("App Server 2") and wired like
   the original. The rest link to the board that teaches them (in a new tab). A
   client's Fix points at its weakest link, with _Show me_ to jump there.
-  Suggestions live in `src/fixes.json`; only fixes the board can show working
+  Suggestions live in `src/content/fixes.json`; only fixes the board can show working
   are listed.
 - **Show traffic:** a gentle ripple runs along each cable from caller to
   callee, and another ripple comes back as the response.
@@ -102,13 +102,13 @@ npm run dev
 Everything content-related lives in JSON, so no code changes are needed to
 add components or templates.
 
-### Components — `src/components/`
+### Components — `src/content/components/`
 
 Each component is its own file, so several people can work on them without
 stepping on each other:
 
 ```
-src/components/
+src/content/components/
   categories.json          sidebar groups, their order and colours
   index.ts                 lists every component file, in sidebar order
   data/cache.json          one file per component, in its category folder
@@ -157,7 +157,7 @@ code snippet:
 Code lines must be 40 characters or fewer so they fit the drawer (a test
 checks). Every component has at least one sample (a test checks).
 
-### Traffic flow — `src/settings.json`
+### Traffic flow — `src/content/settings.json`
 
 The `flow` section tunes the ripple that runs along cables: a request wave
 runs from the cable's start to its end, then a response wave runs back.
@@ -176,9 +176,9 @@ runs from the cable's start to its end, then a response wave runs back.
 A cable's direction is the order it was drawn in (or `from` → `to` in a
 template), so draw cables from the caller to the component it calls.
 
-### Templates — `src/templates/*.json`
+### Templates — `src/content/templates/*.json`
 
-Every JSON file in `src/templates/` is a template; the file name sets its
+Every JSON file in `src/content/templates/` is a template; the file name sets its
 place in the list (`01-hello-world.json`, `02-…`).
 
 ```json
@@ -202,7 +202,7 @@ place in the list (`01-hello-world.json`, `02-…`).
 }
 ```
 
-- `kind` is a component `id` from `src/components/`; `label` is optional and
+- `kind` is a component `id` from `src/content/components/`; `label` is optional and
   renames that one component (the type is shown underneath).
 - `x`/`y` are the component's centre. Columns 250 apart and rows 120–140
   apart keep cables and labels readable.
@@ -220,7 +220,7 @@ place in the list (`01-hello-world.json`, `02-…`).
 - `npm test` checks every template: unknown kinds, missing nodes, bad sides
   and duplicate cables are reported by name.
 
-### Foundations — `src/templates/foundations/*.json`
+### Foundations — `src/content/templates/foundations/*.json`
 
 Foundations use the same format as templates and appear in their own group,
 above Templates. Each one answers a foundational question as part of one
@@ -231,32 +231,44 @@ be unique across templates and foundations (a test checks).
 
 ## Structure
 
-| File                     | Responsibility                                      |
-| ------------------------ | --------------------------------------------------- |
-| `src/main.ts`            | Wires input, the template picker and the lesson     |
-| `src/design.ts`          | The design model: components, ports, cables, groups |
-| `src/history.ts`         | Undo steps                                          |
-| `src/labelEditor.ts`     | The text field for naming cables and groups         |
-| `src/cableToolbar.ts`    | The options wheel over a selected cable             |
-| `src/radialMenu.ts`      | Cuts a menu's buttons into slices of a wheel        |
-| `src/templates.ts`       | Validating, loading and exporting templates         |
-| `src/templateLibrary.ts` | Collects the Foundations and Templates sections     |
-| `src/lesson.ts`          | The template lesson shown in the drawer             |
-| `src/load.ts`            | How busy each component gets for its users          |
-| `src/fixes.ts`           | What to try when a component is busy (`fixes.json`) |
-| `src/fixCard.ts`         | The Fix card shown in the drawer                    |
-| `src/status.ts`          | The status chip's words for a selected component    |
-| `src/nutshell.ts`        | The _In a nutshell_ page, from `nutshell.json`      |
-| `src/componentInfo.ts`   | The component explanation shown in the drawer       |
-| `src/dom.ts`             | Tiny helpers for building drawer content            |
-| `src/rope.ts`            | Verlet rope physics for cables                      |
-| `src/flow.ts`            | The ripple that runs along cables                   |
-| `src/snap.ts`            | Finding the port under the pointer and snap targets |
-| `src/camera.ts`          | Pan, zoom and fitting a design in view              |
-| `src/components.ts`      | Reads the component catalogue in `src/components/`  |
-| `src/render.ts`          | Drawing the board on a canvas                       |
-| `src/palette.ts`         | The sidebar of components                           |
-| `src/geometry.ts`        | Small point and distance helpers                    |
+`src/main.ts` wires everything together; the rest is grouped by job. Each
+folder only uses the ones listed before it: content and the model are the
+base, the simulation reads them, and the board and the UI show it all.
+
+| Folder            | What lives there                                  |
+| ----------------- | ------------------------------------------------- |
+| `src/content/`    | Everything editable without code, and its readers |
+| `src/model/`      | What a design is, and how it changes              |
+| `src/simulation/` | How busy things get, and what to do about it      |
+| `src/board/`      | The canvas: drawing, the camera, snapping         |
+| `src/ui/`         | Panels, menus and drawers around the board        |
+
+| File                             | Responsibility                                      |
+| -------------------------------- | --------------------------------------------------- |
+| `src/main.ts`                    | Wires input, the template picker and the lesson     |
+| `src/content/components.ts`      | Reads the component catalogue in `components/`      |
+| `src/content/templateLibrary.ts` | Collects the Foundations and Templates sections     |
+| `src/model/design.ts`            | The design model: components, ports, cables, groups |
+| `src/model/rope.ts`              | Verlet rope physics: each cable is a rope           |
+| `src/model/history.ts`           | Undo steps                                          |
+| `src/model/templates.ts`         | Validating, loading and exporting templates         |
+| `src/model/geometry.ts`          | Small point and distance helpers                    |
+| `src/simulation/load.ts`         | How busy each component gets for its users          |
+| `src/simulation/status.ts`       | The status chip's words for a selected component    |
+| `src/simulation/fixes.ts`        | What to try when a component is busy                |
+| `src/board/render.ts`            | Drawing the board on a canvas                       |
+| `src/board/flow.ts`              | The ripple that runs along cables                   |
+| `src/board/snap.ts`              | Finding the port under the pointer and snap targets |
+| `src/board/camera.ts`            | Pan, zoom and fitting a design in view              |
+| `src/ui/palette.ts`              | The sidebar of components                           |
+| `src/ui/radialMenu.ts`           | Cuts a menu's buttons into slices of a wheel        |
+| `src/ui/cableToolbar.ts`         | The options wheel over a selected cable             |
+| `src/ui/labelEditor.ts`          | The text field for naming cables and groups         |
+| `src/ui/lesson.ts`               | The template lesson shown in the drawer             |
+| `src/ui/fixCard.ts`              | The Fix card shown in the drawer                    |
+| `src/ui/componentInfo.ts`        | The component explanation shown in the drawer       |
+| `src/ui/nutshell.ts`             | The _In a nutshell_ page                            |
+| `src/ui/dom.ts`                  | Tiny helpers for building drawer content            |
 
 ## Tests
 
@@ -268,20 +280,20 @@ npm test                          # everything
 node --test tests/rope.test.ts    # one file
 ```
 
-| Source file                                                                                                                                                                                      | Test file                                                  |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| `src/load.ts`, component `capacity`                                                                                                                                                              | `tests/load.test.ts`, `tests/components.test.ts`           |
-| `src/fixes.ts`, `src/fixes.json`                                                                                                                                                                 | `tests/fixes.test.ts`                                      |
-| `src/status.ts`                                                                                                                                                                                  | `tests/status.test.ts`                                     |
-| `src/radialMenu.ts`                                                                                                                                                                              | `tests/radialMenu.test.ts`                                 |
-| `src/rope.ts`                                                                                                                                                                                    | `tests/rope.test.ts`                                       |
-| `src/flow.ts`, `src/settings.json`                                                                                                                                                               | `tests/flow.test.ts`                                       |
-| `src/design.ts`                                                                                                                                                                                  | `tests/design.test.ts`                                     |
-| `src/history.ts`                                                                                                                                                                                 | `tests/history.test.ts`                                    |
-| `src/snap.ts`                                                                                                                                                                                    | `tests/snap.test.ts`                                       |
-| `src/camera.ts`                                                                                                                                                                                  | `tests/camera.test.ts`                                     |
-| `src/nutshell.ts`, `src/nutshell.json`                                                                                                                                                           | `tests/nutshell.test.ts`                                   |
-| `src/templates.ts`, `src/templates/**/*.json`                                                                                                                                                    | `tests/templates.test.ts`                                  |
-| `src/components.ts`, `src/components/**`                                                                                                                                                         | `tests/components.test.ts`, `tests/templates.test.ts`      |
-| `src/geometry.ts`                                                                                                                                                                                | covered by `tests/rope.test.ts` and `tests/design.test.ts` |
-| `src/render.ts`, `src/main.ts`, `src/palette.ts`, `src/lesson.ts`, `src/componentInfo.ts`, `src/dom.ts`, `src/labelEditor.ts`, `src/cableToolbar.ts`, `src/fixCard.ts`, `src/templateLibrary.ts` | no unit tests; check in the browser                        |
+| Source file                                                                                                                                                                                                                         | Test file                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `src/simulation/load.ts`, component `capacity`                                                                                                                                                                                      | `tests/load.test.ts`, `tests/components.test.ts`           |
+| `src/simulation/fixes.ts`, `src/content/fixes.json`                                                                                                                                                                                 | `tests/fixes.test.ts`                                      |
+| `src/simulation/status.ts`                                                                                                                                                                                                          | `tests/status.test.ts`                                     |
+| `src/ui/radialMenu.ts`                                                                                                                                                                                                              | `tests/radialMenu.test.ts`                                 |
+| `src/model/rope.ts`                                                                                                                                                                                                                 | `tests/rope.test.ts`                                       |
+| `src/board/flow.ts`, `src/content/settings.json`                                                                                                                                                                                    | `tests/flow.test.ts`                                       |
+| `src/model/design.ts`                                                                                                                                                                                                               | `tests/design.test.ts`                                     |
+| `src/model/history.ts`                                                                                                                                                                                                              | `tests/history.test.ts`                                    |
+| `src/board/snap.ts`                                                                                                                                                                                                                 | `tests/snap.test.ts`                                       |
+| `src/board/camera.ts`                                                                                                                                                                                                               | `tests/camera.test.ts`                                     |
+| `src/ui/nutshell.ts`, `src/content/nutshell.json`                                                                                                                                                                                   | `tests/nutshell.test.ts`                                   |
+| `src/model/templates.ts`, `src/content/templates/**/*.json`                                                                                                                                                                         | `tests/templates.test.ts`                                  |
+| `src/content/components.ts`, `src/content/components/**`                                                                                                                                                                            | `tests/components.test.ts`, `tests/templates.test.ts`      |
+| `src/model/geometry.ts`                                                                                                                                                                                                             | covered by `tests/rope.test.ts` and `tests/design.test.ts` |
+| `src/board/render.ts`, `src/main.ts`, `src/ui/palette.ts`, `src/ui/lesson.ts`, `src/ui/componentInfo.ts`, `src/ui/dom.ts`, `src/ui/labelEditor.ts`, `src/ui/cableToolbar.ts`, `src/ui/fixCard.ts`, `src/content/templateLibrary.ts` | no unit tests; check in the browser                        |

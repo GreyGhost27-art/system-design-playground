@@ -1,4 +1,4 @@
-import { findKind } from './components.ts';
+import { findKind } from '../content/components.ts';
 import { distance, type Point } from './geometry.ts';
 import {
   createRope,

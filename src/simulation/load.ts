@@ -1,5 +1,5 @@
-import { findKind } from './components.ts';
-import type { Design, DesignNode } from './design.ts';
+import { findKind } from '../content/components.ts';
+import type { Design, DesignNode } from '../model/design.ts';
 
 /**
  * The daily users a client can be set to (people who use it on a given day,

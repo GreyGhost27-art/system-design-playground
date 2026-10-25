@@ -4,8 +4,8 @@ import {
   portPosition,
   type DesignNode,
   type PortRef,
-} from './design.ts';
-import { distance, type Point } from './geometry.ts';
+} from '../model/design.ts';
+import { distance, type Point } from '../model/geometry.ts';
 
 export const PORT_RADIUS = 6;
 const PORT_GRAB_RADIUS = 12;

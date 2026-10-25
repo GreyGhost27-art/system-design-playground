@@ -5,7 +5,7 @@ import {
   screenToWorld,
   worldToScreen,
   zoomAt,
-} from '../src/camera.ts';
+} from '../src/board/camera.ts';
 
 test('screen points convert to world points with pan and zoom', () => {
   const camera = { x: 100, y: 50, scale: 2 };

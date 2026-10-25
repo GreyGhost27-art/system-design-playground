@@ -1,4 +1,4 @@
-import { clamp, type Point } from './geometry.ts';
+import { clamp, type Point } from '../model/geometry.ts';
 
 /** `x` and `y` are where the world origin appears on screen. */
 export interface Camera {

@@ -5,8 +5,8 @@ import {
   nextCopyLabel,
   portPosition,
   type PortRef,
-} from '../src/design.ts';
-import { rectBetween } from '../src/geometry.ts';
+} from '../src/model/design.ts';
+import { rectBetween } from '../src/model/geometry.ts';
 
 function twoComponents() {
   const design = new Design();

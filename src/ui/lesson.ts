@@ -1,6 +1,6 @@
 import { element, list, section } from './dom.ts';
-import type { TemplateSection } from './templateLibrary.ts';
-import type { Template } from './templates.ts';
+import type { TemplateSection } from '../content/templateLibrary.ts';
+import type { Template } from '../model/templates.ts';
 
 export function renderLesson(
   container: HTMLElement,

@@ -1,4 +1,4 @@
-import type { Point } from './geometry.ts';
+import type { Point } from '../model/geometry.ts';
 
 // Ring sizes, in pixels: the hole in the middle and the outer edge.
 const INNER = 44;

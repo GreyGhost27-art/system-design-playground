@@ -1,17 +1,18 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { COMPONENT_KINDS } from '../src/components.ts';
-import { fixesFor } from '../src/fixes.ts';
+import { COMPONENT_KINDS } from '../src/content/components.ts';
+import { fixesFor } from '../src/simulation/fixes.ts';
 
-const boardIds = ['../src/templates/', '../src/templates/foundations/'].flatMap(
-  (folder) => {
-    const url = new URL(folder, import.meta.url);
-    return readdirSync(url)
-      .filter((file) => file.endsWith('.json'))
-      .map((file) => JSON.parse(readFileSync(new URL(file, url), 'utf8')).id);
-  },
-);
+const boardIds = [
+  '../src/content/templates/',
+  '../src/content/templates/foundations/',
+].flatMap((folder) => {
+  const url = new URL(folder, import.meta.url);
+  return readdirSync(url)
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => JSON.parse(readFileSync(new URL(file, url), 'utf8')).id);
+});
 
 test('every component that can get busy has something to try', () => {
   for (const { id, capacity } of COMPONENT_KINDS) {

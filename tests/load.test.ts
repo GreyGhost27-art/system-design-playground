@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { Design } from '../src/design.ts';
+import { Design } from '../src/model/design.ts';
 import {
   computeLoad,
   describeUsers,
   requestsFrom,
   WORST_DAY,
-} from '../src/load.ts';
+} from '../src/simulation/load.ts';
 
 /** Daily users whose average traffic is this many requests a second. */
 const usersSending = (requests: number) => (requests * 86_400) / 50;

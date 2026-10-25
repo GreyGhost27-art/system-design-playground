@@ -1,5 +1,5 @@
-import type { Design } from './design.ts';
-import type { Point } from './geometry.ts';
+import type { Design } from '../model/design.ts';
+import type { Point } from '../model/geometry.ts';
 import { createWheelPlacement, layoutRadialMenu } from './radialMenu.ts';
 
 export interface CableActions {

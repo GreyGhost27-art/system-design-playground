@@ -1,5 +1,5 @@
 import type { Camera } from './camera.ts';
-import { categoryColor, findKind } from './components.ts';
+import { categoryColor, findKind } from '../content/components.ts';
 import {
   BUSY_AT,
   describeUsers,
@@ -7,7 +7,7 @@ import {
   type Health,
   type LoadReport,
   type NodeLoad,
-} from './load.ts';
+} from '../simulation/load.ts';
 import {
   NODE_HEIGHT,
   NODE_WIDTH,
@@ -18,7 +18,7 @@ import {
   type DesignNode,
   type Group,
   type PortRef,
-} from './design.ts';
+} from '../model/design.ts';
 import {
   displaceCurve,
   displacementAt,
@@ -28,8 +28,8 @@ import {
   waveAt,
   type FlowSettings,
 } from './flow.ts';
-import type { Point } from './geometry.ts';
-import type { Rope } from './rope.ts';
+import type { Point } from '../model/geometry.ts';
+import type { Rope } from '../model/rope.ts';
 import { PORT_RADIUS } from './snap.ts';
 
 const GRID_DOT = '#2a2a2a';

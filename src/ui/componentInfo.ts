@@ -1,4 +1,8 @@
-import { CATEGORIES, type ComponentKind, type Sample } from './components.ts';
+import {
+  CATEGORIES,
+  type ComponentKind,
+  type Sample,
+} from '../content/components.ts';
 import { element, list, section } from './dom.ts';
 
 /** Explains a component in plain words: what it is, why, and examples. */

@@ -1,4 +1,4 @@
-import { CATEGORIES, COMPONENT_KINDS } from './components.ts';
+import { CATEGORIES, COMPONENT_KINDS } from '../content/components.ts';
 
 export const DRAG_FORMAT = 'application/x-system-component';
 

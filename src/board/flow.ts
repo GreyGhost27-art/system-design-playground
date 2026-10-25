@@ -1,4 +1,4 @@
-import { distance, lerp, type Point } from './geometry.ts';
+import { distance, lerp, type Point } from '../model/geometry.ts';
 
 export interface FlowSettings {
   enabled: boolean;

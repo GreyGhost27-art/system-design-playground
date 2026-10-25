@@ -1,4 +1,4 @@
-import fixes from './fixes.json' with { type: 'json' };
+import fixes from '../content/fixes.json' with { type: 'json' };
 
 /**
  * One thing to try when a component is too busy. It either works in one

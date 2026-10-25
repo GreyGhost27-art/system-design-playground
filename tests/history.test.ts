@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { Design } from '../src/design.ts';
-import { UndoHistory } from '../src/history.ts';
+import { Design } from '../src/model/design.ts';
+import { UndoHistory } from '../src/model/history.ts';
 
 const kinds = (design: Design) => design.nodes.map((node) => node.kind);
 

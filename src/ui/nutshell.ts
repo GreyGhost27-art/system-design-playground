@@ -1,5 +1,5 @@
 import { element } from './dom.ts';
-import content from './nutshell.json' with { type: 'json' };
+import content from '../content/nutshell.json' with { type: 'json' };
 
 export interface NutshellItem {
   title?: string;

@@ -1,18 +1,23 @@
-import { fitCamera, screenToWorld, worldToScreen, zoomAt } from './camera.ts';
-import { renderComponentInfo } from './componentInfo.ts';
-import { renderClientFix, renderComponentFix } from './fixCard.ts';
-import { describeStatus } from './status.ts';
-import { findKind } from './components.ts';
+import {
+  fitCamera,
+  screenToWorld,
+  worldToScreen,
+  zoomAt,
+} from './board/camera.ts';
+import { renderComponentInfo } from './ui/componentInfo.ts';
+import { renderClientFix, renderComponentFix } from './ui/fixCard.ts';
+import { describeStatus } from './simulation/status.ts';
+import { findKind } from './content/components.ts';
 import {
   Design,
   GROUP_HANDLE_HEIGHT,
   NODE_HEIGHT,
   type PortRef,
-} from './design.ts';
-import { rectBetween, type Point } from './geometry.ts';
-import { UndoHistory } from './history.ts';
-import { createCableToolbar } from './cableToolbar.ts';
-import { createLabelEditor } from './labelEditor.ts';
+} from './model/design.ts';
+import { rectBetween, type Point } from './model/geometry.ts';
+import { UndoHistory } from './model/history.ts';
+import { createCableToolbar } from './ui/cableToolbar.ts';
+import { createLabelEditor } from './ui/labelEditor.ts';
 import {
   AVERAGE_DAY,
   BUSY_AT,
@@ -21,27 +26,27 @@ import {
   describeUsers,
   usersOf,
   USER_LEVELS,
-} from './load.ts';
-import { renderLesson } from './lesson.ts';
-import { renderNutshell } from './nutshell.ts';
-import { DRAG_FORMAT, renderPalette } from './palette.ts';
+} from './simulation/load.ts';
+import { renderLesson } from './ui/lesson.ts';
+import { renderNutshell } from './ui/nutshell.ts';
+import { DRAG_FORMAT, renderPalette } from './ui/palette.ts';
 import {
   GROUP_CORNER_RADIUS,
   render,
   type CableDraft,
   type Scene,
-} from './render.ts';
-import { createWheelPlacement, layoutRadialMenu } from './radialMenu.ts';
-import { createRope, reverseRope, stepRope } from './rope.ts';
-import settings from './settings.json' with { type: 'json' };
-import { findSnapTarget, portAt } from './snap.ts';
-import { SECTIONS, type TemplateSection } from './templateLibrary.ts';
+} from './board/render.ts';
+import { createWheelPlacement, layoutRadialMenu } from './ui/radialMenu.ts';
+import { createRope, reverseRope, stepRope } from './model/rope.ts';
+import settings from './content/settings.json' with { type: 'json' };
+import { findSnapTarget, portAt } from './board/snap.ts';
+import { SECTIONS, type TemplateSection } from './content/templateLibrary.ts';
 import {
   loadTemplate,
   parseBoard,
   toTemplate,
   type Template,
-} from './templates.ts';
+} from './model/templates.ts';
 
 type Gesture =
   | { type: 'idle' }

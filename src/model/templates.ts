@@ -1,4 +1,4 @@
-import { isKnownKind } from './components.ts';
+import { isKnownKind } from '../content/components.ts';
 import {
   Design,
   SIDES,

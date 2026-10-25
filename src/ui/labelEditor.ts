@@ -1,4 +1,4 @@
-import type { Point } from './geometry.ts';
+import type { Point } from '../model/geometry.ts';
 
 /** Something on the board that can be named in place. */
 export interface LabelTarget {

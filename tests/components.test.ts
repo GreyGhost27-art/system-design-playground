@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { test } from 'node:test';
-import { CATEGORIES, COMPONENT_KINDS, findKind } from '../src/components.ts';
+import {
+  CATEGORIES,
+  COMPONENT_KINDS,
+  findKind,
+} from '../src/content/components.ts';
 
 test('every component has a unique id and a known category', () => {
   const ids = COMPONENT_KINDS.map((kind) => kind.id);
@@ -74,9 +78,9 @@ test('code examples fit the drawer, 40 characters per line at most', () => {
   }
 });
 
-const componentsFolder = new URL('../src/components/', import.meta.url);
+const componentsFolder = new URL('../src/content/components/', import.meta.url);
 
-/** Every `<category>/<id>.json` file under src/components. */
+/** Every `<category>/<id>.json` file under src/content/components. */
 function componentFilesOnDisk(): { category: string; id: string }[] {
   return readdirSync(componentsFolder, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())

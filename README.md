@@ -1,5 +1,7 @@
 # System Design Playground
 
+[![Checks](https://github.com/JoaoGeraldes/system-design-playground/actions/workflows/check.yml/badge.svg)](https://github.com/JoaoGeraldes/system-design-playground/actions/workflows/check.yml)
+
 Build a system design on a board, send up to 10 million daily users through
 it, and see which part breaks first and how to fix it.
 
@@ -122,6 +124,7 @@ node --test tests/load.test.ts     # one file
 ## Publishing
 
 Every push to `main` runs `npm run check`, builds and deploys to GitHub Pages
-(`.github/workflows/deploy.yml`). One-time setup: **Settings → Pages →
+(`.github/workflows/deploy.yml`). Pull requests get the same checks from
+`.github/workflows/check.yml`. One-time setup: **Settings → Pages →
 Source: GitHub Actions**. For a custom domain, set `base` to `'/'` in
 `vite.config.ts` and add the domain to `public/CNAME`.
